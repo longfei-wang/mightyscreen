@@ -45,9 +45,10 @@ class readrawdata():
                     plate_count+=1
                 if plate_count==self.plates_num:
                     return list(self.map)
-
         return  False
-    
+
+    def save(self):
+        pass
 #    def parse_table(self,row_num,readout):
 #        n=row_num+1
 #        for i in self.p.plate.rows:
