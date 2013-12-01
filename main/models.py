@@ -36,6 +36,7 @@ class project(models.Model):
     agreement = models.CharField(max_length=20)
     experiment = models.ForeignKey('experiment')
     plate = models.ForeignKey('plate')
+    replicate = ReadoutListField()
     fileformat = models.ForeignKey('fileformat')
     user = models.ManyToManyField(User)
 

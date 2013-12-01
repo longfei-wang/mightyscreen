@@ -22,7 +22,7 @@ def upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            rawdata = readrawdata(request.FILES['file'],'test','longfei')
+            rawdata = readrawdata(request.FILES['file'],'test','longfei',['1','2'])
             
             return HttpResponse(rawdata.parse())
 #            handle_uploaded_file(request.FILES['file'])
