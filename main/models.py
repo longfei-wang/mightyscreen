@@ -26,10 +26,11 @@ class ReadoutListField(models.TextField):
         return self.get_db_prep_value(value)
 
 
+#define a screening project
 class project(models.Model):
-    #define a screening project
     def __unicode__(self):
         return self.name
+    ID = models.AutoField(primary_key=True)
     name = models.CharField(max_length=20)
     description = models.TextField()
     agreement = models.CharField(max_length=20)
@@ -39,30 +40,33 @@ class project(models.Model):
     user = models.ManyToManyField(User)
 
 
+#define a experiemnt
 class experiment(models.Model):
-    #define a experiemnt
     def __unicode__(self):
         return self.name	
     name = models.CharField(max_length=20)
     description =  models.TextField()
     readout = models.ManyToManyField('readout')
 
+
+#since differnet experiment has different readouts, this is a table define specific readout of a experiment
 class readout(models.Model):
-    #since differnet experiment has different readouts, this is a table define specific readout of a experiment
     def __unicode__(self):
         return self.name	
     name = models.CharField(max_length=255)
     description = models.TextField()
     keywords = ReadoutListField()
 
+
+#the format of the file user upload.
 class fileformat(models.Model):
-    #the format of the file user upload.
     def __unicode__(self):
         return self.name
     name = models.CharField(max_length=20)
 
+
+#All the plate types.
 class plate(models.Model):
-    #All the plate types.
     def __unicode__(self):
         return self.name
     name = models.CharField(max_length=20)
@@ -85,8 +89,8 @@ class plate(models.Model):
 #    row = models.CharField(max_length=10)
 #    position = models.CharField(max_length=20)
 
+#Data object for all screening raw data, readout is stored in comma seperated array, well posistion is refering another table   
 class data(models.Model):
-    #Data object for all screening raw data, readout is stored in comma seperated array, well posistion is refering another table 
     def __unicode__(self):
         return self.readout
     ID = models.AutoField(primary_key=True)

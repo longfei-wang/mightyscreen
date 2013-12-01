@@ -22,7 +22,7 @@ def upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            rawdata = readrawdata(request.FILES['file'])
+            rawdata = readrawdata(request.FILES['file'],'test','longfei')
             
             return HttpResponse(rawdata.parse())
 #            handle_uploaded_file(request.FILES['file'])
@@ -31,7 +31,7 @@ def upload(request):
         form = UploadFileForm()
         c={'form': form}
         c.update(csrf(request))
-    return render_to_response('readdata/upload.html', c)
+    return render_to_response('main/upload.html', c)
 
 
 #def gen(request):
