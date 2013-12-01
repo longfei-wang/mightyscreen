@@ -44,7 +44,7 @@ class well(models.Model):
     column = models.CharField(max_length=10)
     row = models.CharField(max_length=10)
     position = models.CharField(max_length=20)
-
+    origin = models.CharField(max_length=20)
 
 class data(models.Model):
     #Data object for all screening raw data, readout is stored in comma seperated array, well posistion is refering another table 
