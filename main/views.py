@@ -23,8 +23,8 @@ def upload(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             rawdata = readrawdata(request.FILES['file'],'test','longfei',['1','2'])
-            
-            return HttpResponse(rawdata.parse())
+            rawdata.parse()
+            return HttpResponse(rawdata.save())
 #            handle_uploaded_file(request.FILES['file'])
 #            return HttpResponseRedirect('/success/url/')
     else:    #a form to upload raw data
