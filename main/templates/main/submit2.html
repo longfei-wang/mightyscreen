@@ -149,11 +149,10 @@
 </fieldwrapper>
 
 
-<!--fieldwrapper>
+<fieldwrapper>
 
     <label for="id_mtz"> CSV file : <span class="required">*</span></label>
     <input id="id_mtz" type="file" name="mtz" title="Must include an amplitude column" />
-    
     
 </fieldwrapper>
 
@@ -203,7 +202,7 @@
     <label for="id_phaser_opts"> Phaser extra options : </label>
     <textarea id="id_phaser_opts" rows="10" cols="40" name="phaser_opts"></textarea>
     
-</fieldwrapper-->
+</fieldwrapper>
 
 
 <fieldwrapper>
@@ -229,20 +228,18 @@
 </fieldwrapper>
 
 
-<!--fieldwrapper>
+<fieldwrapper>
 
     <label for="id_sgalt"> Search all possible space groups (increases timeout rate). Please use this option instead of submitting the same MTZ file for multiple searches. : </label>
     <input id="id_sgalt" type="checkbox" name="sgalt" title="This will decrease search within the default space group as total job time is capped. Please use this option instead of submitting the same MTZ file for multiple searches. " />
     
-</fieldwrapper-->
+</fieldwrapper>
 
-{% block content%}
-<form action= "{% url 'submit1'%}" method="post" enctype= "multipart/form-data">
-   {% csrf_token %}
-   {{form.as_p}}
-   <input type="submit" value= "submit"/>
-</form>
-{% endblock%}
+
+
+
+        <input type="submit" value="Submit" />
+    </form>
 
 <div id="slideContainer">
 	<div>

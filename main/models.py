@@ -44,7 +44,7 @@ class project(models.Model):
 #define a experiemnt
 class experiment(models.Model):
     def __unicode__(self):
-        return self.name	
+        return self.name        
     name = models.CharField(max_length=20)
     description =  models.TextField()
     readout = models.ManyToManyField('readout')
@@ -53,7 +53,7 @@ class experiment(models.Model):
 #since differnet experiment has different readouts, this is a table define specific readout of a experiment
 class readout(models.Model):
     def __unicode__(self):
-        return self.name	
+        return self.name        
     name = models.CharField(max_length=255)
     description = models.TextField()
     keywords = ReadoutListField()
@@ -84,7 +84,7 @@ class plate(models.Model):
 #class well(models.Model):
 #    #a table describing plate format and each position of wells in this plate, dosen't nessesarily need to be a plate, could be anything.
 #    def __unicode__(self):
-#        return self.plate_type	
+#        return self.plate_type        
 #    plate_type = models.ForeignKey('plate')
 #    column = models.CharField(max_length=10)
 #    row = models.CharField(max_length=10)
@@ -98,8 +98,21 @@ class data(models.Model):
     library = models.CharField(max_length=20)
     plate = models.CharField(max_length=10)
     well = models.CharField(max_length=10)
-    replicate = models.PositiveIntegerField()
+    replicate = models.CharField(max_length=10)
     project = models.ForeignKey('project')
     readout =  ReadoutListField()
     datetime = models.DateTimeField()
-    create_by = models.OneToOneField(User)
+    create_by = models.ForeignKey(User)
+
+
+
+#==============================================================================
+## test models from QY
+
+#class for uploaded files
+class rawDataFile(models.Model):
+    def __unicode__(self):
+        return self.readout
+    
+    datafile = models.FileField(upload_to = 'rawdata_test_%Y%m%d')
+
