@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -103,7 +106,7 @@ class data(models.Model):
     readout =  ReadoutListField()
     datetime = models.DateTimeField()
     create_by = models.ForeignKey(User)
-<<<<<<< HEAD
+
 
 
 
@@ -117,5 +120,4 @@ class rawDataFile(models.Model):
     
     datafile = models.FileField(upload_to = 'rawdata_test_%Y%m%d')
 
-=======
->>>>>>> b8a9f35593c515f48222e3bf47b5e0cedf662bb4
+

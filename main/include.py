@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from django import forms
 from django.contrib.auth.models import User
 from collections import defaultdict
@@ -98,10 +101,9 @@ class readrawdata():
                         create_by=User.objects.get(username__exact=self.user_name),
                         )
                         entry.save()
-<<<<<<< HEAD
         return True
-=======
-        return True
+    
+
         
         
->>>>>>> b8a9f35593c515f48222e3bf47b5e0cedf662bb4
+
