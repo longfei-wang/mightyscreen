@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from django import forms
 from django.contrib.auth.models import User
 from collections import defaultdict
@@ -10,8 +13,11 @@ from main.models import project, data, experiment, readout, fileformat, plate
 
 
 class UploadFileForm(forms.Form):
-    title = forms.CharField(max_length=50)
-    file  = forms.FileField()
+    """to longfei: I change the name from file to datafile
+    because file is a type name, could cause error"""
+        
+    #title = forms.CharField(max_length=50)
+    datafile  = forms.FileField()
 
 class readrawdata():
     def __init__(self,csvfile,project_name,user_name,plates):
@@ -91,5 +97,9 @@ class readrawdata():
                         )
                         #entry.save()
         return 'saved'
+    
+
+>>>>>>> 3309bac5c6e7ae09b2716dbbc98012d55927862f
         
         
+
