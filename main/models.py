@@ -81,6 +81,16 @@ class plate(models.Model):
     ('BR','bottom-right'),
     )
 
+class submission(models.Model):
+    datetime = models.DateTimeField()
+    submit_by = models.ForeignKey(User)
+    status = (
+    ('s','succeed'),
+    ('i','in queue'),
+    ('f','failed'),
+    ('u','unknown'),
+    )
+
 #class well(models.Model):
 #    #a table describing plate format and each position of wells in this plate, dosen't nessesarily need to be a plate, could be anything.
 #    def __unicode__(self):
@@ -101,5 +111,6 @@ class data(models.Model):
     replicate = models.CharField(max_length=10)
     project = models.ForeignKey('project')
     readout =  ReadoutListField()
+    submission = models.ForeignKey('submission')
     datetime = models.DateTimeField()
     create_by = models.ForeignKey(User)

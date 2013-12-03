@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth.models import User
 from collections import defaultdict
-from astropy.table import Table
-import csv,datetime
+#from astropy.table import Table
+import pandas as pd
+import datetime
 
 from main.models import project, data, experiment, readout, fileformat, plate
 
@@ -14,7 +15,8 @@ class UploadFileForm(forms.Form):
 
 class readrawdata():
     def __init__(self,csvfile,project_name,user_name,plates):
-        self.rawdata = Table.read(csvfile,format='ascii')
+#        self.rawdata = Table.read(csvfile,format='ascii')
+        self.rawdata=pd.read_csv(csvfile,header=None).values.astype(str)
         self.user_name=user_name
         self.plates=plates
         self.plates_num=len(plates)
@@ -25,11 +27,10 @@ class readrawdata():
         self.replicate_num=len(self.replicate)
         self.map=defaultdict(lambda: defaultdict(dict))
         self.datetime=datetime.datetime.now()
-        
 
+# process the data define where table are
+# a.experiment.readout.all(), a.experiment.readout.count(), a.experiment.readout.get(name='FP').keywords
     def parse(self):
-            
-        # a.experiment.readout.all(), a.experiment.readout.count(), a.experiment.readout.get(name='FP').keywords
         n=0
         readout_count=0
         replicate_count=0
@@ -52,14 +53,6 @@ class readrawdata():
         
     def test(self):
         return self.rawdata[10]
-#    def parse_table(self,platec,replicatec,readoutc):
-#        n=row_num+1
-#        for i in self.p.plate.rows:
-#            n+=1
-#            m=self.csv[n]
-#            location = m[0]+i
-#            m.pop(0)
-#            self.tmp[readout][location]=m
 
         
 #class data(models.Model):
@@ -75,6 +68,8 @@ class readrawdata():
 #    datetime = models.DateTimeField()
 #    create_by = models.OneToOneField(User)
 
+
+#save tables into database row by row, might take some time.
     def save(self):
         for pla in range(len(self.plates)):
             for rep in range(len(self.replicate)):
@@ -94,7 +89,7 @@ class readrawdata():
                         datetime=self.datetime,
                         create_by=User.objects.get(username__exact=self.user_name),
                         )
-                        entry.save()
-        return True
+                        #entry.save()
+        return 'saved'
         
         
