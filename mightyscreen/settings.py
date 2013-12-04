@@ -37,7 +37,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main',
-    'debug_toolbar',
+    'djcelery',
+    'kombu.transport.django',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -91,3 +92,8 @@ TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 
 MEDIA_ROOT =os.path.join(BASE_DIR,'media')
 MEDIA_URL = '/media/'
+
+
+import djcelery
+djcelery.setup_loader()
+BROKER_URL="django://"

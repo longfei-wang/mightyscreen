@@ -87,11 +87,11 @@ class plate(models.Model):
 class submission(models.Model):
     datetime = models.DateTimeField()
     submit_by = models.ForeignKey(User)
+    plates=ReadoutListField()
     status = (
-    ('s','succeed'),
-    ('i','in queue'),
+    ('p','pending'),
     ('f','failed'),
-    ('u','unknown'),
+    ('s','succeed'),
     )
 
 #class well(models.Model):

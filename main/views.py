@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import FormView, DetailView
 from django.core.urlresolvers import reverse
 
-from .include import UploadFileForm, readrawdata
+from .tasks import UploadFileForm, readrawdata
 from main.models import data, rawDataFile
 
 # Create your views here.
@@ -20,14 +20,13 @@ from main.models import data, rawDataFile
 
 def index(request):    
     return render(request,'main/index.html')
-
+#"""request.FILES['datafile'],"""'test','longfei',['1','2']
 def upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            rawdata = readrawdata(request.FILES['file'],'test','longfei',['1','2'])
-            rawdata.parse()
-            return HttpResponse(rawdata.save())
+            result=readrawdata.delay(request.FILES['datafile'],'test','longfei',['1','2'])
+            return HttpResponse(result.state)
 #            handle_uploaded_file(request.FILES['file'])
 #            return HttpResponseRedirect('/success/url/')
     else:    #a form to upload raw data
