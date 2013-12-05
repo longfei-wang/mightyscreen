@@ -10,7 +10,7 @@ import datetime as dt
 
 from celery.decorators import task
 
-from main.models import project, data, submission
+from main.models import project, data, submission, submission_id
 
 
 
@@ -22,7 +22,7 @@ class UploadFileForm(forms.Form):
     datafile  = forms.FileField()
 
 class parsedata():
-    def __init__(self,csvfile,project_name,user_name,library_name,plates_array):
+    def __init__(self,csvfile,project_name,user_name,library_name,plates_array,sub_id):
 #        self.rawdata = Table.read(csvfile,format='ascii')
         self.rawdata=pd.read_csv(csvfile,header=None).values.astype(str)
         self.user_name=user_name
@@ -36,18 +36,11 @@ class parsedata():
         self.replicate_num=len(self.replicate)
         self.map=defaultdict(lambda: defaultdict(dict))
         self.datetime=dt.datetime.now()
-        self.submission=submission()
+        self.sub=submission_id.objects.get(pk=sub_id)
+            
 
-#class submission(models.Model):
-#    datetime = models.DateTimeField()
-#    submit_by = models.ForeignKey(User)
-#    library = models.CharField(max_length=20)
-#    plates=ReadoutListField()
-#    status = (
-#    ('p','pending'),
-#    ('f','failed'),
-#    ('s','succeed'),
-#    )
+
+
 
 # process the data define where table are
 # a.experiment.readout.all(), a.experiment.readout.count(), a.experiment.readout.get(name='FP').keywords
@@ -56,9 +49,12 @@ class parsedata():
         readout_count=0
         replicate_count=0
         plate_count=0
+
         for row in self.rawdata:
             n+=1
+
             for m in self.readout.all():
+
                 if m.keywords[0] in row[0]:
                     self.map[plate_count][replicate_count][m.name.encode('utf8')]=n+1
                     readout_count+=1
@@ -70,9 +66,11 @@ class parsedata():
                     plate_count+=1
                 if plate_count==self.plates_num:
                     return True
+
         return  False
         
     def test(self):
+
         return self.rawdata[10]
 
         
@@ -92,32 +90,96 @@ class parsedata():
 
 #save tables into database row by row, might take some time.
     def save(self):
+
         for pla in range(len(self.plates)):
-            for rep in range(len(self.replicate)):
-                for row in range(len(self.p.plate.rows)):
-                    for col in range(len(self.p.plate.columns)):
-                        readout_list = list()
-                        for i in self.readout.all(): 
-                            j=self.map[pla][rep][i.name.encode('utf8')]
-                            readout_list.append(self.rawdata[row+j][col+1])
-                        entry = data(
-                        library = self.library,
-                        plate = self.plates[pla],
-                        well=self.p.plate.rows[row]+self.p.plate.columns[col],
-                        replicate=self.replicate[rep],
-                        project=self.p,
-                        readout=','.join(readout_list),
-                        datetime=self.datetime,
-                        create_by=User.objects.get(username__exact=self.user_name),
-                        )
-                        #entry.save()
+            #csub the submission entry for this plate
+            csub=submission.objects.get(project=self.p,library=self.library,plate=self.plates[pla],submission_id=self.sub)
+            #check if there is already a plate
+            if submission.objects.filter(project=self.p,library=self.library,plate=self.plates[pla],status='s'):
+                pass
+                csub.status='f'
+                csub.message+='plate '+str(pla)+' already exists!<br>'
+                csub.save(update_fields=['status','message'])
+            
+            else:
+    
+                for rep in range(len(self.replicate)):
+    
+                    for row in range(len(self.p.plate.rows)):
+    
+                        for col in range(len(self.p.plate.columns)):
+                            readout_list = list()
+    
+                            for i in self.readout.all(): 
+                                j=self.map[pla][rep][i.name.encode('utf8')]
+                                readout_list.append(self.rawdata[row+j][col+1])
+    
+                            entry = data(
+                            submission_id=self.sub,
+                            library = self.library,
+                            plate = self.plates[pla],
+                            well=self.p.plate.rows[row]+self.p.plate.columns[col],
+                            replicate=self.replicate[rep],
+                            project=self.p,
+                            readout=','.join(readout_list),
+                            datetime=self.datetime,
+                            create_by=User.objects.get(username__exact=self.user_name),
+                            )
+    
+                            entry.save()
+                            
+                            csub.status='s'
+                            csub.save(update_fields=['status'])
         return 'saved'
 
 #wrap  rawdata class in a function for easier queue.
 @task()
-def readrawdata(*args,**kwargs):
-    data = parsedata(*args,**kwargs)
-    data.parse()
-    data.save()
-    return "file parsed"
+def parse_data(*args):
+    rawdata = parsedata(*args)
+    rawdata.parse()
+    rawdata.save()
+    return "parsed"
 
+#class submission(models.Model):
+#    submission_id=models.ForeignKey('submission_id')
+#    project=models.ForeignKey('project')
+#    datetime = models.DateTimeField()
+#    submit_by = models.ForeignKey(User)
+#    library = models.CharField(max_length=20)
+#    plate=models.CharField(max_length=10)
+#    message=models.TextField(blank=True)
+#    status = (
+#    ('p','pending'),
+#    ('f','failed'),
+#    ('s','succeed'),
+#    )
+#    
+#class submission_id(models.Model):
+#    pass
+
+
+    
+def submit_data(csvfile,project_name,user_name,library_name,plates_array):
+    #create a entries in submission.
+    sub_id=submission_id(description='just a test')
+    sub_id.save()
+    time = dt.datetime.now()
+    proj = project.objects.get(name=project_name)
+    user = User.objects.get(username__exact=user_name)
+    
+    for i in plates_array:
+        sub=submission(
+        submission_id=sub_id,
+        project=proj,
+        datetime=time,
+        submit_by=user,
+        library=library_name,
+        plate= i,
+        status='p'
+        )
+        sub.save()
+
+    #then parse_data in background
+    parse_data.delay(csvfile,project_name,user_name,library_name,plates_array,sub_id.pk)
+    
+    return dir(parse_data)
