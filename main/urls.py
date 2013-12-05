@@ -8,7 +8,7 @@ from django.conf.urls.static import static
 from main import views
 
 urlpatterns = patterns('',
-    url(r'^$', views.index, name='index'),
+    url(r'^$', views.datalist.as_view(), name='index'),
     url(r'^upload/', views.upload, name='upload'),
     
 

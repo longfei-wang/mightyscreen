@@ -77,25 +77,32 @@ class plate(models.Model):
     numofwells = models.PositiveIntegerField()
     columns = ReadoutListField()
     rows = ReadoutListField()
-    origin = (
+    ochoice = (
     ('TL','top-left'),
     ('TR','top-right'),
     ('BL','bottom-left'),
     ('BR','bottom-right'),
     )
+#    origin = models.CharField(max_length=2, choices=ochoice)
 
 class submission(models.Model):
+    submission_id=models.ForeignKey('submission_id')
+    project=models.ForeignKey('project')
     datetime = models.DateTimeField()
     submit_by = models.ForeignKey(User)
     library = models.CharField(max_length=20)
-    plates=ReadoutListField()
-    status = (
+    plate=models.CharField(max_length=10)
+    message=models.TextField(blank=True)
+    schoice = (
     ('p','pending'),
     ('f','failed'),
     ('s','succeed'),
     )
-
-
+    status=models.CharField(max_length=1, choices=schoice)
+    
+class submission_id(models.Model):
+    description = models.TextField(blank=True)
+    
 #class well(models.Model):
 #    #a table describing plate format and each position of wells in this plate, dosen't nessesarily need to be a plate, could be anything.
 #    def __unicode__(self):
@@ -115,8 +122,8 @@ class data(models.Model):
     well = models.CharField(max_length=10)
     replicate = models.CharField(max_length=10)
     project = models.ForeignKey('project')
+    submission_id=models.ForeignKey('submission_id')
     readout =  ReadoutListField()
-    submission = models.ForeignKey('submission')
     datetime = models.DateTimeField()
     create_by = models.ForeignKey(User)
 

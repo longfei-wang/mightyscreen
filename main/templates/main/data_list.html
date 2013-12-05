@@ -1,0 +1,12 @@
+<table>
+<tr>
+<td>plate</td><td>library</td><td>well</td><td>readout</td><td>replicate</td>
+<tr>
+
+
+  {% for i in object_list %}
+<tr>
+<td>{{ i.plate }}</td><td>{{ i.library }}</td><td>{{ i.well }}</td><td>{{ i.readout }}</td><td>{{ i.replicate }}</td>
+<tr>
+  {% endfor %}
+</table>
