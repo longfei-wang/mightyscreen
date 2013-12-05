@@ -87,12 +87,14 @@ class plate(models.Model):
 class submission(models.Model):
     datetime = models.DateTimeField()
     submit_by = models.ForeignKey(User)
+    library = models.CharField(max_length=20)
     plates=ReadoutListField()
     status = (
     ('p','pending'),
     ('f','failed'),
     ('s','succeed'),
     )
+
 
 #class well(models.Model):
 #    #a table describing plate format and each position of wells in this plate, dosen't nessesarily need to be a plate, could be anything.

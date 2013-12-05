@@ -25,7 +25,7 @@ def upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            result=readrawdata.delay(request.FILES['datafile'],'test','longfei',['1','2'])
+            result=readrawdata.delay(request.FILES['datafile'],'test','longfei','testlibrary',['1','2'])
             return HttpResponse(result.state)
 #            handle_uploaded_file(request.FILES['file'])
 #            return HttpResponseRedirect('/success/url/')
