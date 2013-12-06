@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import FormView, ListView
 from django.core.urlresolvers import reverse
 
-from .tasks import UploadFileForm, submit_data
+from .tasks import UploadFileForm, submit_data, uploadIccbLibrary
 from main.models import data, rawDataFile
 
 # Create your views here.
@@ -75,3 +75,18 @@ class upload_raw_datafile(FormView):
         """
         ## to be completed
         return reverse("tasks") 
+
+def upload_iccb_library(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+#            result=uploadIccbLibrary(request.FILES['datafile'])
+            result=uploadIccbLibrary('/main/testset_ICCB_parsed.json')
+            return HttpResponse(result)
+#            handle_uploaded_file(request.FILES['file'])
+#            return HttpResponseRedirect('/success/url/')
+    else:    #a form to upload raw data
+        form = UploadFileForm()
+        c={'form': form}
+        c.update(csrf(request))
+    return render(request, 'main/uploadlibrary.html', c)

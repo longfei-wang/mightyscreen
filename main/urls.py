@@ -15,6 +15,7 @@ urlpatterns = patterns('',
 
 #==============================================================================
 ## test urls from QY    
+    url(r'^uploadlibrary/', views.upload_iccb_library, name='uploadlibrary'),
     url(r'^tasks/', views.tasks, name='tasks'),
 #    url(r'^submit/', views.submit_table, name='submit1'),
     url(r'^submit2/', views.submit_analysis, name='submit2'),
