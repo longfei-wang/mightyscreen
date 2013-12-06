@@ -96,7 +96,7 @@ class parsedata():
             csub=submission.objects.get(project=self.p,library=self.library,plate=self.plates[pla],submission_id=self.sub)
             #check if there is already a plate
             if submission.objects.filter(project=self.p,library=self.library,plate=self.plates[pla],status='s'):
-                pass
+                
                 csub.status='f'
                 csub.message+='plate '+str(pla)+' already exists!<br>'
                 csub.save(update_fields=['status','message'])
@@ -128,8 +128,9 @@ class parsedata():
     
                             entry.save()
                             
-                            csub.status='s'
-                            csub.save(update_fields=['status'])
+                csub.status='s'
+                csub.save(update_fields=['status'])
+                
         return 'saved'
 
 #wrap  rawdata class in a function for easier queue.
@@ -182,4 +183,4 @@ def submit_data(csvfile,project_name,user_name,library_name,plates_array):
     #then parse_data in background
     parse_data.delay(csvfile,project_name,user_name,library_name,plates_array,sub_id.pk)
     
-    return dir(parse_data)
+    return "submitted"

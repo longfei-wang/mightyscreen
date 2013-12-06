@@ -8,7 +8,7 @@ from django.views.generic import FormView, ListView
 from django.core.urlresolvers import reverse
 
 from .tasks import UploadFileForm, submit_data
-from main.models import data, rawDataFile
+from main.models import data, project, submission, rawDataFile
 
 # Create your views here.
 
@@ -16,12 +16,17 @@ from main.models import data, rawDataFile
 #    with open('some/file/name.txt', 'wb+') as destination:
 #        for chunk in f.chunks():
 #            destination.write(chunk)
+class projectlist(ListView):
+    model = project
+
+class submissionlist(ListView):
+    model = submission
 
 class datalist(ListView):
     model = data
 
 def index(request):
-    pass
+    return render(request, "main/index.html")
 #"""request.FILES['datafile'],"""'test','longfei',['1','2']
 def upload(request):
     if request.method == 'POST':
