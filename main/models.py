@@ -139,5 +139,43 @@ class rawDataFile(models.Model):
         return self.readout
     
     datafile = models.FileField(upload_to = 'rawdata_test_%Y%m%d')
+    
+#class for library (refer to big library collection, like ICCB)
+class compound(models.Model):
+    def __unicode__(self):
+        return self.library_name
+    library_name = models.CharField(max_length = 30)
+    library_info = models.ForeignKey('library_info')
+    chemical_info = models.ForeignKey('chemical_info')
 
+
+    
+class library_info(models.Model):
+    facility_reagent_ID = models.CharField(max_length = 30)
+    plate = models.IntegerField(default=0)
+    well = models.CharField(max_length = 20)
+    plate_well = models.CharField(max_length = 20)
+    sub_library_name = models.CharField(max_length = 30)
+
+
+class chemical_info(models.Model):
+    pubchem_cid = models.IntegerField(default=0)
+    chemical_name = models.CharField(max_length = 30)
+    molecular_weight = models.DecimalField(max_digits=10, decimal_places=5)
+    formula = models.CharField(max_length = 30)
+    TPSA = models.DecimalField(max_digits=8, decimal_places=2)
+    logP = models.DecimalField(max_digits=8, decimal_places=4)
+    inchikey = models.CharField(max_length = 30)
+    canonical_smiles = models.CharField(max_length = 100)
+    inchi = models.TextField()
+    fp2 = models.TextField()
+    fp3 = models.CharField(max_length = 50)
+    fp4 = models.TextField()
+    svg = models.TextField()
+    sdf = models.TextField()
+
+
+        
+    
+    
 
