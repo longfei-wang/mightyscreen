@@ -1,12 +1,37 @@
+{% extends 'main/base.html' %}
+{% load filters %}
+
+{% block content %}
+{% if entry_list %}
 <table>
-<tr>
-<td>plate</td><td>library</td><td>well</td><td>readout</td><td>replicate</td>
-<tr>
 
 
-  {% for i in object_list %}
 <tr>
-<td>{{ i.plate }}</td><td>{{ i.library }}</td><td>{{ i.well }}</td><td>{{ i.readout }}</td><td>{{ i.replicate }}</td>
+    {% for i in field_list %}
+          <td>{{ i.name }}</td>
+    {% endfor %}
+</tr>
+
+{% for j in entry_list %}
 <tr>
-  {% endfor %}
+    {% for i in field_list %}
+          <td>{{ j|getattr:i.name }}</td>
+    {% endfor %}
+</tr>
+
+{% endfor %}
+
 </table>
+
+<a href='?page=1'>&lt;</a>...
+{% for i in pages %}
+<a href='?page={{i}}'>{{i}}</a>
+{% endfor %}
+...<a href='?page={{last_page}}'>&gt;</a>
+
+
+{% else%}
+No Results Found!
+{% endif %}
+
+{% endblock %}

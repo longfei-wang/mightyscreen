@@ -6,9 +6,15 @@ from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 from django.views.generic import FormView, ListView
 from django.core.urlresolvers import reverse
+<<<<<<< HEAD
 
 from .tasks import UploadFileForm, submit_data, uploadIccbLibrary
 from main.models import data, rawDataFile
+=======
+from django.core.paginator import Paginator
+from .tasks import UploadFileForm, submit_data
+from main.models import data, project, submission, rawDataFile
+>>>>>>> df6519809320b14eeb38a3615f87106a75aeccef
 
 # Create your views here.
 
@@ -17,12 +23,34 @@ from main.models import data, rawDataFile
 #        for chunk in f.chunks():
 #            destination.write(chunk)
 
-class datalist(ListView):
-    model = data
-
 def index(request):
-    pass
+    return render(request, "main/index.html")
 #"""request.FILES['datafile'],"""'test','longfei',['1','2']
+
+
+def datalist(request):
+    entry_list = data.objects.all()
+    field_list = data._meta.fields
+   
+    current_page = (request.GET.get('page'))
+        
+    p = Paginator(entry_list,30)    
+    
+    if not current_page:
+        current_page=1
+    
+    if int(current_page)+3 >= p.num_pages:
+        page_range = range(p.num_pages - 7, p.num_pages)
+    else:
+        page_range = range(max(1,int(current_page)-3),max(1,int(current_page)-3)+7) 
+        
+
+    return render(request, "main/data_list.html",{'entry_list': p.page(current_page),
+                                                  'field_list': field_list,
+                                                  'pages': page_range,
+                                                  'last_page':p.num_pages
+                                                })
+
 def upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
