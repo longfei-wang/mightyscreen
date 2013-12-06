@@ -1,3 +1,6 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
 <form enctype="multipart/form-data" method="post" action="/main/upload/">
    {% csrf_token %}      
    <table>
@@ -5,3 +8,4 @@
     </table>
     <input type="submit" value="Submit" id="Save"/>
 </form>
+{% endblock %}
