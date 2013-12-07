@@ -6,15 +6,15 @@ from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 from django.views.generic import FormView, ListView
 from django.core.urlresolvers import reverse
-<<<<<<< HEAD
+
 
 from .tasks import UploadFileForm, submit_data, uploadIccbLibrary
 from main.models import data, rawDataFile
-=======
+
 from django.core.paginator import Paginator
 from .tasks import UploadFileForm, submit_data
 from main.models import data, project, submission, rawDataFile
->>>>>>> df6519809320b14eeb38a3615f87106a75aeccef
+
 
 # Create your views here.
 

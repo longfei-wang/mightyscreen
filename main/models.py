@@ -144,8 +144,8 @@ class rawDataFile(models.Model):
 class compound(models.Model):
     def __unicode__(self):
         return (self.library_name + ' '+ self.plate_well)      
-    library_name = models.CharField(max_length = 30)
-    sub_library_name = models.CharField(max_length = 30)
+    library_name = models.ForeignKey('library')
+    sub_library_name = models.ForeignKey('sub_library')
     facility_reagent_id = models.CharField(max_length = 30)
     plate = models.IntegerField(default=0)
     well = models.CharField(max_length = 20)
@@ -164,7 +164,7 @@ class compound(models.Model):
     fp4 = models.TextField()
     svg = models.TextField()
     sdf = models.TextField()
-    additional_properties = models.ForeignKey('additional_compound_info')
+#    additional_properties = models.ForeignKey('additional_compound_info')
 
 class additional_compound_info(models.Model):
     pass
@@ -173,15 +173,15 @@ class library(models.Model):
     def __unicode__(self):
         return self.library_name
     library_name = models.CharField(max_length = 30)
-    sub_librarys = models.ForeignKey('sub_library')
-    compounds = models.ForeignKey('compound')    
+    sub_librarys = models.CharField(max_length = 30)
+    compounds = models.CharField(max_length = 30)    
     
 class sub_library(models.Model):
     def __unicode__(self):
         return self.sub_library_name 
     sub_library_name = models.CharField(max_length = 30)
-    super_library = models.CharField(max_length = 30)
-    compounds = models.ForeignKey('compound')
+    super_library = models.ForeignKey('library') 
+    compounds = models.CharField(max_length = 30)
 
         
     
