@@ -1,20 +1,17 @@
 from django.shortcuts import render, render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
-from django.template import RequestContext, loader
 from django.contrib.auth.models import User
 from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
-from django.views.generic import FormView, ListView
 from django.core.urlresolvers import reverse
-<<<<<<< HEAD
 
-from .tasks import UploadFileForm, submit_data, uploadIccbLibrary
-from main.models import data, rawDataFile
-=======
-from django.core.paginator import Paginator
-from .tasks import UploadFileForm, submit_data
+
+from main.tasks import submit_data, uploadIccbLibrary
+from main.forms import UploadFileForm
 from main.models import data, project, submission, rawDataFile
->>>>>>> df6519809320b14eeb38a3615f87106a75aeccef
+
+from django.core.paginator import Paginator
+
 
 # Create your views here.
 

@@ -185,8 +185,7 @@ def submit_data(csvfile,project_name,user_name,library_name,plates_array):
     #then parse_data in background
     parse_data.delay(csvfile,project_name,user_name,library_name,plates_array,sub_id.pk)
     
-<<<<<<< HEAD
-    return dir(parse_data)
+    return "submitted"
  
 #=============================================================================
 ## Tasks from QY    
@@ -257,6 +256,4 @@ def uploadIccbLibrary(jsonFile):
     lib = iccb_library(jsonFile)
     lib.save()
     return dir(uploadIccbLibrary)
-=======
-    return "submitted"
->>>>>>> df6519809320b14eeb38a3615f87106a75aeccef
+
