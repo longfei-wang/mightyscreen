@@ -16,12 +16,7 @@ from main.models import compound, additional_compound_info, library, sub_library
 
 
 
-class UploadFileForm(forms.Form):
-    """to longfei: I change the name from file to datafile
-    because file is a type name, could cause error"""
-        
-    #title = forms.CharField(max_length=50)
-    datafile  = forms.FileField()
+
 
 class parsedata():
     def __init__(self,csvfile,project_name,user_name,library_name,plates_array,sub_id):
@@ -185,7 +180,11 @@ def submit_data(csvfile,project_name,user_name,library_name,plates_array):
     #then parse_data in background
     parse_data.delay(csvfile,project_name,user_name,library_name,plates_array,sub_id.pk)
     
+<<<<<<< HEAD
     return dir(parse_data)
+=======
+    return "submitted"
+>>>>>>> d8b216796ac15f395cd25a41a1480a7888893349
  
 #=============================================================================
 ## Tasks from QY    
@@ -257,5 +256,8 @@ def uploadIccbLibrary(jsonFile):
     lib.save()
     return dir(uploadIccbLibrary)
 
+<<<<<<< HEAD
     return "submitted"
 
+=======
+>>>>>>> d8b216796ac15f395cd25a41a1480a7888893349

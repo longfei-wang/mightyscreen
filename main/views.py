@@ -1,11 +1,11 @@
 from django.shortcuts import render, render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
-from django.template import RequestContext, loader
 from django.contrib.auth.models import User
 from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
-from django.views.generic import FormView, ListView
+from django.contrib.auth import authenticate, login
 from django.core.urlresolvers import reverse
+<<<<<<< HEAD
 
 
 from .tasks import UploadFileForm, submit_data, uploadIccbLibrary
@@ -15,6 +15,17 @@ from django.core.paginator import Paginator
 from .tasks import UploadFileForm, submit_data
 from main.models import data, project, submission, rawDataFile
 
+=======
+from django import forms
+from django.views.generic.edit import FormView
+
+from main.tasks import submit_data, uploadIccbLibrary
+from main.forms import UploadFileForm
+from main.models import data, project, submission, rawDataFile
+
+from django.core.paginator import Paginator
+
+>>>>>>> d8b216796ac15f395cd25a41a1480a7888893349
 
 # Create your views here.
 
@@ -45,7 +56,7 @@ def datalist(request):
         page_range = range(max(1,int(current_page)-3),max(1,int(current_page)-3)+7) 
         
 
-    return render(request, "main/data_list.html",{'entry_list': p.page(current_page),
+    return render_to_response( "main/data_list.html",{'entry_list': p.page(current_page),
                                                   'field_list': field_list,
                                                   'pages': page_range,
                                                   'last_page':p.num_pages
@@ -54,13 +65,18 @@ def datalist(request):
 def upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            result=submit_data(request.FILES['datafile'],'test','longfei','testlibrary',['1','2'])
-            return HttpResponse(result)
+        
+        if not form.is_valid():
+            return render_to_response('main/error.html',{'error_msg':"WTF, you can't even fill a form right? HAAAAAA!"})
+
+        submit_data(request.FILES['datafile'],'test','longfei',request.POST.get('library'),request.POST.get('plates').split(','))
+        return HttpResponseRedirect('/main/view/')
+
 #            handle_uploaded_file(request.FILES['file'])
 #            return HttpResponseRedirect('/success/url/')
+
     else:    #a form to upload raw data
-        form = UploadFileForm()
+        form = UploadFileForm(initial={'library':'test','plates':'1,2'})
         c={'form': form}
         c.update(csrf(request))
     return render_to_response('main/upload.html', c)
