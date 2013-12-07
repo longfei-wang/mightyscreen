@@ -8,4 +8,9 @@ class UploadFileForm(forms.Form):
     because file is a type name, could cause error"""
         
     #title = forms.CharField(max_length=50)
+    
+    library = forms.CharField()    
+    plates = forms.CharField()
     datafile  = forms.FileField()
+    comment = forms.CharField(widget=forms.Textarea,required=False)
+    

@@ -16,12 +16,7 @@ from main.models import compound, additional_compound_info, library, sub_library
 
 
 
-class UploadFileForm(forms.Form):
-    """to longfei: I change the name from file to datafile
-    because file is a type name, could cause error"""
-        
-    #title = forms.CharField(max_length=50)
-    datafile  = forms.FileField()
+
 
 class parsedata():
     def __init__(self,csvfile,project_name,user_name,library_name,plates_array,sub_id):
