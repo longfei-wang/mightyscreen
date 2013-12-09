@@ -41,16 +41,17 @@ class compound(models.Model):
 class additional_compound_info(models.Model):
     pass
 
-class library(models.Model):
-    def __unicode__(self):
-        return self.library_name
-    library_name = models.CharField(max_length = 30)
-    sub_librarys = models.CharField(max_length = 30)
-    compounds = models.CharField(max_length = 30)    
     
 class sub_library(models.Model):
     def __unicode__(self):
         return self.sub_library_name 
     sub_library_name = models.CharField(max_length = 30)
-    super_library = models.ForeignKey('library') 
-    compounds = models.CharField(max_length = 30)
+    super_library = models.ForeignKey('library')
+    number_of_compounds = models.IntegerField(default=0)
+
+class library(models.Model):
+    def __unicode__(self):
+        return self.library_name
+    library_name = models.CharField(max_length = 30)
+    number_of_sub_librarys = models.IntegerField(default=0)
+    number_of_compounds = models.IntegerField(default=0)
