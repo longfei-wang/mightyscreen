@@ -12,7 +12,6 @@ import json
 from celery.decorators import task
 
 from main.models import project, data, submission, submission_id
-from main.models import compound, additional_compound_info, library, sub_library
 
 
 
@@ -180,11 +179,8 @@ def submit_data(csvfile,project_name,user_name,library_name,plates_array):
     #then parse_data in background
     parse_data.delay(csvfile,project_name,user_name,library_name,plates_array,sub_id.pk)
     
-<<<<<<< HEAD
     return dir(parse_data)
-=======
-    return "submitted"
->>>>>>> d8b216796ac15f395cd25a41a1480a7888893349
+
  
 #=============================================================================
 ## Tasks from QY    
@@ -256,8 +252,5 @@ def uploadIccbLibrary(jsonFile):
     lib.save()
     return dir(uploadIccbLibrary)
 
-<<<<<<< HEAD
-    return "submitted"
 
-=======
->>>>>>> d8b216796ac15f395cd25a41a1480a7888893349
+
