@@ -8,14 +8,14 @@
 
 <tr>
     {% for i in field_list %}
-          <td>{{ i.name }}</td>
+          <td>{{ i }}</td>
     {% endfor %}
 </tr>
 
 {% for j in entry_list %}
 <tr>
     {% for i in field_list %}
-          <td>{{ j|getattr:i.name }}</td>
+          <td>{{ j|getattr:i }}</td>
     {% endfor %}
 </tr>
 

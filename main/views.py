@@ -29,8 +29,11 @@ def index(request):
 
 def datalist(request):
     entry_list = data.objects.all()
-    field_list = data._meta.fields
-   
+    field_list = list()
+    for i in data._meta.fields:
+        field_list.append(i.name)
+    field_list.append('readout')
+
     current_page = (request.GET.get('page'))
         
     p = Paginator(entry_list,30)    
@@ -57,14 +60,14 @@ def upload(request):
         if not form.is_valid():
             return render_to_response('main/error.html',{'error_msg':"WTF, you can't even fill a form right? HAAAAAA!"})
 
-        submit_data(request.FILES['datafile'],'test','longfei',request.POST.get('library'),request.POST.get('plates').split(','))
+        submit_data(form.cleaned_data)
         return HttpResponseRedirect('/main/view/')
 
 #            handle_uploaded_file(request.FILES['file'])
 #            return HttpResponseRedirect('/success/url/')
 
     else:    #a form to upload raw data
-        form = UploadFileForm(initial={'library':'test','plates':'1,2'})
+        form = UploadFileForm(initial={'library':'test','plates':'1,2','user':'longfei','project':'test'})
         c={'form': form}
         c.update(csrf(request))
     return render_to_response('main/upload.html', c)
