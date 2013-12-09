@@ -12,8 +12,6 @@ import json
 from celery.decorators import task
 
 from main.models import project, data, data_readout, submission, submission_plate_list
-from main.models import compound, additional_compound_info, library, sub_library
-
 
 
 class rawdata():
@@ -138,75 +136,78 @@ def submit_data(formdata):
     #then parse_data in background
     submit_queue.delay(formdata,sub)
     
-    return "submitted"
+    return 'submitted'
+
  
 #=============================================================================
 ## Tasks from QY    
     
-class compound_library(object):
-    ''' library of compounds to be saved into database
-    Input file is a list of each compound with all the properties stored as dictionary
-    Input file normally generated using method library.updated_parsed_saved from another script
-    '''        
-    def __init__(self,formated_dic_lib_file):
-        self._source = formated_dic_lib_file
-        self._mols =[json.loads(mol) for mol in open(self._source, 'rU')] 
-        self._name = self.get_mols()[0]['Library_Name']    
-    
-    def get_name(self):
-        return self._name
-    
-    def get_source(self):
-        return self._source
-    
-    def get_mols(self):
-        return self._mols
-    
-    def save(self):
-        '''import data into the database'''
-        mols = self.get_mols()
-        for mol in mols:
-            entry = compound(
-                tpsa = mol["TPSA"],
-                library_name = mol["Library_Name"],
-                inchikey = mol["InChiKey"],
-                facility_reagent_id = mol["Facility_Reagent_ID"],
-                plate_well = mol["Plate_Well"],
-                logp = mol["logP"],
-                plate = mol["Plate"],
-                svg = mol["svg"],
-                well = mol["Well"],
-                molecular_weight = mol["Molecular_Weight"],
-                library = mol["Library"],
-                chemical_name = mol["Chemical_Name"],
-                pubchem_cid = mol["PubChem_CID"],
-                fp4 = mol["Fp4"],
-                sdf = mol["sdf"],
-                fp3 = mol["Fp3"],
-                fp2 = mol["Fp2"],
-                inchi = mol["InChI"],
-                formula = mol["Formula"],
-                canonical_smiles = mol["Canonical_Smiles"],
-                )
-            entry.save()
-            
-            entry = library(
-                library_name = mol["Library_Name"],
-                )
-            entry.save()
-            
-            entry = sub_library(
-                sub_library_name = mol["Library"],
-                super_library_name = mol["Library_Name"],
-                )
-            entry.save()
+#class compound_library(object):
+#    ''' library of compounds to be saved into database
+#    Input file is a list of each compound with all the properties stored as dictionary
+#    Input file normally generated using method library.updated_parsed_saved from another script
+#    '''        
+#    def __init__(self,formated_dic_lib_file):
+#        self._source = formated_dic_lib_file
+#        self._mols =[json.loads(mol) for mol in open(self._source, 'rU')] 
+#        self._name = self.get_mols()[0]['Library_Name']    
+#    
+#    def get_name(self):
+#        return self._name
+#    
+#    def get_source(self):
+#        return self._source
+#    
+#    def get_mols(self):
+#        return self._mols
+#    
+#    def save(self):
+#        '''import data into the database'''
+#        mols = self.get_mols()
+#        for mol in mols:
+#            entry = compound(
+#                tpsa = mol["TPSA"],
+#                library_name = mol["Library_Name"],
+#                inchikey = mol["InChiKey"],
+#                facility_reagent_id = mol["Facility_Reagent_ID"],
+#                plate_well = mol["Plate_Well"],
+#                logp = mol["logP"],
+#                plate = mol["Plate"],
+#                svg = mol["svg"],
+#                well = mol["Well"],
+#                molecular_weight = mol["Molecular_Weight"],
+#                library = mol["Library"],
+#                chemical_name = mol["Chemical_Name"],
+#                pubchem_cid = mol["PubChem_CID"],
+#                fp4 = mol["Fp4"],
+#                sdf = mol["sdf"],
+#                fp3 = mol["Fp3"],
+#                fp2 = mol["Fp2"],
+#                inchi = mol["InChI"],
+#                formula = mol["Formula"],
+#                canonical_smiles = mol["Canonical_Smiles"],
+#                )
+#            entry.save()
+#            
+#            entry = library(
+#                library_name = mol["Library_Name"],
+#                )
+#            entry.save()
+#            
+#            entry = sub_library(
+#                sub_library_name = mol["Library"],
+#                super_library_name = mol["Library_Name"],
+#                )
+#            entry.save()
+#
+#class iccb_library(compound_library):
+#    def to_be_added():
+#        pass
+#
+#def uploadIccbLibrary(jsonFile):
+#    lib = iccb_library(jsonFile)
+#    lib.save()
+#    return dir(uploadIccbLibrary)
 
-class iccb_library(compound_library):
-    def to_be_added():
-        pass
 
-def uploadIccbLibrary(jsonFile):
-    lib = iccb_library(jsonFile)
-    lib.save()
-    return dir(uploadIccbLibrary)
 
