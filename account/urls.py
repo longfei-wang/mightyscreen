@@ -5,12 +5,11 @@ from django.conf.urls import patterns, url
 from django.conf import settings
 from django.conf.urls.static import static
 
-from main import views
+from account import views
 
 urlpatterns = patterns('',
-    url(r'^$', views.index,name='index'),
-    url(r'^view/', views.datalist, name='view'),
-    url(r'^upload/', views.upload, name='upload'),
+    url(r'^login/', views.login, name='login'),
+    url(r'^my/', views.myaccount, name='myaccount'),
     )    
 
 
