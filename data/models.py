@@ -10,7 +10,7 @@ for i in project.objects.all():
         n=''
         for j in i.experiment.readout.all():
 
-            n+=j.name+'=models.TextField();'
+            n+=j.name+'=models.TextField(blank=True);'
 
         exec ('class proj_'+str(i.pk)+'(data_base):'+n)
 
