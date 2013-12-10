@@ -133,13 +133,8 @@ class data(models.Model):
 #==============================================================================
 ## test models from QY
 
-#class for uploaded files
-class rawDataFile(models.Model):
-    def __unicode__(self):
-        return self.readout
-    
-    datafile = models.FileField(upload_to = 'rawdata_test_%Y%m%d')
-    
+
+
 
 
 

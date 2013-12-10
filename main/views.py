@@ -15,7 +15,7 @@ from django.views.generic.edit import FormView
 
 from main.tasks import submit_data, uploadIccbLibrary
 from main.forms import UploadFileForm
-from main.models import data, project, submission, rawDataFile
+from main.models import data, project, submission
 
 
 
