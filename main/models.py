@@ -160,7 +160,6 @@ class data_base(models.Model):
 
 
 
-        
     
     
 

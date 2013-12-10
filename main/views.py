@@ -12,8 +12,10 @@ from django.views.generic.edit import FormView
 
 from main.tasks import submit_data
 from main.forms import UploadFileForm
+
 from main.models import project, submission
 from data.models import proj_1 as data
+
 
 
 
