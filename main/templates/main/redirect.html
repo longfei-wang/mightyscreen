@@ -1,0 +1,10 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+
+<META HTTP-EQUIV="Refresh" CONTENT="5; URL={% url dest %}"> 
+
+{{message}}<br>
+Redirect to main page in 5 seconds.
+
+{% endblock %}
