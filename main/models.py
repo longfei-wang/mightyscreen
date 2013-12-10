@@ -122,9 +122,33 @@ class submission_plate_list(models.Model):
     messages = models.TextField(blank=True)
 
 #Data object for all screening raw data, readout is stored in comma seperated array, well posistion is refering another table   
-class data(models.Model):
+#class data(models.Model):
+#    def __unicode__(self):
+#        return self.readout
+#    library = models.CharField(max_length=20)
+#    plate = models.CharField(max_length=10)
+#    well = models.CharField(max_length=10)
+#    replicate = models.CharField(max_length=10)
+#    project = models.ForeignKey('project')
+#    submission=models.ForeignKey('submission')
+#    create_date = models.DateTimeField()
+#    create_by = models.ForeignKey(User)
+#    def _get_readout(self):
+#        return data_readout.objects.filter(data_entry=self)
+#    readout=property(_get_readout)
+#
+#class data_readout(models.Model):
+#    def __unicode__(self):
+#        return self.reading
+#    data_entry=models.ForeignKey('data')
+#    readout=models.ForeignKey('readout')
+#    reading=models.TextField()
+
+class data_base(models.Model):
     def __unicode__(self):
         return self.readout
+    class Meta:
+        abstract=True
     library = models.CharField(max_length=20)
     plate = models.CharField(max_length=10)
     well = models.CharField(max_length=10)
@@ -133,32 +157,6 @@ class data(models.Model):
     submission=models.ForeignKey('submission')
     create_date = models.DateTimeField()
     create_by = models.ForeignKey(User)
-    def _get_readout(self):
-        return data_readout.objects.filter(data_entry=self)
-    readout=property(_get_readout)
-
-class data_readout(models.Model):
-    def __unicode__(self):
-        return self.reading
-    data_entry=models.ForeignKey('data')
-    readout=models.ForeignKey('readout')
-    reading=models.TextField()
-
-#class data_stats(models.Model):
-#    data_entry=models.ForeignKey('data')
-#    stats_type=models.ForeignKey('readout')
-#    stats=models.CharField()
-
-#==============================================================================
-## test models from QY
-
-#class for uploaded files
-#class rawDataFile(models.Model):
-#    def __unicode__(self):
-#        return self.readout
-#    
-#    datafile = models.FileField(upload_to = 'rawdata_test_%Y%m%d')
-#    
 
 
 

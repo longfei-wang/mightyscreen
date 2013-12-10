@@ -8,6 +8,6 @@ urlpatterns = patterns('',
     #url(r'^$', 'mightyscreen.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
     url(r'^main/', include('main.urls')),
-    url(r'^library/', include('library.urls')),
+    url(r'^account/', include('account.urls')),
     url(r'^admin/', include(admin.site.urls)),
 )
