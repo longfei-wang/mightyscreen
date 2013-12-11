@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'kombu.transport.django',
     'data',
     'account',
+    'statistics',
 )
 
 MIDDLEWARE_CLASSES = (

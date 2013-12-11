@@ -10,4 +10,12 @@ urlpatterns = patterns('',
     url(r'^main/', include('main.urls')),
     url(r'^account/', include('account.urls')),
     url(r'^admin/', include(admin.site.urls)),
+
+)
+
+#=============================================================================
+##tests from QY
+
+urlpatterns += (
+    url(r'^statistics/', include('statistics.urls')),
 )
