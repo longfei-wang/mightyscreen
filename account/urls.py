@@ -8,8 +8,9 @@ from django.conf.urls.static import static
 from account import views
 
 urlpatterns = patterns('',
-    url(r'^login/', views.login, name='login'),
-    url(r'^register/', views.register, name='register'),
+    url(r'^login/', views.signin, name='login'),
+    url(r'^logout/', views.logoff, name='logout'),
+    url(r'^register/', views.signup, name='register'),
     url(r'^my/', views.myaccount, name='myaccount'),
     )    
 

@@ -101,3 +101,5 @@ MEDIA_URL = '/media/'
 import djcelery
 djcelery.setup_loader()
 BROKER_URL="django://"
+
+AUTH_PROFILE_MODULE = 'account.user_profile'

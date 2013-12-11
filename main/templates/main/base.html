@@ -17,7 +17,13 @@
 <nav>
 <a href="{% url "index" %}">Main Page</a>|
 <a href="{% url "view" %}">View Data</a>|
-<a href="{% url "upload" %}">Upload Data</a></nav>
+<a href="{% url "upload" %}">Upload Data</a>|
+{% if user.is_authenticated %}
+    Welcome, {{ user.username }}&nbsp;(<a href={% url "myaccount" %}">Account</a>,&nbsp;<a href="{% url "logout" %}">Logout</a>).
+{% else %}
+    Welcome, Please <a href="{% url "login" %}">Log in</a>. Not a user? <a href="{% url "register" %}">Sign up</a>
+{% endif %}
+</nav>
 
 {% block title %}{% endblock %}
 

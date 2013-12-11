@@ -1,0 +1,13 @@
+{% extends 'main/base.html' %}
+
+
+{% block content %}
+User: {{user.username}} <br>
+Full Name: {{user.get_full_name}} <br>
+Email: {{user.email}} <br>
+Affiliation: {{profile.affiliation}} <br>
+Position: {{profile.position}} <br>
+Projects: {{user.project_set.values_list}}<br>
+Date Joined: {{user.date_joined}} <br>
+Last login: {{user.last_login}} <br>
+{% endblock %}
