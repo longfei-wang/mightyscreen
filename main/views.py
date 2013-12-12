@@ -1,5 +1,4 @@
-from django.shortcuts import render, render_to_response
-from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
@@ -50,7 +49,7 @@ def datalist(request):
         page_range = range(max(1,int(current_page)-3),max(1,int(current_page)-3)+7) 
         
 
-    return render_to_response( "main/data_list.html",{'entry_list': p.page(current_page),
+    return render(request, "main/data_list.html",{'entry_list': p.page(current_page),
                                                   'field_list': field_list,
                                                   'pages': page_range,
                                                   'last_page':p.num_pages
@@ -61,10 +60,10 @@ def upload(request):
         form = UploadFileForm(request.POST, request.FILES)
         
         if not form.is_valid():
-            return render_to_response('main/error.html',{'error_msg':"WTF, you can't even fill a form right? HAAAAAA!"})
+            return render(request,'main/error.html',{'error_msg':"WTF, you can't even fill a form right? HAAAAAA!"})
 
         submit_data(form.cleaned_data)
-        return HttpResponseRedirect('/main/view/')
+        return render(request,'main/redirect.html',{'message':'Data submitted to queue!','dest':'index'})
 
 #            handle_uploaded_file(request.FILES['file'])
 #            return HttpResponseRedirect('/success/url/')
@@ -73,5 +72,5 @@ def upload(request):
         form = UploadFileForm(initial={'library':'test','plates':'1,2','user':'longfei','project':'test'})
         c={'form': form}
         c.update(csrf(request))
-    return render_to_response('main/upload.html', c)
+    return render(request,'main/upload.html', c)
 

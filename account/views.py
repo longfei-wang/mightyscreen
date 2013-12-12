@@ -1,9 +1,7 @@
-from django.shortcuts import render, render_to_response
-from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
 from django.core.context_processors import csrf
-from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth import login,logout
 from account.models import RegisterForm
 
 # Create your views here.
@@ -16,11 +14,11 @@ def signin(request):
         if form.is_valid():            
             #form.save
             login(request,form.get_user())
-            return render_to_response('main/redirect.html',{'message':'You are logged in!','dest':'index'})
+            return render(request,'main/redirect.html',{'message':'You are logged in!','dest':'index'})
 
     args={'form':form}
     args.update(csrf(request))
-    return render_to_response('account/login.html',args)
+    return render(request,'account/login.html',args)
 
 def signup(request):
     form=RegisterForm()
@@ -31,20 +29,32 @@ def signup(request):
         if form.is_valid():
 
             form.save()
-            return render_to_response('main/redirect.html',{'message':'Congrats! You are registered!','dest':'index'})
+            return render(request,'main/redirect.html',{'message':'Congrats! You are registered!','dest':'index'})
 
 
     args={'form':form}
     args.update(csrf(request))
 
-    return render_to_response('account/register.html',args)
+    return render(request,'account/register.html',args)
 
 def logoff(request):
     logout(request)
-    return render_to_response('main/redirect.html',{'message':'You are logged out!','dest':'index'})
+    return render(request,'main/redirect.html',{'message':'You are logged out!','dest':'index'})
 
 def myaccount(request):
     user = request.user
     profile = user.get_profile()
 #    raise Exception(user.project_set.values_list())
-    return render_to_response('account/account.html',{'user':user,'profile':profile})
+    return render(request,'account/account.html',{'user':user,'profile':profile})
+    
+def projselect(request):
+
+    if request.method == 'POST':
+        request.session['proj_id']=request.POST.get('proj')
+        request.session['proj'] = request.user.project_set.get(pk=request.POST.get('proj')).name
+        return render(request,'main/redirect.html',{'message':'Choose'+request.session['proj']+' as your project','dest':'index'})
+
+    projs=request.user.project_set.all()
+    args={'projs':projs}
+    args.update(csrf(request))    
+    return render(request,'account/projselect.html',args)

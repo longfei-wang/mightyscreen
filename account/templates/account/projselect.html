@@ -1,0 +1,13 @@
+{% extends 'main/base.html' %}
+
+
+{% block content %}
+<form enctype="multipart/form-data" method="post" action="/account/projselect/">
+   {% csrf_token %}      
+
+    {% for i in projs %}
+       <input type='radio' name='proj' value='{{i.pk}}'> {{i.name}}<br>
+    {% endfor %}
+<input type="submit" value="Submit"/>
+</form>
+{% endblock %}

@@ -19,7 +19,12 @@
 <a href="{% url "view" %}">View Data</a>|
 <a href="{% url "upload" %}">Upload Data</a>|
 {% if user.is_authenticated %}
-    Welcome, {{ user.username }}&nbsp;(<a href={% url "myaccount" %}">Account</a>,&nbsp;<a href="{% url "logout" %}">Logout</a>).
+    Welcome, {{ user.username }}&nbsp;(<a href="{% url "myaccount" %}">Account</a>,&nbsp;<a href="{% url "logout" %}">Logout</a>).
+    {% if request.session.proj %}
+        Current Project&nbsp;(<a href="{% url "projselect" %}">{{request.session.proj}}</a>)
+    {% else %}
+        <a href="{% url "projselect" %}">Please Choose a Project</a>
+    {% endif %}
 {% else %}
     Welcome, Please <a href="{% url "login" %}">Log in</a>. Not a user? <a href="{% url "register" %}">Sign up</a>
 {% endif %}
