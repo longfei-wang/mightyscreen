@@ -11,9 +11,8 @@ from django.views.generic.edit import FormView
 
 from main.tasks import submit_data
 from main.forms import UploadFileForm
-
 from main.models import project, submission
-from data.models import proj_1 as data
+
 
 
 
@@ -30,30 +29,36 @@ def index(request):
 #"""request.FILES['datafile'],"""'test','longfei',['1','2']
 
 
+#list view of data in current project. Dynamically import the right model/table for project
 def datalist(request):
-    entry_list = data.objects.all()
-    field_list = list()
-    for i in data._meta.fields:
-        field_list.append(i.name)
 
-    current_page = (request.GET.get('page'))
+    if 'proj' in request.session: 
+        exec ('from data.models import proj_'+request.session['proj_id']+' as data')
+        entry_list = data.objects.all()
+        field_list = list()
+        for i in data._meta.fields:
+            field_list.append(i.name)
+    
+        current_page = (request.GET.get('page'))
+            
+        p = Paginator(entry_list,30)    
         
-    p = Paginator(entry_list,30)    
+        if not current_page:
+            current_page=1
+        
+        if int(current_page)+3 >= p.num_pages:
+            page_range = range(p.num_pages - 7, p.num_pages)
+        else:
+            page_range = range(max(1,int(current_page)-3),max(1,int(current_page)-3)+7) 
+            
     
-    if not current_page:
-        current_page=1
-    
-    if int(current_page)+3 >= p.num_pages:
-        page_range = range(p.num_pages - 7, p.num_pages)
+        return render(request, "main/data_list.html",{'entry_list': p.page(current_page),
+                                                      'field_list': field_list,
+                                                      'pages': page_range,
+                                                      'last_page':p.num_pages
+                                                    })
     else:
-        page_range = range(max(1,int(current_page)-3),max(1,int(current_page)-3)+7) 
-        
-
-    return render(request, "main/data_list.html",{'entry_list': p.page(current_page),
-                                                  'field_list': field_list,
-                                                  'pages': page_range,
-                                                  'last_page':p.num_pages
-                                                })
+        return render(request,"main/data_list.html",{})
 
 def upload(request):
     if request.method == 'POST':
