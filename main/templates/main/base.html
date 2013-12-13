@@ -5,54 +5,57 @@
 
 
 <head>
-<meta charset="UTF-8">
-<title>MightyScreen</title>
-<link href="{% static "main/css/main.css" %}" rel="stylesheet" type="text/css">
+    <meta charset="UTF-8">
+    <title>MightyScreen</title>
+    <link href="{% static "main/css/main.css" %}" rel="stylesheet" type="text/css">
 </head>
 
 <body>
-<div id='wrapper'>
-<header id='banner'>
-    <section id='logo'><img src="{% static "main/img/logo.jpg" %}"></section><aside id="headertext"><h1>You can now play with your own data</h1></aside>
-</header>
+    <div id='wrapper'>
+        <header id='banner'>
+            <section id='logo'><img src="{% static "main/img/logo.jpg" %}"></section><aside id="headertext"><h1>You can now play with your own data</h1></aside>
+        </header>
 
-<nav>
-<span id="menubar">
-<a href="{% url "index" %}">Main Page</a>|
-<a href="{% url "view" %}">View Data</a>|
-<a href="{% url "upload" %}">Upload Data</a>
-</span>
-<span id="loginbar">
-{% if user.is_authenticated %}
-    Welcome, {{ user.username }}&nbsp;(<a href="{% url "myaccount" %}">Account</a>,&nbsp;<a href="{% url "logout" %}">Logout</a>).
-    {% if request.session.proj %}
-        Current Project&nbsp;(<a href="{% url "projselect" %}">{{request.session.proj}}</a>)
-    {% else %}
-        <a href="{% url "projselect" %}">Please Choose a Project</a>
-    {% endif %}
-{% else %}
-    Welcome, Please <a href="{% url "login" %}">Log in</a>. Not a user? <a href="{% url "register" %}">Sign up</a>
-{% endif %}
-</span>
-</nav>
+        <nav>
+            <span id="menubar">
+                <a href="{% url "index" %}">Main Page</a>|
+                <a href="{% url "view" %}">View Data</a>|
+                <a href="{% url "upload" %}">Upload Data</a>
+            </span>
+            <span id="loginbar">
+                {% if user.is_authenticated %}
+                    Welcome, {{ user.username }}&nbsp;(<a href="{% url "myaccount" %}">Account</a>,&nbsp;<a href="{% url "logout" %}">Logout</a>).
 
-<section>
-<header id="title">
-{% block title %}{% endblock %}
-</header>
+                    {% if request.session.proj %}
+                        Current Project&nbsp;(<a href="{% url "projselect" %}">{{request.session.proj}}</a>)
+                    {% else %}
+                        <a href="{% url "projselect" %}">Please Choose a Project</a>
+                    {% endif %}
+                    
+                {% else %}
+                    Welcome, Please <a href="{% url "login" %}">Log in</a>. Not a user? <a href="{% url "register" %}">Sign up</a>
+                {% endif %}
+            </span>
+        </nav>
 
-<article id="content">
-{% block content %}
-{%endblock%}
-</article>
-<footer>
-</footer>
-</section>
+        <section>
+            <header id="title">
+                {% block title %}
+                {% endblock %}
+            </header>
+
+            <article id="content">
+                {% block content %}
+                {%endblock%}
+            </article>
+            <footer>
+            </footer>
+        </section>
 
 
-<footer>A website under development.... || copyright reserved</footer>
+        <footer>A website under development.... || copyright reserved</footer>
 
-</div>
+    </div>
 </body>
 
 </html>
