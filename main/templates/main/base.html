@@ -1,4 +1,5 @@
 {# This is the base template for all web pages #}
+{% load staticfiles %}
 <!doctype html>
 <html>
 
@@ -6,18 +7,22 @@
 <head>
 <meta charset="UTF-8">
 <title>MightyScreen</title>
+<link href="{% static "main/css/main.css" %}" rel="stylesheet" type="text/css">
 </head>
 
 <body>
-
-<header>
-<h1>MightyScreen Under Development</h1>
+<div id='wrapper'>
+<header id='banner'>
+    <section id='logo'><img src="{% static "main/img/logo.jpg" %}"></section><aside id="headertext"><h1>You can now play with your own data</h1></aside>
 </header>
 
 <nav>
+<span id="menubar">
 <a href="{% url "index" %}">Main Page</a>|
 <a href="{% url "view" %}">View Data</a>|
-<a href="{% url "upload" %}">Upload Data</a>|
+<a href="{% url "upload" %}">Upload Data</a>
+</span>
+<span id="loginbar">
 {% if user.is_authenticated %}
     Welcome, {{ user.username }}&nbsp;(<a href="{% url "myaccount" %}">Account</a>,&nbsp;<a href="{% url "logout" %}">Logout</a>).
     {% if request.session.proj %}
@@ -28,14 +33,26 @@
 {% else %}
     Welcome, Please <a href="{% url "login" %}">Log in</a>. Not a user? <a href="{% url "register" %}">Sign up</a>
 {% endif %}
+</span>
 </nav>
 
+<section>
+<header id="title">
 {% block title %}{% endblock %}
+</header>
 
+<article id="content">
 {% block content %}
 {%endblock%}
+</article>
+<footer>
+</footer>
+</section>
 
-<footer>copyright reserved</footer>
 
+<footer>A website under development.... || copyright reserved</footer>
+
+</div>
 </body>
+
 </html>

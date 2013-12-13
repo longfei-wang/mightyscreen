@@ -1,0 +1,57 @@
+body{
+    text-align:center;
+}
+
+#wrapper{
+    width:1000px;
+    margin-left:auto;
+    margin-right:auto;
+    position:relative;
+    text-align:left;
+}
+
+#menubar{
+
+}
+
+header nav section article footer{
+    display:block;
+}
+
+#logo{
+    float:left;
+}
+
+#loginbar{
+    margin-right:20px;
+    float:right;
+
+}
+
+#title{
+    height:20px;
+}
+
+#content{
+    padding: 20px;
+
+#headertext{
+    text-align:center;
+    height:1000px;
+    margin-top:50px;
+    padding:20px;
+}
+}
+
+#banner{
+    height:90px;
+}
+
+nav{
+    background-color:#CCC
+   
+}
+
+footer{
+    text-align:center;
+}
