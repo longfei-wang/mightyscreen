@@ -34,34 +34,43 @@ class project(models.Model):
     def __unicode__(self):
         return self.name
     
-    def rep(self):
-        return self.replicate.split(',')
-    
-    ID = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=50)
     description = models.TextField()
     agreement = models.CharField(max_length=20)
     experiment = models.ForeignKey('experiment')
     plate = models.ForeignKey('plate')
     replicate = models.TextField()
-    fileformat = models.ForeignKey('fileformat')
+    score = models.ManyToManyField('score')
+    ower = models.ForeignKey(User)
     user = models.ManyToManyField(User)
 
-
+    def rep(self):
+        return self.replicate.split(',')
+        
 #define a experiemnt
 class experiment(models.Model):
     def __unicode__(self):
         return self.name        
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=50)
     description =  models.TextField()
     readout = models.ManyToManyField('readout')
+
+
+
+#since differnet experiment has different readouts, this is a table define specific readout of a experiment
+class score(models.Model):
+    def __unicode__(self):
+        return self.name        
+    name = models.CharField(max_length=50)
+    description = models.TextField()
+    formular = models.TextField()
 
 
 #since differnet experiment has different readouts, this is a table define specific readout of a experiment
 class readout(models.Model):
     def __unicode__(self):
         return self.name        
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=50)
     description = models.TextField()
     keywords = models.TextField()
 
@@ -83,7 +92,7 @@ class plate(models.Model):
     def row(self):
         return self.rows.split(',')
     
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=50)
     numofwells = models.PositiveIntegerField()
     columns = models.TextField()
     rows = models.TextField()
@@ -112,8 +121,8 @@ class submission_plate_list(models.Model):
     def __unicode__(self):
         return self.get_status_display()
     submission_id=models.ForeignKey('submission')
-    library = models.CharField(max_length=20)
-    plate=models.CharField(max_length=10)
+    library = models.CharField(max_length=50)
+    plate=models.CharField(max_length=50)
     schoice = (
     ('f','failed'),
     ('s','succeed'),
@@ -149,16 +158,24 @@ class data_base(models.Model):
         return self.readout
     class Meta:
         abstract=True
-    library = models.CharField(max_length=20)
-    plate = models.CharField(max_length=10)
-    well = models.CharField(max_length=10)
-    replicate = models.CharField(max_length=10)
+    library = models.CharField(max_length=50)
+    plate = models.CharField(max_length=20)
+    well = models.CharField(max_length=20)
+    replicate = models.CharField(max_length=20)
+
+    schoice = (
+    ('E','empty'),
+    ('P','positive control'),
+    ('N','negative control'),
+    ('B','bad well'),
+    ('X','compound'),
+    )
+    welltype=models.CharField(max_length=1, choices=schoice)
+
     project = models.ForeignKey('project')
     submission=models.ForeignKey('submission')
     create_date = models.DateTimeField()
     create_by = models.ForeignKey(User)
-
-
 
     
     
