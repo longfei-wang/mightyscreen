@@ -42,8 +42,10 @@ def logoff(request):
     return render(request,'main/redirect.html',{'message':'You are logged out!','dest':'index'})
 
 
-#account overview: recent activities and so on
+
 def myaccount(request):
+    """#account overview: recent activities and so on"""
+
     return render(request,'account/account.html',{})
     
 #user profile

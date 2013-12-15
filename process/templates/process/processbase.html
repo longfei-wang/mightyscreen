@@ -1,0 +1,25 @@
+{% extends 'main/base.html' %}
+
+{% block title %}
+<h4>Welcome {{user.username}}!</h4>
+{% endblock %}
+{% block content %}
+<section>
+
+<nav id="submenu">
+    <ul>
+        <li><a href="{% url "mark" %}">Mark Wells</a></li>
+    </ul>
+
+</nav>
+
+<div id="subcontent">
+    {% block subcontent %}
+
+    {% endblock %}
+
+</div>
+
+
+</section>
+{% endblock %}

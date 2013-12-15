@@ -44,6 +44,7 @@ INSTALLED_APPS = (
     'data',
     'account',
     'statistics',
+    'process',
 )
 
 MIDDLEWARE_CLASSES = (

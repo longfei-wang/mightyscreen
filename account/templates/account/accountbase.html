@@ -6,7 +6,7 @@
 {% block content %}
 <section>
 
-<nav id="accountmenu">
+<nav id="submenu">
     <ul>
         <li><a href="{% url "profile" %}">My Profile</a></li>
         <li><a href="{% url "projects" %}">My Projects</a></li>
@@ -21,8 +21,8 @@
 
 </nav>
 
-<div id="accountcontent">
-    {% block accountdetail %}
+<div id="subcontent">
+    {% block subcontent %}
 
     {% endblock %}
 
