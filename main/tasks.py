@@ -10,7 +10,7 @@ import datetime as dt
 from celery.decorators import task
 
 from main.models import project, submission, submission_plate_list
-from data.models import proj_1 as data
+
 
 
 class rawdata():
@@ -65,7 +65,7 @@ class rawdata():
 
 #save tables into database row by row, might take some time.
     def save(self):
-
+        exec ('from data.models import proj_'+str(self.p.pk)+' as data')
         for pla in range(self.plates_num):
             #csub the submission_palte_list entry for this plate
             csub=submission_plate_list(library=self.library,plate=self.plates[pla],submission_id=self.sub)
@@ -127,8 +127,8 @@ def submit_queue(*args):
 def submit_data(formdata):
     #create a entries in submission.
     sub=submission(comments=formdata['comments'],
-                      project=project.objects.get(name=formdata['project']),
-                      submit_by=User.objects.get(username__exact=formdata['user']),
+                      project=project.objects.get(pk=formdata['project']),
+                      submit_by=User.objects.get(pk=formdata['user']),
                       submit_time=dt.datetime.now(),
                       status='p')
     sub.save()

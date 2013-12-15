@@ -13,7 +13,7 @@
 <body>
     <div id='wrapper'>
         <header id='banner'>
-            <section id='logo'><img src="{% static "main/img/logo.jpg" %}"></section><aside id="headertext"><h1>You can now play with your own data</h1></aside>
+            <span id='logo'>MightyScreen</span><span id='headertext'><i>Play with your own data</i></span>
         </header>
 
         <nav>
@@ -38,22 +38,24 @@
             </span>
         </nav>
 
-        <section>
-            <header id="title">
+        <div id="mainsection">
+
                 {% block title %}
                 {% endblock %}
-            </header>
 
-            <article id="content">
+
+
                 {% block content %}
                 {%endblock%}
-            </article>
-            <footer>
-            </footer>
-        </section>
+
+        </div>
 
 
-        <footer>A website under development.... || copyright reserved</footer>
+        <footer id="footer">
+            Under development.... || copyright reserved || 
+            <a href='https://github.com/longfei-wang/mightyscreen'>github</a> || 
+            <a href="{% url "admin:index" %}">admin</a>
+        </footer>
 
     </div>
 </body>

@@ -1,17 +1,11 @@
 from django.shortcuts import render
-from django.contrib.auth.models import User
 from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login
 from django.core.urlresolvers import reverse
 
 from django.core.paginator import Paginator
-
-from django.views.generic.edit import FormView
-
 from main.tasks import submit_data
-from main.forms import UploadFileForm
-from main.models import project, submission
+from main.models import UploadFileForm
 
 
 
@@ -60,22 +54,26 @@ def datalist(request):
     else:
         return render(request,"main/data_list.html",{})
 
+
+
+
 def upload(request):
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        
-        if not form.is_valid():
-            return render(request,'main/error.html',{'error_msg':"WTF, you can't even fill a form right? HAAAAAA!"})
-
-        submit_data(form.cleaned_data)
-        return render(request,'main/redirect.html',{'message':'Data submitted to queue!','dest':'index'})
-
-#            handle_uploaded_file(request.FILES['file'])
-#            return HttpResponseRedirect('/success/url/')
-
-    else:    #a form to upload raw data
-        form = UploadFileForm(initial={'library':'test','plates':'1,2','user':'longfei','project':'test'})
+    if 'proj' in request.session: 
+        form = UploadFileForm(initial={'library':'test','plates':'1,2','user':request.user.pk,'project':request.session['proj_id']})
+    
+        if request.method == 'POST':
+            form = UploadFileForm(request.POST, request.FILES)
+            
+            if form.is_valid():
+    
+                submit_data(form.cleaned_data)
+                return render(request,'main/redirect.html',{'message':'Data submitted to queue!','dest':'index'})
+    
+        #a form to upload raw data
+    
         c={'form': form}
         c.update(csrf(request))
+    else:
+        return render(request,'main/error.html',{'error_msg':'No working project specified!'})
     return render(request,'main/upload.html', c)
 

@@ -3,6 +3,7 @@
 
 from django.db import models
 from django.contrib.auth.models import User
+from django import forms
 
 # Create your models here.
 
@@ -33,26 +34,27 @@ from django.contrib.auth.models import User
 class project(models.Model):
     def __unicode__(self):
         return self.name
+    def rep(self):
+        return self.replicate.split(',')
     
     name = models.CharField(max_length=50)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     agreement = models.CharField(max_length=20)
     experiment = models.ForeignKey('experiment')
     plate = models.ForeignKey('plate')
     replicate = models.TextField()
-    score = models.ManyToManyField('score')
-    ower = models.ForeignKey(User)
+    score = models.ManyToManyField('score',blank=True)
+    leader = models.ForeignKey(User,related_name='leader')
     user = models.ManyToManyField(User)
 
-    def rep(self):
-        return self.replicate.split(',')
         
 #define a experiemnt
 class experiment(models.Model):
     def __unicode__(self):
         return self.name        
+    
     name = models.CharField(max_length=50)
-    description =  models.TextField()
+    description =  models.TextField(blank=True)
     readout = models.ManyToManyField('readout')
 
 
@@ -62,7 +64,7 @@ class score(models.Model):
     def __unicode__(self):
         return self.name        
     name = models.CharField(max_length=50)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     formular = models.TextField()
 
 
@@ -71,7 +73,7 @@ class readout(models.Model):
     def __unicode__(self):
         return self.name        
     name = models.CharField(max_length=50)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     keywords = models.TextField()
 
 
@@ -170,13 +172,22 @@ class data_base(models.Model):
     ('B','bad well'),
     ('X','compound'),
     )
-    welltype=models.CharField(max_length=1, choices=schoice)
+    welltype=models.CharField(max_length=1,choices=schoice,default='X')
 
     project = models.ForeignKey('project')
     submission=models.ForeignKey('submission')
     create_date = models.DateTimeField()
     create_by = models.ForeignKey(User)
 
+class UploadFileForm(forms.Form):
     
+    #title = forms.CharField(max_length=50)
+    project = forms.CharField(widget=forms.HiddenInput)
+    user = forms.CharField(widget=forms.HiddenInput)
+    library = forms.CharField()
+    plates = forms.CharField()
+    datafile  = forms.FileField()
+    comments = forms.CharField(widget=forms.Textarea,required=False)
+       
     
 

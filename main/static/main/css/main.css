@@ -1,4 +1,5 @@
 body{
+    background-color:#CCC;
     text-align:center;
 }
 
@@ -10,48 +11,59 @@ body{
     text-align:left;
 }
 
-#menubar{
 
-}
 
-header nav section article footer{
-    display:block;
+#banner{
+    background-color:#EBFFFF;
+    border-radius: 10px;
 }
 
 #logo{
-    float:left;
+    font-style:italic;
+    font-size:40px;
+    padding-left:10px;
 }
-
-#loginbar{
-    margin-right:20px;
-    float:right;
-
-}
-
-#title{
-    height:20px;
-}
-
-#content{
-    padding: 20px;
 
 #headertext{
-    text-align:center;
-    height:1000px;
-    margin-top:50px;
-    padding:20px;
-}
-}
-
-#banner{
-    height:90px;
+    padding-left:20px;
 }
 
 nav{
-    background-color:#CCC
+    background-color:#E69980;
+    padding: 3px 10px 0 10px;
+    border-radius: 10px;
+    height:20px;
+    margin:5px 0 5px 0;
    
 }
 
-footer{
+#menubar{
+}
+
+#loginbar{
+    float:right;
+
+}
+#mainsection{
+    padding:10px;
+    border-radius: 15px;
+    background-color:white;
+}
+
+
+#footer{
+    margin:5px 0 5px 0;
     text-align:center;
+    background-color:#EBFFFF;
+    border-radius: 15px;
+}
+
+.tablehead{
+background-color:	#CCC;
+}
+.odd {
+background-color:#F0FAFF;
+}
+.even{
+background-color:#D1F0FF;
 }
