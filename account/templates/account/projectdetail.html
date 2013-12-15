@@ -1,0 +1,42 @@
+{% extends 'account/accountbase.html' %}
+{% load filters %}
+
+{% block accountdetail %}
+<h4>List of all submissions within the project:</h4><br>
+
+
+<table>
+
+
+    <tr class="tablehead">
+        {% for i in field_list %}
+              <td>{{ i }}</td>
+        {% endfor %}
+    </tr>
+    
+    {% for j in proj.submission_set.all %}
+        <tr class="{% cycle "odd" "even" %}">
+            {% for i in field_list %}
+
+
+                {% if i == "status" %}
+                    <td>{{j.get_status_display}}</td>                  
+                {% else %}{% if i == "plates" %}
+                    <td>
+                    {% for l in j.submission_plate_list_set.all %}
+                    {{l.plate}}
+                    {% endfor %}
+                    </td>
+                {% else %}
+                    <td>{{ j|getattr:i }}</td>
+                {% endif %}{% endif %}
+
+
+
+            {% endfor %}
+        </tr>
+    {% endfor %}
+
+</table>
+
+{% endblock %}

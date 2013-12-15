@@ -3,6 +3,17 @@ body{
     text-align:center;
 }
 
+ul{
+    list-style-type: none;
+}
+
+li{
+    margin:5px 0 5px;
+}
+
+a:link {text-decoration:none;}
+a:visited {text-decoration:none;}
+
 #wrapper{
     width:1000px;
     margin-left:auto;
@@ -28,26 +39,26 @@ body{
     padding-left:20px;
 }
 
-nav{
-    background-color:#E69980;
-    padding: 3px 10px 0 10px;
-    border-radius: 10px;
-    height:20px;
-    margin:5px 0 5px 0;
-   
-}
 
 #menubar{
+    height:20px;
+    margin:5px 0 5px 0;   
+    padding: 3px 10px 0 10px;
+    background-color:#E69980;
+    border-radius: 10px;
+    
 }
 
 #loginbar{
+    width:380px;
     float:right;
 
 }
 #mainsection{
-    padding:10px;
+    padding:15px 15px 15px 15px;
     border-radius: 10px;
     background-color:white;
+    min-height:500px;
 }
 
 
@@ -56,6 +67,25 @@ nav{
     text-align:center;
     background-color:white;
     border-radius: 10px;
+}
+
+#accountmenu{
+    background-color:#EBFFFF;
+    border-radius: 10px;
+    vertical-align:top;
+    width:20%;
+    display:inline-block;
+    min-height:200px;
+    padding-top:20px;
+}
+
+#accountcontent{
+    width:75%;
+    display:inline-block;
+    background-color:#EBFFFF;
+    border-radius: 10px;
+    padding:20px;
+    min-height:350px;
 }
 
 .tablehead{

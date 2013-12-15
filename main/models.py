@@ -30,7 +30,11 @@ from django import forms
 #        return self.get_db_prep_value(value)
 
 
-#define a screening project
+#define a screening, basically list of projects with their relations. like primary screen, secondary screen.
+class screen(models.Model):
+    pass
+
+#define a screening sub project
 class project(models.Model):
     def __unicode__(self):
         return self.name

@@ -16,12 +16,14 @@
             <span id='logo'>MightyScreen</span><span id='headertext'><i>Play with your own data</i></span>
         </header>
 
-        <nav>
-            <span id="menubar">
-                <a href="{% url "index" %}">Main Page</a>|
-                <a href="{% url "view" %}">View Data</a>|
-                <a href="{% url "upload" %}">Upload Data</a>
-            </span>
+        <nav id="menubar">
+            <span>
+                <a href="{% url "index" %}">Main</a> |
+                <a href="{% url "view" %}">View</a> |
+                <a href="{% url "upload" %}">Upload</a> |
+                <a href="{% url "process" %}">Process</a> |
+                <a href="">Stats</a> |
+            </span>            
             <span id="loginbar">
                 {% if user.is_authenticated %}
                     Welcome, {{ user.username }}&nbsp;(<a href="{% url "myaccount" %}">Account</a>,&nbsp;<a href="{% url "logout" %}">Logout</a>).
@@ -42,7 +44,6 @@
 
                 {% block title %}
                 {% endblock %}
-
 
 
                 {% block content %}

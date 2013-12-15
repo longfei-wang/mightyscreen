@@ -41,12 +41,33 @@ def logoff(request):
     logout(request)
     return render(request,'main/redirect.html',{'message':'You are logged out!','dest':'index'})
 
+
+#account overview: recent activities and so on
 def myaccount(request):
+    return render(request,'account/account.html',{})
+    
+#user profile
+def profile(request):
+    #raise Exception(dir(request))
     user = request.user
     profile = user.get_profile()
 #    raise Exception(user.project_set.values_list())
-    return render(request,'account/account.html',{'user':user,'profile':profile})
-    
+    return render(request,'account/profile.html',{'user':user,'profile':profile})
+
+#view and manage projects
+def projects(request):
+
+    if request.GET.get('p'):
+        proj=request.user.project_set.get(pk=request.GET.get('p'))
+       # raise Exception(dir(proj.submission_set.get(pk=1).submission_plate_list_set))
+        field_list=['project','submit_time','submit_by','comments','status','plates']
+        return render(request,'account/projectdetail.html',{'proj':proj,'field_list':field_list})
+        
+
+    field_list=['name','description','agreement','experiment','plate','replicate','leader']    
+    return render(request,'account/projectlist.html',{'field_list':field_list})
+
+#to select working project
 def projselect(request):
 
     if request.method == 'POST':
