@@ -14,7 +14,7 @@ body{
 
 
 #banner{
-    background-color:#EBFFFF;
+    background-color:white;
     border-radius: 10px;
 }
 
@@ -46,7 +46,7 @@ nav{
 }
 #mainsection{
     padding:10px;
-    border-radius: 15px;
+    border-radius: 10px;
     background-color:white;
 }
 
@@ -54,8 +54,8 @@ nav{
 #footer{
     margin:5px 0 5px 0;
     text-align:center;
-    background-color:#EBFFFF;
-    border-radius: 15px;
+    background-color:white;
+    border-radius: 10px;
 }
 
 .tablehead{
