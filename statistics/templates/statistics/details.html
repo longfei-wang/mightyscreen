@@ -1,0 +1,43 @@
+{% extends 'main/base.html' %}
+{% load filters %}
+
+{% block content %}
+{% if entry_list%}
+
+
+<a href='?page=1'>&lt;</a>...
+{% for i in pages %}
+<a href='?page={{i}}'>{{i}}</a>
+{% endfor %}
+...<a href='?page={{last_page}}'>&gt;</a>
+
+{% for j in entry_list %}
+<dl>
+    {% for i in field_list %}
+        {% if i != 'svg' %}
+            <dt>{{i}}</dt>
+            <dd>{{ j|getattr:i }}</dd>
+        {%else%}
+            {% autoescape off %}
+            <dt>{{i}}</dt>
+            <dd>{{ j|getattr:i }}</dd>
+           {% endautoescape %}
+        {% endif %}          
+    {% endfor %}
+    <dt>PubChem Link</dt>
+    <dd><a href="http://www.ncbi.nlm.nih.gov/pccompound?term=+{{j|getattr:'inchikey'}}">PubChem Link</a></dd>     
+</dl>
+{% endfor %}
+
+<a href='?page=1'>&lt;</a>...
+{% for i in pages %}
+<a href='?page={{i}}'>{{i}}</a>
+{% endfor %}
+...<a href='?page={{last_page}}'>&gt;</a>
+
+
+{% else%}
+No Results Found!
+{% endif %}
+
+{% endblock %}

@@ -11,7 +11,9 @@ from statistics import views
 
 urlpatterns = patterns('',
     url(r'^$', views.index,name='statindex'), #name='index' is conflict with main.index
-    url(r'^plot/', views.plot, name='plot'),
+    url(r'^compounds/', views.compound_list, name='compounds'),
+    url(r'^details/', views.details, name='c_details'),
+    url(r'^plot/', views.heatmap, name='c_details'),
     )    
 
 
