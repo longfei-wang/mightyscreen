@@ -2,32 +2,120 @@
 {% load filters %}
 
 {% block content %}
+
+<br>
+<article>
+<form enctype="multipart/form-data" method="post" action="{% url "view" %}">
+{% csrf_token %}
+
+    <select name="field">
+        {% for i in field_list %}
+            <option value="{{i}}">{{ i }}</option>
+        {% endfor %}
+    </select>
+
+
+    <select name="sign">
+            <option value="exact">=</option>
+            <option value="gt">></option>
+            <option value="gte">>=</option>
+            <option value="lt"><</option>
+            <option value="lte">>=</option>
+            <option value="iexact">like</option>
+            <option value="icontains">contain</option>
+    </select>
+
+    <input type="text" name="querytext">
+    (
+    <select name="joint">
+             <option value=""></option>
+            <option value=",">AND</option>
+            <option value="|">OR</option>
+            <option value=",~">NOT</option>
+    </select>
+    
+
+    <select name="field2">
+        {% for i in field_list %}
+            <option value="{{i}}">{{ i }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="sign2">
+            <option value="exact">=</option>
+            <option value="gt">></option>
+            <option value="gte">>=</option>
+            <option value="lt"><</option>
+            <option value="lte">>=</option>
+            <option value="iexact">like</option>
+            <option value="icontains">contain</option>
+    </select>
+
+    <input type="text" name="querytext2">
+    )
+
+    <input type="submit" value="Update">
+
+</form>
+
+</article>
+<br>
+
 {% if entry_list %}
-<table>
 
+<article>
 
-<tr class="tablehead">
-    {% for i in field_list %}
-          <td>{{ i }}</td>
-    {% endfor %}
-</tr>
-
-{% for j in entry_list %}
-<tr class="{% cycle "odd" "even" %}">
-    {% for i in field_list %}
-          <td>{{ j|getattr:i }}</td>
-    {% endfor %}
-</tr>
-
-{% endfor %}
-
-</table>
-
-<a href='?page=1'>&lt;</a>...
+<div>
+<a href='?page=1'>First</a>
+<a href='?page={{prev_page}}'>Prev</a>
 {% for i in pages %}
 <a href='?page={{i}}'>{{i}}</a>
 {% endfor %}
-...<a href='?page={{last_page}}'>&gt;</a>
+<a href='?page={{next_page}}'>Next</a>
+<a href='?page={{last_page}}'>Last</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Current Page: {{curr_page}}
+</div>
+
+
+<table>
+
+
+    <tr class="tablehead">
+        {% for i in field_list %}
+            <td>
+                {{ i }}<br>
+                (<a href='?order={{i}}'>a</a>|
+                <a href='?order=-{{i}}'>d</a>)
+            </td>
+        {% endfor %}
+    </tr>
+
+    {% for j in entry_list %}
+        <tr class="{% cycle "odd" "even" %}">
+            {% for i in field_list %}
+                  <td>{{ j|getattr:i }}</td>
+            {% endfor %}
+        </tr>
+    
+    {% endfor %}
+
+</table>
+
+<div>
+<a href='?page=1'>First</a>
+<a href='?page={{prev_page}}'>Prev</a>
+{% for i in pages %}
+<a href='?page={{i}}'>{{i}}</a>
+{% endfor %}
+<a href='?page={{next_page}}'>Next</a>
+<a href='?page={{last_page}}'>Last</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Current Page: {{curr_page}}
+</div>
+
+</article>
+
+
+
 
 
 {% else%}

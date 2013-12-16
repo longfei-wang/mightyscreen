@@ -192,6 +192,5 @@ class UploadFileForm(forms.Form):
     plates = forms.CharField()
     datafile  = forms.FileField()
     comments = forms.CharField(widget=forms.Textarea,required=False)
-       
-    
+
 

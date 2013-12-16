@@ -4,10 +4,11 @@
 {% block content %}
 <form enctype="multipart/form-data" method="post" action="/account/projselect/">
    {% csrf_token %}      
-
-    {% for i in projs %}
-       <input type='radio' name='proj' value='{{i.pk}}'> {{i.name}}<br>
-    {% endfor %}
+    <select name='proj'>
+        {% for i in projs %}
+           <option value='{{i.pk}}'> {{i.name}}</option>
+        {% endfor %}
+    </select>
 <input type="submit" value="Submit"/>
 </form>
 {% endblock %}

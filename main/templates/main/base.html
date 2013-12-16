@@ -27,11 +27,11 @@
             <span id="loginbar">
                 {% if user.is_authenticated %}
                     Welcome, {{ user.username }}&nbsp;(<a href="{% url "myaccount" %}">Account</a>,&nbsp;<a href="{% url "logout" %}">Logout</a>).
-
+                    Project&nbsp;
                     {% if request.session.proj %}
-                        Current Project&nbsp;(<a href="{% url "projselect" %}">{{request.session.proj}}</a>)
+                        (<a href="{% url "projselect" %}">{{request.session.proj}}</a>)
                     {% else %}
-                        <a href="{% url "projselect" %}">Please Choose a Project</a>
+                        <a href="{% url "projselect" %}">choose</a>
                     {% endif %}
                     
                 {% else %}
