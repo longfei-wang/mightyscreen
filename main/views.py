@@ -66,7 +66,6 @@ def datalist(request):
 
 
 
-
     field_list = list()
     for i in data._meta.fields:
         field_list.append(i.name)
@@ -89,6 +88,7 @@ def datalist(request):
         
 
     return render(request, "main/data_list.html",{'entry_list': p.page(current_page),
+                                                  'num_entries':entry_list.count(),
                                                   'field_list': field_list,
                                                   'pages': page_range,
                                                   'last_page':p.num_pages,

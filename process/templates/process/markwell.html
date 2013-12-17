@@ -1,0 +1,55 @@
+{% extends 'process/processbase.html' %}
+{% load staticfiles %}
+
+{% block subcontent %}
+
+
+<style type="text/css" scoped>
+.label{
+    margin:2px;
+    font-size:small;
+    width:25px;
+    height:20px;
+    float:left;
+    text-align:center;
+}
+.well{
+    margin:1px;
+    width:25px;
+    height:20px;
+    float:left;
+    border:1px solid grey;
+    text-align:center;
+}
+</style>
+
+<script src="{% static "main/js/jquery-2.0.3.min.js" %}"></script>
+
+
+
+<div style="width:730px;">
+    <div class="label"></div>
+    {% for j in proj.plate.col %}            
+        <div class="label">{{j}}</div>
+    {% endfor %}
+
+{% for i in proj.plate.row %}
+    <div class="label">{{i}}</div>
+    {% for j in proj.plate.col %}
+        <div class="well" well="{{i}}{{j}}"></div>
+    {% endfor %}
+{% endfor %}
+</div>
+
+
+<script>
+
+
+$(".well").click(function(){
+    $(this).css("background-color","red");
+});
+
+</script>
+
+
+{% endblock %}

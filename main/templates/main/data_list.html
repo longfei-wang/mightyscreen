@@ -59,13 +59,13 @@
 </form>
 
 </article>
-<br>
 
 {% if entry_list %}
 
 <article>
 
 <div>
+{{num_entries}} Results Found<br>
 <a href='?page=1'>First</a>
 <a href='?page={{prev_page}}'>Prev</a>
 {% for i in pages %}
