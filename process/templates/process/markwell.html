@@ -21,13 +21,22 @@
     border:1px solid grey;
     text-align:center;
 }
+
+
+#selectable .ui-selecting {
+    background: #ccc;
+}
+#selectable .ui-selected {
+    background: #999;
+}
+
 </style>
 
-<script src="{% static "main/js/jquery-2.0.3.min.js" %}"></script>
 
 
 
-<div style="width:730px;">
+
+<div style="width:730px;" id="selectable">
     <div class="label"></div>
     {% for j in proj.plate.col %}            
         <div class="label">{{j}}</div>
@@ -42,12 +51,15 @@
 </div>
 
 
+<script src="{% static "main/js/jquery-2.0.3.min.js" %}"></script>
+<script src="{% static "main/js/jquery-ui.min.js" %}"></script>
+
+
+
 <script>
 
+$("#selectable").selectable();
 
-$(".well").click(function(){
-    $(this).css("background-color","red");
-});
 
 </script>
 
