@@ -142,7 +142,11 @@ def heatmap(request):
 
         ## Plot Histogram
         img_strings += stat.plot_histogram((replicate_dic['A'][1]+replicate_dic['B'][1]))
-        return HttpResponse(img_strings)        
+        
+        ##Plot cluster
+        c = stat.test_cluster(replicate_dic['A'][1])        
+        
+        return HttpResponse(c)        
 
     else:
         return render(request,"main/data_list.html",{}) ## return address need to be re-defined
