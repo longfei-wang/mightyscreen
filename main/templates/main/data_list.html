@@ -3,81 +3,94 @@
 
 {% block content %}
 
-<br>
-<article>
-<form enctype="multipart/form-data" method="post" action="{% url "view" %}">
+
+<form enctype="multipart/form-data" method="post" class="form-inline" role="form" action="{% url "view" %}">
 {% csrf_token %}
+    <div class="form-group">
+        <input type="submit" value="Update" class="form-control">
+    </div>
+    <div class="form-group">
+        <select name="field" class="form-control">
+            {% for i in field_list %}
+                <option value="{{i}}">{{ i }}</option>
+            {% endfor %}
+        </select>
 
-    <select name="field">
-        {% for i in field_list %}
-            <option value="{{i}}">{{ i }}</option>
-        {% endfor %}
-    </select>
+
+        <select name="sign" class="form-control">
+                <option value="exact">=</option>
+                <option value="gt">></option>
+                <option value="gte">>=</option>
+                <option value="lt"><</option>
+                <option value="lte">>=</option>
+                <option value="iexact">like</option>
+                <option value="icontains">contain</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label class="sr-only" for="query1">First Query</label>
+        <input type="text" name="querytext" id="query1" class="form-control">
+
+    </div>
 
 
-    <select name="sign">
-            <option value="exact">=</option>
-            <option value="gt">></option>
-            <option value="gte">>=</option>
-            <option value="lt"><</option>
-            <option value="lte">>=</option>
-            <option value="iexact">like</option>
-            <option value="icontains">contain</option>
-    </select>
-
-    <input type="text" name="querytext">
     (
-    <select name="joint">
-             <option value=""></option>
-            <option value=",">AND</option>
-            <option value="|">OR</option>
-            <option value=",~">NOT</option>
-    </select>
-    
+    <div class="form-group">
+        <select name="joint" class="form-control">
+                 <option value=""></option>
+                <option value=",">AND</option>
+                <option value="|">OR</option>
+                <option value=",~">NOT</option>
+        </select>
+        
 
-    <select name="field2">
-        {% for i in field_list %}
-            <option value="{{i}}">{{ i }}</option>
-        {% endfor %}
-    </select>
+        <select name="field2" class="form-control">
+            {% for i in field_list %}
+                <option value="{{i}}">{{ i }}</option>
+            {% endfor %}
+        </select>
 
-    <select name="sign2">
-            <option value="exact">=</option>
-            <option value="gt">></option>
-            <option value="gte">>=</option>
-            <option value="lt"><</option>
-            <option value="lte">>=</option>
-            <option value="iexact">like</option>
-            <option value="icontains">contain</option>
-    </select>
+        <select name="sign2" class="form-control">
+                <option value="exact">=</option>
+                <option value="gt">></option>
+                <option value="gte">>=</option>
+                <option value="lt"><</option>
+                <option value="lte">>=</option>
+                <option value="iexact">like</option>
+                <option value="icontains">contain</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <input type="text" name="querytext2"  class="form-control">
 
-    <input type="text" name="querytext2">
+    </div>
     )
-
-    <input type="submit" value="Update">
 
 </form>
 
-</article>
+
+<br><br>
 
 {% if entry_list %}
 
-<article>
 
-<div>
-{{num_entries}} Results Found<br>
-<a href='?page=1'>First</a>
-<a href='?page={{prev_page}}'>Prev</a>
-{% for i in pages %}
-<a href='?page={{i}}'>{{i}}</a>
-{% endfor %}
-<a href='?page={{next_page}}'>Next</a>
-<a href='?page={{last_page}}'>Last</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Current Page: {{curr_page}}
-</div>
+<div class="alert alert-success">Found <span class="badge">{{num_entries}}</span> Entries!</div>
+
+<ul class="pagination">
+    <li class="{{pbutton_attr}}"><a href='?page=1'>First</a></li>
+    <li class="{{pbutton_attr}}"><a href='?page={{prev_page}}'>Prev</a></li>
+    {% for i in pages %}
+    <li class="{% if i == curr_page %}active{% endif %}"><a href='?page={{i}}'>{{i}}</a></li>
+    {% endfor %}
+    <li class="{{pbutton_attr}}"><a href='?page={{next_page}}'>Next</a></li>
+    <li class="{{pbutton_attr}}"><a href='?page={{last_page}}'>Last</a></li>
+</ul>
 
 
-<table>
+
+
+<table class="table table-striped table-hover table-condensed table-responsive">
 
 
     <tr class="tablehead">
@@ -101,25 +114,26 @@
 
 </table>
 
-<div>
-<a href='?page=1'>First</a>
-<a href='?page={{prev_page}}'>Prev</a>
-{% for i in pages %}
-<a href='?page={{i}}'>{{i}}</a>
-{% endfor %}
-<a href='?page={{next_page}}'>Next</a>
-<a href='?page={{last_page}}'>Last</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Current Page: {{curr_page}}
-</div>
 
-</article>
+<ul class="pagination">
+    <li class="{{pbutton_attr}}"><a href='?page=1'>First</a></li>
+    <li class="{{pbutton_attr}}"><a href='?page={{prev_page}}'>Prev</a></li>
+    {% for i in pages %}
+    <li class="{% if i == curr_page %}active{% endif %}"><a href='?page={{i}}'>{{i}}</a></li>
+    {% endfor %}
+    <li class="{{pbutton_attr}}"><a href='?page={{next_page}}'>Next</a></li>
+    <li class="{{pbutton_attr}}"><a href='?page={{last_page}}'>Last</a></li>
+</ul>
+
+
 
 
 
 
 
 {% else%}
-No Results Found!
+
+<div class="alert alert-warning">No Results Found!</div>
 {% endif %}
 
 {% endblock %}

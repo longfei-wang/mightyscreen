@@ -81,11 +81,12 @@ def datalist(request):
     page_range = range(int(current_page)-5,int(current_page)+5)
     
     if int(current_page)-5 < 1:
-        page_range = range(1,min(p.num_pages,11))
-    if int(current_page)+5 > p.num_pages:
-        page_range = range(max(1,p.num_pages-10),p.num_pages)
-  
+        page_range = range(1,max(p.num_pages-5,1)+1)
+    else:
+        if int(current_page)+5 > p.num_pages:
+            page_range = range(p.num_pages-10,p.num_pages+1)
         
+    pb_attr='disabled' if len(page_range) < 2 else ''
 
     return render(request, "main/data_list.html",{'entry_list': p.page(current_page),
                                                   'num_entries':entry_list.count(),
@@ -95,6 +96,7 @@ def datalist(request):
                                                   'curr_page':int(current_page),
                                                   'next_page':min(p.num_pages,int(current_page)+1),
                                                   'prev_page':max(1,int(current_page)-1),
+                                                  'pbutton_attr':pb_attr,
                                                 })
 
 

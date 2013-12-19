@@ -1,5 +1,7 @@
 {# This is the base template for all web pages #}
 {% load staticfiles %}
+
+
 <!doctype html>
 <html>
 
@@ -19,7 +21,7 @@
     <![endif]-->
 </head>
 
-<body style="padding-top:65px;">
+<body style="padding-top:65px;padding-bottom:50px;">
     <!-- Top Navigation Bar -->
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <div class="wrapper">
@@ -41,23 +43,35 @@
                     <li><a href="{% url "process" %}">Process</a></li>
                     <li><a href="">Stats</a> 
                 </ul>
+
                 {% if user.is_authenticated %}
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        {{ user.username }} <span class="caret"></span>
+                        </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{% url "myaccount" %}">Account</a></li>
+                                <li><a href="{% url "projselect" %}">Project</a></li>
+                                <li class="divider"></li>
+                                <li><a href="{% url "logout" %}">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+
                     <p class="navbar-text navbar-right">
-                
-                        Welcome, {{ user.username }} (<a href="{% url "myaccount" %}">Account</a>,<a href="{% url "logout" %}">Logout</a>) Projec:
-                            {% if request.session.proj %}
-                                <a href="{% url "projselect" %}">{{request.session.proj}}</a>
-                            {% else %}
-                                <a href="{% url "projselect" %}">choose</a>
-                            {% endif %}
+                        Welcome!
                     </p>
+
+
                 {% else %}
-                    <form class="navbar-form navbar-right" role="form">
+
+                    <form class="navbar-form navbar-right" role="form" enctype="multipart/form-data" method="post" action="{% url "login" %}">{% csrf_token %}
                         <div class="form-group">
-                            <input type="text" placeholder="Username" class="form-control">
+                            <input type="text" placeholder="Username" id="id_username" name="username" class="form-control">
                         </div>
                         <div class="form-group">
-                            <input type="password" placeholder="Password" class="form-control">
+                            <input type="password" placeholder="Password" id="id_password" name="password" class="form-control">
                         </div>
                     
                         <button type="submit" class="btn btn-success">Sign in</button>
@@ -67,12 +81,6 @@
             </div><!--/.navbar-collapse -->
         </div>
     </nav>
-
-
-    <!-- Main jumbotron for a primary marketing message or call to action -->
-
-
-
 
 
 <!-- row of columns -->
@@ -90,73 +98,27 @@
             </div>
         </div>
         <div class="col-lg-9 col-md-9 col-sm-12">
-                <div class="jumbotron">
-                  <div class="container">
-                    <h1>Hello, world!</h1>
-                    <p>This is a template for a simple marketing or informational website. It includes a large callout called a jumbotron and three supporting pieces of content. Use it as a starting point to create something more unique.</p>
-                    <p><a class="btn btn-primary btn-lg" role="button">Learn more &raquo;</a></p>
-                  </div>
-                </div>
+
                 {% block content %}
                 {%endblock%}
         </div>
 
     </div>
+
+
+    <hr>
     <div class="row">
-        <div class="col-lg-12 col-md-12 col-sm-12">
-        <div class="container">
-            <footer>
-                Under development.... || copyright reserved || 
-                <a href='https://github.com/longfei-wang/mightyscreen'>github</a> || 
-                <a href="{% url "admin:index" %}">admin</a>
-            </footer>
-        </div>
-        </div>
+        <footer>
+            <p>
+            Under development.... || copyright reserved || 
+            <a href='https://github.com/longfei-wang/mightyscreen'>github</a> || 
+            <a href="{% url "admin:index" %}">admin</a>
+            </p>
+        </footer>
     </div>
 </div> <!-- /container -->
 
-   <!--  <div class=​"navbar navbar-inverse navbar-fixed-top" role=​"navigation">​
-        <div class="container">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="#">MightyScreen</a>
-            </div>
-                <span>
-                    <a href="{% url "index" %}">Main</a> |
-                    <a href="{% url "view" %}">View</a> |
-                    <a href="{% url "upload" %}">Upload</a> |
-                    <a href="{% url "process" %}">Process</a> |
-                    <a href="">Stats</a> |
-                </span>
-            
-            <span>
-                {% if user.is_authenticated %}
-                    Welcome, {{ user.username }}&nbsp;(<a href="{% url "myaccount" %}">Account</a>,&nbsp;<a href="{% url "logout" %}">Logout</a>).
-                    Project&nbsp;
-                    {% if request.session.proj %}
-                        (<a href="{% url "projselect" %}">{{request.session.proj}}</a>)
-                    {% else %}
-                        <a href="{% url "projselect" %}">choose</a>
-                    {% endif %}
-                    
-                {% else %}
-                    Welcome, Please <a href="{% url "login" %}">Log in</a>. Not a user? <a href="{% url "register" %}">Sign up</a>
-                {% endif %}
-            </span>
-        </div>
-    </div>
- -->
-
-
-
-
-
-
-
-
-
-
-
-<script src="{% static "main/js/jquery-1.10.2.min.js" %}"></script>
+<script src="{% static "main/js/jquery-2.0.3.min.js" %}"></script>
 <script src="{% static "main/js/bootstrap.min.js" %}"></script>
 
 {% block script %}
