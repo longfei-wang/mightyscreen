@@ -8,7 +8,7 @@ from django.conf.urls.static import static
 from process import views
 
 urlpatterns = patterns('',
-    url(r'^$', views.index,name='process'),
+    url(r'^$', views.mark,name='process'),
     url(r'^mark', views.mark,name='mark'),
     )    
 

@@ -190,7 +190,7 @@ class UploadFileForm(forms.Form):
     user = forms.CharField(widget=forms.HiddenInput)
     library = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control'}))
     plates = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control'}))
-    datafile  = forms.FileField(widget=forms.TextInput(attrs={'class':'form-control'}))
+    datafile  = forms.FileField(widget=forms.FileInput(attrs={'class':'form-control'}))
     comments = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control'}),required=False)
 
 

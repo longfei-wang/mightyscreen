@@ -1,21 +1,22 @@
-{% extends 'account/accountbase.html' %}
+{% extends 'main/base.html' %}
 {% load filters %}
 
-{% block subcontent %}
-<h4>List of all my projects:</h4><br>
+{% block content %}
+<div class="page-header">
+<h2>List of {{user.username}}'s Projects</h2>
+</div>
+
+<table class="table table-bordered table-striped .table-hover">
 
 
-<table>
-
-
-    <tr class="tablehead">
+    <tr>
         {% for i in field_list %}
               <td>{{ i }}</td>
         {% endfor %}
     </tr>
     
     {% for j in user.project_set.all %}
-        <tr class="{% cycle "odd" "even" %}">
+        <tr>
             {% for i in field_list %}
                 {% if i == "name" %}
                     <td><a href="{% url "projects" %}?p={{j.pk}}">{{ j|getattr:i }}</a></td>                  
@@ -28,5 +29,13 @@
 
 </table>
 
-<br><a href=''>Create a new project</a>
+<br>
+
+
+
+<a href=''><button class="btn btn-default">Create a New Project</button></a>
+
+
+
+
 {% endblock %}

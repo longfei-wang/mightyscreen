@@ -11,12 +11,10 @@ urlpatterns = patterns('',
     url(r'^login/', views.signin, name='login'),
     url(r'^logout/', views.logoff, name='logout'),
     url(r'^register/', views.signup, name='register'),
-    url(r'^view/', views.myaccount, name='myaccount'),
     url(r'^profile/', views.profile, name='profile'),
-    url(r'^submission/', views.myaccount, name='submission'),
     url(r'^projects', views.projects, name='projects'),
     url(r'^projselect/', views.projselect, name='projselect'),
-    )    
+    )
 
 
 

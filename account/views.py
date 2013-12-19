@@ -41,12 +41,6 @@ def logoff(request):
     logout(request)
     return render(request,'main/redirect.html',{'message':'You are logged out!','dest':'index'})
 
-
-
-def myaccount(request):
-    """#account overview: recent activities and so on"""
-
-    return render(request,'account/account.html',{})
     
 #user profile
 def profile(request):
@@ -66,18 +60,17 @@ def projects(request):
         return render(request,'account/projectdetail.html',{'proj':proj,'field_list':field_list})
         
 
-    field_list=['name','description','agreement','experiment','plate','replicate','leader']    
-    return render(request,'account/projectlist.html',{'field_list':field_list})
+    field_list=['name','description','agreement','experiment','plate','replicate','leader']
+    args={'field_list':field_list}
+    args.update(csrf(request))    
+    return render(request,'account/projectlist.html',args)
 
 #to select working project
 def projselect(request):
 
-    if request.method == 'POST':
-        request.session['proj_id']=request.POST.get('proj')
-        request.session['proj'] = request.user.project_set.get(pk=request.POST.get('proj')).name
+    if request.method == 'GET':
+        request.session['proj_id']=request.GET.get('p')
+        request.session['proj'] = request.user.project_set.get(pk=request.GET.get('p')).name
         return render(request,'main/redirect.html',{'message':'Choose'+request.session['proj']+' as your project','dest':'index'})
 
-    projs=request.user.project_set.all()
-    args={'projs':projs}
-    args.update(csrf(request))    
-    return render(request,'account/projselect.html',args)
+    return render(request,'main/error.html',{})

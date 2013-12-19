@@ -1,21 +1,24 @@
-{% extends 'account/accountbase.html' %}
+{% extends 'main/base.html' %}
 {% load filters %}
 
-{% block subcontent %}
-<h4>List of all submissions within the project:</h4><br>
+{% block content %}
+
+<div class="page-header">
+<h2>All Submissions of Project: {{proj.name}}</h2>
+</div>
 
 
-<table>
+<table class="table table-bordered table-striped .table-hover">
 
 
-    <tr class="tablehead">
+    <tr>
         {% for i in field_list %}
               <td>{{ i }}</td>
         {% endfor %}
     </tr>
     
     {% for j in proj.submission_set.all %}
-        <tr class="{% cycle "odd" "even" %}">
+        <tr>
             {% for i in field_list %}
 
 

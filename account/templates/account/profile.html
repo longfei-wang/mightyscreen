@@ -1,15 +1,25 @@
-{% extends 'account/accountbase.html' %}
+{% extends 'main/base.html' %}
 
 
-{% block subcontent %}
-<h4>User Profile:</h4><br>
-Username: {{user.username}} <br>
-Full Name: {{user.get_full_name}} <br>
-Email: {{user.email}} <br>
-Affiliation: {{profile.affiliation}} <br>
-Position: {{profile.position}} <br>
-Date Joined: {{user.date_joined}} <br>
-Last login: {{user.last_login}} <br><br>
-<a href="">Edit</a><br>
-<a href="">Change Password</a><br>
+{% block content %}
+
+<div class="page-header">
+<h2>User Profile:</h2>
+</div>
+
+<div class="col-md-8 col-lg-6 col-sm-12">
+	<div class="panel panel-default">
+		<div class="panel-heading"><strong>Username:</strong> {{user.username}}</div>
+		<ul class="list-group">
+			<li class="list-group-item"><strong>Full Name:</strong> {{user.get_full_name}} </li>
+			<li class="list-group-item"><strong>Email:</strong> {{user.email}} </li>
+			<li class="list-group-item"><strong>Affiliation:</strong> {{profile.affiliation}} </li>
+			<li class="list-group-item"><strong>Position:</strong> {{profile.position}} </li>
+			<li class="list-group-item"><strong>Date Joined:</strong> {{user.date_joined}} </li>
+			<li class="list-group-item"><strong>Last Login:</strong> {{user.last_login}} </li></li>
+			<li class="list-group-item"><a href="">Edit</a></li>
+			<li class="list-group-item"><a href="">Change Password</a></li>
+		</ul>
+	</div>
+</div>
 {% endblock %}

@@ -2,9 +2,8 @@
 
 {% block content %}
 
-<META HTTP-EQUIV="Refresh" CONTENT="5; URL={% url dest %}"> 
-
-{{message}}<br>
-Redirect to main page in 5 seconds.
-
+<META HTTP-EQUIV="Refresh" CONTENT="2; URL={% url dest %}"> 
+<div class="alert alert-success">
+{{message}}. Redirect to main page in a few seconds.
+</div>
 {% endblock %}

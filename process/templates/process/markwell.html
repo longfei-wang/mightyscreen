@@ -1,34 +1,27 @@
-{% extends 'process/processbase.html' %}
+{% extends 'main/base.html' %}
 {% load staticfiles %}
 
-{% block subcontent %}
+{% block content %}
 
 
 <style type="text/css" scoped>
-.label{
-    margin:2px;
+.glabel{
+
     font-size:small;
     width:25px;
     height:20px;
     float:left;
     text-align:center;
 }
-.well{
-    margin:1px;
+.gwell{
+
     width:25px;
     height:20px;
+
     float:left;
-    border:1px solid grey;
     text-align:center;
 }
 
-.button{
-    float:left;
-    margin:2px 10px 2px;
-    padding:2px;
-    border:1px solid grey;
-    background:#CCC;
-}
 
 #selectable .ui-selecting {
     background: #ccc;
@@ -41,32 +34,40 @@
 
 
 
+<div style="width:1050px;" class="panel panel-default">
+    <div class="panel-body" id="selectable">
 
-
-<div style="width:730px;" id="selectable">
-    <div class="label"></div>
+    <div class="glabel well"></div>
     {% for j in proj.plate.col %}            
-        <div class="label">{{j}}</div>
+        <div class="glabel well">{{j}}</div>
     {% endfor %}
 
 {% for i in proj.plate.row %}
-    <div class="label">{{i}}</div>
+    <div class="glabel well">{{i}}</div>
     {% for j in proj.plate.col %}
-        <div class="well" well="{{i}}{{j}}"></div>
+        <div class="gwell well" well="{{i}}{{j}}"></div>
     {% endfor %}
 {% endfor %}
-</div>
+
+
+</div></div>
 
 <form>
 
 {% for i,j in welltypes.items %}
-    <br><div class="button" id="{{i}}">{{i}}:&nbsp;{{j|title}}</div><input type="text" name="{{i}}"><br>
+    <br><div id="{{i}}">{{i}}:&nbsp;{{j|title}}</div><input type="text" name="{{i}}"><br>
 {% endfor %}
 
 </form>
 
 
-<script src="{% static "main/js/jquery-2.0.3.min.js" %}"></script>
+
+
+{% endblock %}
+
+
+{% block script %}
+
 <script src="{% static "main/js/jquery-ui.min.js" %}"></script>
 
 
@@ -85,6 +86,6 @@ $(".button").click(function(){
 
 </script>
 
-
 {% endblock %}
+
 

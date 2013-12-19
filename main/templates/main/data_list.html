@@ -3,9 +3,25 @@
 
 {% block content %}
 
+{% if entry_list %}
+<div class="alert alert-success">Found <span class="badge">{{num_entries}}</span> Entries!
+<a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
+</div>
+{% else%}
+<div class="alert alert-warning">No Results Found!
+<a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
+</div>
+{% endif %}
+
+<div class="well">
+
+
+
+
 
 <form enctype="multipart/form-data" method="post" class="form-inline" role="form" action="{% url "view" %}">
 {% csrf_token %}
+
     <div class="form-group">
         <input type="submit" value="Update" class="btn btn-primary">
     </div>
@@ -28,14 +44,12 @@
         </select>
     </div>
 
-    <div class="form-group">
-        <label class="sr-only" for="query1">First Query</label>
+    <div class="form-group"> 
         <input type="text" name="querytext" id="query1" class="form-control">
-
     </div>
 
-
     (
+
     <div class="form-group">
         <select name="joint" class="form-control">
                  <option value=""></option>
@@ -69,13 +83,10 @@
 
 </form>
 
-
-<br><br>
+</div>
 
 {% if entry_list %}
 
-
-<div class="alert alert-success">Found <span class="badge">{{num_entries}}</span> Entries!</div>
 
 <ul class="pagination">
     <li class="{{pbutton_attr}}"><a href='?page=1'>First</a></li>
@@ -124,14 +135,6 @@
 </ul>
 
 
-
-
-
-
-
-{% else%}
-
-<div class="alert alert-warning">No Results Found!</div>
 {% endif %}
 
 {% endblock %}
