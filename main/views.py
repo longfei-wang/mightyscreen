@@ -28,6 +28,8 @@ def index(request):
 def datalist(request):
     """list view of data in current project. Dynamically import the right model/table for project"""
 
+    pre_order='id'
+    
     if not 'proj' in request.session:
         return render(request,"main/error.html",{'error_msg':"No project specified!"})
         
@@ -52,8 +54,9 @@ def datalist(request):
             entry_list = cache.get('dataview')
 
             if request.GET.get('order'):
-                
-                query='entry_list.order_by("'+request.GET.get('order')+'")'
+                pre_order=request.GET.get('order')
+                query='entry_list.order_by("'+pre_order+'")'
+
                 #raise Exception(query)
                 exec("entry_list = "+query)
                 
@@ -97,6 +100,7 @@ def datalist(request):
                                                   'next_page':min(p.num_pages,int(current_page)+1),
                                                   'prev_page':max(1,int(current_page)-1),
                                                   'pbutton_attr':pb_attr,
+                                                  'pre_order':pre_order,
                                                 })
 
 

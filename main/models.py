@@ -188,9 +188,9 @@ class UploadFileForm(forms.Form):
     #title = forms.CharField(max_length=50)
     project = forms.CharField(widget=forms.HiddenInput)
     user = forms.CharField(widget=forms.HiddenInput)
-    library = forms.CharField()
-    plates = forms.CharField()
-    datafile  = forms.FileField()
-    comments = forms.CharField(widget=forms.Textarea,required=False)
+    library = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control'}))
+    plates = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control'}))
+    datafile  = forms.FileField(widget=forms.TextInput(attrs={'class':'form-control'}))
+    comments = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control'}),required=False)
 
 

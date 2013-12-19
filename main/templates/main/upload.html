@@ -3,9 +3,12 @@
 {% block content %}
 <form enctype="multipart/form-data" method="post" action="/main/upload/">
    {% csrf_token %}      
-   <table>
+   	<table>
        {{form.as_table}}
+       <tr>
+       <td></td><td><input type="submit" value="Submit" class="btn btn-primary"/></td>
+       </tr>
     </table>
-    <input type="submit" value="Submit" id="Save"/>
+    
 </form>
 {% endblock %}

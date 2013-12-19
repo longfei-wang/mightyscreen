@@ -52,7 +52,7 @@
                         </a>
                             <ul class="dropdown-menu">
                                 <li><a href="{% url "myaccount" %}">Account</a></li>
-                                <li><a href="{% url "projselect" %}">Project</a></li>
+                                <li><a href="{% url "projselect" %}">Project&nbsp;<span class="badge"><small>{{request.session.proj}}</small></span></a></li>
                                 <li class="divider"></li>
                                 <li><a href="{% url "logout" %}">Logout</a></li>
                             </ul>
@@ -75,7 +75,7 @@
                         </div>
                     
                         <button type="submit" class="btn btn-success">Sign in</button>
-                        <a href="{% url "login" %}">Log in</a>. Not a user? <a href="{% url "register" %}">Sign up</a>
+                        <a href="{% url "register" %}">Sign up</a>
                     </form>
                 {% endif %}
             </div><!--/.navbar-collapse -->
