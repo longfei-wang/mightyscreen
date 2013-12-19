@@ -249,7 +249,6 @@ def plot_plate_heatmap(well, intensity, plate_number = 1, cmap = pylab.cm.jet_r,
     pylab.grid()
     pylab.scatter(xsmock_column,ysmock_row_inverse, s=100,c = 'w', cmap = cmap)
     pylab.scatter(xs_column,ys_row_inverse, s=100,c = intensity, cmap = cmap)
-
     ## Plot colorbar
     ax2 = fig.add_axes([0.1, 0.1, 0.4, 0.03])
     norm = pylab.mpl.colors.Normalize(vmin=min(intensity), vmax=max(intensity))
