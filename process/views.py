@@ -4,6 +4,8 @@ from main.models import project, data_base
 # Create your views here.
     
 def mark(request):
+	if not 'proj' in request.session:
+		return render(request,"main/error.html",{'error_msg':"No project specified!"})
 	
 	welltypes=dict(data_base.schoice)
 	proj=project.objects.get(pk=request.session['proj_id'])
@@ -13,12 +15,8 @@ def mark(request):
 	# for i in proj.submission_plate_list_set.filter(status="s"):
 	# 	plates.append(i.plate)
 
-
 	if request.method=='POST':
-		if not 'proj' in request.session:
-			return render(request,"main/error.html",{'error_msg':"No project specified!"})
-         
-    	exec ('from data.models import proj_'+request.session['proj_id']+' as data')
+		exec ('from data.models import proj_'+request.session['proj_id']+' as data')
 
     	if request.POST.getlist('plates'):
 	    	for i in request.POST.getlist('plates'):
@@ -30,5 +28,5 @@ def mark(request):
 	    					data.objects.filter(plate=i,well=h).update(welltype=j)
 
 
-		# raise Exception(request.POST.getlist('plates'))
+
 	return render(request,'process/markwell.html',{'proj':proj,'welltypes':welltypes,'plates':plates})
