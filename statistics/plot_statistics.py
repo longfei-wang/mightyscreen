@@ -296,6 +296,46 @@ def test_cluster(data_in, n = 10):
     return image_string
 
 
+
+def test_hierarchical_cluster(data_in, n = 10):
+    """use k_means_clustering"""    
+    
+    from numpy import vstack,array
+    from numpy.random import rand
+    from scipy.cluster.vq import kmeans,vq
+    
+    fig = pylab.figure(figsize=(12,6))    
+    
+    # data generation
+#    data = vstack((rand(150,2) + array([.5,.5]),rand(150,2)))
+    data = vstack((data_in))
+    ## computing K-Means with K = 2 (2 clusters)
+    #centroids,_ = kmeans(data,10)
+    ## assign each sample to a cluster
+    #idx,_ = vq(data,centroids)
+    #
+    ## some plotting using numpy's logical indexing
+    #plot(data[idx==0,0],data[idx==0,1],'ob',
+    #     data[idx==1,0],data[idx==1,1],'or')
+    #plot(centroids[:,0],centroids[:,1],'sg',markersize=8)
+    #show()
+    
+    # now with K = 3 (3 clusters)
+
+    centroids,_ = kmeans(data,n)
+    idx,_ = vq(data,centroids)
+    
+    color_s = 'rcgmbyk'
+    for i in range(n):
+        pylab.plot(data[idx==i],data[idx==i],'o', color = color_s[i%7])
+
+#    pylab.plot(centroids[:,0],centroids[:,1],'sm',markersize=8)
+
+    image_string = _fig_out()
+    return image_string
+
+
+
 #def _test_run():
 #    ## test plot_sigmoid_binding 
 #    f1 = 'test_plot_sigmoid_binding.tab'
