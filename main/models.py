@@ -127,6 +127,7 @@ class submission_plate_list(models.Model):
     def __unicode__(self):
         return self.get_status_display()
     submission_id=models.ForeignKey('submission')
+    project=models.ForeignKey('project')
     library = models.CharField(max_length=50)
     plate=models.CharField(max_length=50)
     schoice = (
@@ -161,7 +162,7 @@ class submission_plate_list(models.Model):
 
 class data_base(models.Model):
     def __unicode__(self):
-        return self.readout
+        return self.well
     class Meta:
         abstract=True
     library = models.CharField(max_length=50)

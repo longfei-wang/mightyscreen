@@ -5,23 +5,6 @@
 
 
 <style type="text/css" scoped>
-.glabel{
-
-    font-size:small;
-    width:25px;
-    height:20px;
-    float:left;
-    text-align:center;
-}
-.gwell{
-
-    width:25px;
-    height:20px;
-
-    float:left;
-    text-align:center;
-}
-
 
 #selectable .ui-selecting {
     background: #ccc;
@@ -33,33 +16,51 @@
 </style>
 
 
-
-<div style="width:1050px;" class="panel panel-default">
-    <div class="panel-body" id="selectable">
-
-    <div class="glabel well"></div>
-    {% for j in proj.plate.col %}            
-        <div class="glabel well">{{j}}</div>
-    {% endfor %}
-
-{% for i in proj.plate.row %}
-    <div class="glabel well">{{i}}</div>
-    {% for j in proj.plate.col %}
-        <div class="gwell well" well="{{i}}{{j}}"></div>
-    {% endfor %}
+{% for i,j in welltypes.items %}
+<button class="btn btn-primary wellbtn" welltype="{{i}}">{{j|title}}</button>
 {% endfor %}
 
+<table class="table table-bordered table-responsive" id="selectable">
 
-</div></div>
+    <tr>
+    <td></td>
+        {% for j in proj.plate.col %}            
+            <td>{{j}}</td>
+        {% endfor %}
+    </tr>
 
-<form>
+    {% for i in proj.plate.row %}
+        <tr>
+            <td>{{i}}</td>
+            {% for j in proj.plate.col %}
+                <td class="well" well="{{i}}{{j}}"></td>
+            {% endfor %}
+        </tr>
+
+
+    {% endfor %}
+
+
+</table>
+
+<form role="form" enctype="multipart/form-data" method="post" action="{% url "mark" %}">
+{% csrf_token %}
 
 {% for i,j in welltypes.items %}
-    <br><div id="{{i}}">{{i}}:&nbsp;{{j|title}}</div><input type="text" name="{{i}}"><br>
+    <label>{{j|title}}</label>
+    <textarea class="form-control" welltype="{{i}}" name="{{i}}"></textarea>
 {% endfor %}
 
-</form>
+<label>Select Plates to Update</label>
+<select multiple name="plates" class="form-control">
+    {% for i in plates %}
+        <option value="{{i}}">{{i}}</option>    
+    {% endfor %}
+</select>
 
+<button type="submit" class="btn btn-success">Update</button>
+
+</form>
 
 
 
@@ -71,17 +72,20 @@
 <script src="{% static "main/js/jquery-ui.min.js" %}"></script>
 
 
-
 <script>
 
-$("#selectable").selectable();
+$("#selectable").selectable({
+    filter: ".well"
+});
 
-$(".button").click(function(){
-
+$(".wellbtn").click(function(){
+    x=$(this).attr("welltype");
+    value=[];
     $(".ui-selected").each(function(){
-        alert($(this).attr("well"));
+        value.push($(this).attr("well"));
+        //alert($(this).attr("well"));
     });
-
+    $("textarea[welltype="+x+"]").val(value.join(','));
 });
 
 </script>
