@@ -1,0 +1,4 @@
+{% for error in field.errors %}
+<!--     <span id="error_{{ field.auto_id }}_{{ forloop.counter }}" class="help-inline">{{ error }}</span> -->
+	<label class="control-label" >{{ error }}</label>
+{% endfor %}

@@ -1,14 +1,21 @@
 {% extends 'main/base.html' %}
+{% load bootstrap_tags %}
 
 {% block content %}
-<form enctype="multipart/form-data" method="post" action="/main/upload/">
-   {% csrf_token %}      
-   	<table>
-       {{form.as_table}}
-       <tr>
-       <td></td><td><input type="submit" value="Submit" class="btn btn-primary"/></td>
-       </tr>
-    </table>
-    
-</form>
+
+<div class="well">
+	<form class="form-horizontal" role="form" enctype="multipart/form-data" method="post" action="/main/upload/">
+	   {% csrf_token %}      
+	       {{form|as_bootstrap_h}}
+
+
+	  	<div class="form-group">
+	  		<div class="col-sm-offset-2 col-sm-10">
+				<input type="submit" class="btn btn-primary" value="Submit"/>
+				<input type="reset" class="btn btn-default" value="Clear"/>
+			</div>
+		</div>
+	    
+	</form>
+</div>
 {% endblock %}

@@ -5,18 +5,19 @@ from main.models import data_base,project
 #automatically generate data model(table) for each project with their specific readouts
 #figured that the table would be too big to store all the data. 
 #A HTS project can easily have millions of entries. Better handle project seperately
-for i in project.objects.all():
-    n=''
-    for j in i.experiment.readout.all():
+if project.objects.all():
+	for i in project.objects.all():
+	    n=''
+	    for j in i.experiment.readout.all():
 
-        n+=j.name+'=models.TextField(blank=True);'
-    
-    for l in i.score.all():
-        
-        n+=l.name+'=models.TextField(blank=True);'
-    
-    #raise Exception(n)
-    exec ('class proj_'+str(i.pk)+'(data_base):'+n)
+	        n+=j.name+'=models.TextField(blank=True);'
+	    
+	    for l in i.score.all():
+	        
+	        n+=l.name+'=models.TextField(blank=True);'
+	    
+	    #raise Exception(n)
+	    exec ('class proj_'+str(i.pk)+'(data_base):'+n)
 
 
 

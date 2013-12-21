@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from main.tasks import submit_data
 from main.models import UploadFileForm
 from django.core.cache import cache
+from django.contrib import messages
 
 
 
@@ -22,7 +23,6 @@ from django.core.cache import cache
 def index(request):
     return render(request, "main/index.html")
 #"""request.FILES['datafile'],"""'test','longfei',['1','2']
-
 
 
 def datalist(request):
@@ -50,8 +50,8 @@ def datalist(request):
         
     else:
         #if this is just turning pages then use the latest query
-        if cache.get('dataview') and request.method == 'GET':
-            entry_list = cache.get('dataview')
+        if cache.get('dataview'+request.session['proj_id']) and request.method == 'GET':
+            entry_list = cache.get('dataview'+request.session['proj_id'])
 
             if request.GET.get('order'):
                 pre_order=request.GET.get('order')
@@ -64,7 +64,7 @@ def datalist(request):
             entry_list = data.objects.all()
 
 
-    cache.set('dataview',entry_list)
+    cache.set('dataview'+request.session['proj_id'],entry_list)
 
 
 
@@ -108,7 +108,7 @@ def datalist(request):
 
 def upload(request):
     if 'proj' in request.session: 
-        form = UploadFileForm(initial={'library':'test','plates':'1,2','user':request.user.pk,'project':request.session['proj_id']})
+        form = UploadFileForm(initial={'user':request.user.pk,'project':request.session['proj_id']})
     
         if request.method == 'POST':
             form = UploadFileForm(request.POST, request.FILES)

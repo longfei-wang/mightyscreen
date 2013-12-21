@@ -121,6 +121,14 @@
             </div>
         </div>
         <div class="col-lg-9 col-md-9 col-sm-12">
+                {# all messages will be displayed here #}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags in 'error debug'  %}danger{% else %}{{message.tags}}{% endif %}">{{message}}
+                            <a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
+                        </div>
+                    {% endfor %}
+                {% endif %}
 
                 {% block content %}
                 {%endblock%}

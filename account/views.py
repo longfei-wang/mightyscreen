@@ -22,7 +22,8 @@ def signin(request):
 
 def signup(request):
     form=RegisterForm()
-    
+    #for i in form:
+        # raise Exception(i.__str__())
     if request.method == 'POST':
 
         form = RegisterForm(request.POST)
