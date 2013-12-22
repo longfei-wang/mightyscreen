@@ -97,7 +97,13 @@ class plate(models.Model):
         return self.columns.split(',')
     def row(self):
         return self.rows.split(',')
-    
+    def well(self):
+        well=list()
+        for i in self.row():
+            for j in self.col():
+                well.append(i+j)
+        return well
+
     name = models.CharField(max_length=50)
     numofwells = models.PositiveIntegerField()
     columns = models.TextField()

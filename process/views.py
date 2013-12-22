@@ -31,7 +31,7 @@ def mark(request):
     				data.objects.filter(plate__in=request.POST.getlist('plates'),well__in=x.split(',')).update(welltype=j)
 
 
-		messages.success(request,'Wells Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
+		messages.success(request,'WellType Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
 	return render(request,'process/markwell.html',{'proj':proj,'welltypes':welltypes,'plates':plates})
 
 def score(request):
@@ -50,5 +50,6 @@ def score(request):
 	if request.method=='POST':
 		exec ('from data.models import proj_'+request.session['proj_id']+' as data')
 		if request.POST.getlist('plates'):
-			process_score(data.objects.all(),proj,plates)
+			if process_score.delay(data.objects.all(),proj,request.POST.getlist('plates')):
+				messages.success(request,'Job has been sent. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
 	return render(request,'process/score.html',{'plates':plates})
