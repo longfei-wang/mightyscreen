@@ -10,6 +10,7 @@ from process import views
 urlpatterns = patterns('',
     url(r'^$', views.mark,name='process'),
     url(r'^mark', views.mark,name='mark'),
+    url(r'^score', views.score,name='score'),
     )    
 
 

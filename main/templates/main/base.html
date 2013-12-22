@@ -84,7 +84,7 @@
 
                 {% else %}
 
-                    <form class="navbar-form navbar-right" role="form" enctype="multipart/form-data" method="post" action="{% url "login" %}">{% csrf_token %}
+                    <form class="navbar-form navbar-right" role="form" enctype="multipart/form-data" method="post" action="{% url "login" %}?from={{request.path}}">{% csrf_token %}
                         <div class="form-group">
                             <input type="text" placeholder="Username" id="id_username" name="username" class="form-control">
                         </div>
@@ -114,8 +114,8 @@
                         <li><a href="{% url "view" %}">View</a></li>
                         <li><a href="{% url "upload" %}">Upload</a></li>
                         <li><a href="{% url "mark" %}">MaskWell</a></li>
-                        <li><a href="">Score</a></li>
-                        <li><a href="">Stats</a> 
+                        <li><a href="{% url "score" %}">Score</a></li>
+                        <li><a href="">Plots</a> 
                     </ul>
 
             </div>
@@ -124,7 +124,7 @@
                 {# all messages will be displayed here #}
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-{% if message.tags in 'error debug'  %}danger{% else %}{{message.tags}}{% endif %}">{{message}}
+                        <div class="alert alert-{% if message.tags in 'error debug'  %}danger{% else %}{{message.tags}}{% endif %}">{{message|safe}}
                             <a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
                         </div>
                     {% endfor %}
