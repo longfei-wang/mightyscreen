@@ -13,7 +13,7 @@ urlpatterns = patterns('',
     url(r'^$', views.index,name='statindex'), #name='index' is conflict with main.index
     url(r'^compounds/', views.compound_list, name='compounds'),
     url(r'^details/', views.details, name='c_details'),
-    url(r'^plot/', views.fingerprint_cluster, name='c_cluster'),
+    url(r'^plot/', views.interactive_heatmap, name='c_cluster'),
     )    
 
 

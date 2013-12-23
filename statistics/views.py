@@ -1,9 +1,13 @@
 from django.shortcuts import render
 from django.http import StreamingHttpResponse, HttpResponse
 from django.core.paginator import Paginator
+from django.core.context_processors import csrf
+from django.contrib import messages
 
+from collections import OrderedDict as od
 
 from library.models import compound
+from main.models import project, data_base
 import pylab
 import cStringIO
 
@@ -154,7 +158,32 @@ def heatmap(request):
     else:
         return render(request,"main/data_list.html",{}) ## return address need to be re-defined
 
-
+def interactive_heatmap(request):
+    """ basic function to plot heatmaps for plate replicates\
+        can expand to plot many different statistics    
+    """
+    ### This function is still in the testing phase
+    ### because one plate seems like have more than 384 wells...
+    if 'proj' in request.session: 
+        exec ('from data.models import proj_'+request.session['proj_id']+' as data')
+        ## Retrive data to be ploted
+        plate_number = '2'        
+        entry_list = data.objects.filter(plate = plate_number)
+        welltypes=od(sorted(dict(data_base.schoice).items()))        
+        proj=project.objects.get(pk=request.session['proj_id'])        
+        replicate_dic = {}       
+      
+        for e in entry_list:
+            if e.replicate not in replicate_dic.keys():
+                well = []
+                fp = []
+                replicate_dic.update({e.replicate:[well,fp]})
+                replicate_dic[e.replicate][0].append(e.well)
+                replicate_dic[e.replicate][1].append(float(e.FP))
+            else:
+                replicate_dic[e.replicate][0].append(e.well)
+                replicate_dic[e.replicate][1].append(float(e.FP))
+	return render(request,'statistics/heatmap.html',{'proj':proj,'welltypes':welltypes,'plates':plate_number})
 
 #=============================================================================
 ## Testing views

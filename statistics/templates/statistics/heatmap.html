@@ -1,0 +1,154 @@
+{% extends 'main/base.html' %}
+{% load staticfiles %}
+
+{% block content %}
+    
+<style type="text/css" scoped>
+
+#selectable .ui-selecting {
+    background-color:#ccc;
+}
+#selectable .ui-selected {
+    background-color: #999;
+}
+
+</style>
+
+
+
+<div class="well">
+    {% for i,j in welltypes.items %}
+        <button class="btn btn-primary wellbtn" welltype="{{i}}"><strong>Mark As</strong> {{j|title}}</button>
+    {% endfor %}
+</div>
+
+<table class="table table-bordered table-responsive" id="selectable">
+
+    <tr>
+    <td></td>
+        {% for j in proj.plate.col %}            
+            <td>{{j}}</td>
+        {% endfor %}
+    </tr>
+
+    {% for i in proj.plate.row %}
+        <tr>
+            <td>{{i}}</td>
+            {% for j in proj.plate.col %}
+                <td class="well heatmap" well="{{i}}{{j}}">{{j}}</td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+
+</table>
+
+<div class="well">
+<form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url "mark" %}">
+{% csrf_token %}
+
+    {% for i,j in welltypes.items %}
+    <div class="form-group">
+        <label class="col-sm-2 control-label">{{j|title}}</label>
+        <div class="col-sm-10">
+        <textarea rows=5 class="form-control" welltype="{{i}}" name="{{i}}" placeholder="List of {{j|title}} wells seperated by comma, like A01,A02,A03"></textarea>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Plates to Update</label>
+        <div class="col-sm-10">
+            <select multiple name="plates" class="form-control">
+                {% for i in plates %}
+                    <option value="{{i}}">{{i}}</option>    
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-success">Update</button>
+            <button type="reset" class="btn btn-default">Clear</button>
+        </div>
+    </div>
+
+</form>
+</div>
+
+
+{% endblock %}
+
+
+{% block script %}
+
+
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>    
+<script type="text/JavaScript">
+$(document).ready(function(){
+ 
+    // Function to get the max value in an Array
+    Array.max = function(array){
+        return Math.max.apply(Math,array);
+    };
+ 
+    // Get all data values from our table cells making sure to ignore the first column of text
+    // Use the parseInt function to convert the text string to a number
+ 
+    var counts= $(".heatmap").map(function() {
+        return parseInt($(this).text());
+    }).get();
+    
+    // run max value function and store in variable
+    var max = Array.max(counts);
+ 
+    n = 100; // Declare the number of groups
+ 
+    // Define the ending colour, which is white
+    xr = 255; // Red value
+    xg = 255; // Green value
+    xb = 255; // Blue value
+ 
+    // Define the starting colour #f32075
+    yr = 243; // Red value
+    yg = 32; // Green value
+    yb = 117; // Blue value
+ 
+    // Loop through each data point and calculate its % value
+    $(".heatmap").each(function(){
+        var val = parseInt($(this).text());
+        var pos = parseInt((Math.round((val/max)*100)).toFixed(0));
+        red = parseInt((xr + (( pos * (yr - xr)) / (n-1))).toFixed(0));
+        green = parseInt((xg + (( pos * (yg - xg)) / (n-1))).toFixed(0));
+        blue = parseInt((xb + (( pos * (yb - xb)) / (n-1))).toFixed(0));
+        clr = 'rgb('+red+','+green+','+blue+')';
+        $(this).css({background:clr,color:clr});
+        
+    });
+});
+</script>    
+
+
+<script src="{% static "main/js/jquery-ui.min.js" %}"></script>
+<script>
+
+$("#selectable").selectable({
+    filter: ".well"
+});
+
+$(".wellbtn").click(function(){
+    x=$(this).attr("welltype");
+    value=[];
+    $(".ui-selected").each(function(){
+        value.push($(this).attr("well"));
+        //alert($(this).attr("well"));
+    });
+    $("textarea[welltype="+x+"]").val(value.join(','));
+});
+
+</script>
+
+{% endblock %}
+
+
