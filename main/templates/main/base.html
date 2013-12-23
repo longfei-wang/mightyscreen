@@ -45,7 +45,7 @@
                      <span class="caret"></span>
                     </a>
                         <ul class="dropdown-menu">
-                            <li><a href="">New Project</a></li>
+                            <li><a href="{% url 'projedit' %}">New Project</a></li>
                             <li class="divider"></li>
                             {% for i in user.project_set.all %}
                                 <li><a href="{% url "projselect" %}?p={{i.pk}}">{{i.name}}</a></li>

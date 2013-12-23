@@ -1,0 +1,23 @@
+{% extends 'main/base.html' %}
+{% load staticfiles %}
+{% load bootstrap_tags %}
+
+
+{% block content %}
+<div class="well">
+<form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url "projedit" %}">{% csrf_token %}
+
+{{form|as_bootstrap_h}}
+
+	    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-success">Update</button>
+            <button type="reset" class="btn btn-default">Clear</button>
+        </div>
+    </div>
+
+</form>
+
+</div>
+
+{% endblock %}

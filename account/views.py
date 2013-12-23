@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.core.context_processors import csrf
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login,logout
-from account.models import RegisterForm
+from account.models import RegisterForm, ProjectForm
 
 # Create your views here.
 def signin(request):
@@ -75,3 +75,7 @@ def projselect(request):
         return render(request,'main/redirect.html',{'message':'Choose'+request.session['proj']+' as your project','dest':'index'})
 
     return render(request,'main/error.html',{})
+
+def projedit(request):
+    form=ProjectForm
+    return render(request,'account/projectedit.html',{'form':form})

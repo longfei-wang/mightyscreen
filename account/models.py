@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-
+from main.models import project,experiment,readout,score,plate
 # Create your models here.
 
 
@@ -30,3 +30,9 @@ class RegisterForm(UserCreationForm):
             position=self.cleaned_data['position'])
         profile.save()
         return user, user_profile
+
+
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model=project
+        fields=['name','description','agreement','experiment','plate','replicate','score','leader','user']
