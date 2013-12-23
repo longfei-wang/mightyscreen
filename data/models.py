@@ -9,12 +9,13 @@ if project.objects.all():
 	for i in project.objects.all():
 	    n=''
 	    for j in i.experiment.readout.all():
+	    	for h in i.project.rep():
 
-	        n+=j.name+'=models.TextField(blank=True);'
+	    	    n+='%(readout)s_%(rep)s=models.FloatField(blank=True);'%{'readout':j,'rep':h}
 	    
 	    for l in i.score.all():
 	        
-	        n+=l.name+'=models.TextField(blank=True);'
+	        n+=l.name+'=models.FoatField(blank=True);'
 	    
 	    #raise Exception(n)
 	    exec ('class proj_'+str(i.pk)+'(data_base):'+n)

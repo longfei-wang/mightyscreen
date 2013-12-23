@@ -68,12 +68,12 @@ WSGI_APPLICATION = 'mightyscreen.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'mightyscreen',
-	'HOST': '',
-	'USER' : 'root',
-	'PASSWORD': 'wanglf2011',
-	'PORT': '',
+    	'HOST': '',
+    	'USER' : 'root',
+    	'PASSWORD': 'wanglf2011',
+    	'PORT': '',
     }
 }
 
