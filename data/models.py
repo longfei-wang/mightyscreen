@@ -11,11 +11,11 @@ if project.objects.all():
 	    for j in i.experiment.readout.all():
 	    	for h in i.rep():
 
-	    	    n+='%(readout)s_%(rep)s=models.FloatField(blank=True);'%{'readout':j,'rep':h}
+	    	    n+='%(readout)s_%(rep)s=models.FloatField(null=True);'%{'readout':j,'rep':h}
 	    
 	    for l in i.score.all():
 	        
-	        n+=l.name+'=models.FloatField(blank=True);'
+	        n+=l.name+'=models.FloatField(null=True);'
 	    
 	    #raise Exception(n)
 	    exec ('class proj_'+str(i.pk)+'(data_base):'+n)

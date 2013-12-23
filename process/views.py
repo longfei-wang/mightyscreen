@@ -50,6 +50,6 @@ def score(request):
 	if request.method=='POST':
 		exec ('from data.models import proj_'+request.session['proj_id']+' as data')
 		if request.POST.getlist('plates'):
-			if process_score.delay(data.objects.all(),proj,request.POST.getlist('plates')):
+			if process_score(data.objects.all(),proj,request.POST.getlist('plates')):
 				messages.success(request,'Job has been sent. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
 	return render(request,'process/score.html',{'plates':plates})

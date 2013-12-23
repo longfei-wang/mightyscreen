@@ -36,7 +36,6 @@ def datalist(request):
         
     exec ('from data.models import proj_'+request.session['proj_id']+' as data')
     
-        
     
     if request.POST.get('querytext'):
 

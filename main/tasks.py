@@ -9,27 +9,44 @@ import datetime as dt
 
 from celery.decorators import task
 
-from main.models import project, submission, submission_plate_list
+from main.models import project, submission
 
 
 
-class rawdata():
-    def __init__(self,formdata,sub):
-#        self.rawdata = Table.read(csvfile,format='ascii')
-        self.rawdata=pd.read_csv(formdata['datafile'],header=None).values.astype(str)
+class rawdatafile():
+    def __init__(self,formdata):
+        """formdata is the django UploadFileForm in main.models
+        pandas is used to parse the datafile"""   
+
+        if formdata['datafile'].content_type=='text/csv':
+            self.rawdata=pd.read_csv(formdata['datafile'],header=None).fillna('').values
+        #self.rawdata=pd.read_csv(formdata['datafile'],header=None).values.astype(str)
         self.library=formdata['library']
+        self.proj_id=formdata['project']
         self.plates=formdata['plates'].split(',')
         self.plates_num=len(self.plates)
-        self.p=sub.project
+        self.p=project.objects.get(pk=formdata['project'])
         self.replicate=self.p.rep()
         self.readout=self.p.experiment.readout
         self.readout_num=self.readout.count()
         self.replicate_num=len(self.replicate)
         self.map=defaultdict(lambda: defaultdict(dict))
-        self.datetime=sub.submit_time
+        self.datetime=dt.datetime.now()
         self.row=self.p.plate.row()
         self.col=self.p.plate.col()
-        self.sub=sub
+
+
+        #if everything is ready, create a pending job entry.
+        if self.p and self.rawdata.any():
+            self.sub=submission(
+                comments=formdata['comments'],
+                jobtype='upload',
+                project=project.objects.get(pk=formdata['project']),
+                submit_by=User.objects.get(pk=formdata['user']),
+                submit_time=self.datetime,
+                log="plates in queue: %s"%formdata['plates'],
+                status='p')
+            self.sub.save()
 
 # process the data define where table are
 # a.experiment.readout.all(), a.experiment.readout.count(), a.experiment.readout.get(name='FP').keywords
@@ -43,7 +60,6 @@ class rawdata():
             n+=1
 
             for m in self.readout.all():
-
                 if m.keywords in row[0]:
                     self.map[plate_count][replicate_count][m.name.encode('utf8')]=n+1
                     readout_count+=1
@@ -65,75 +81,50 @@ class rawdata():
 
 #save tables into database row by row, might take some time.
     def save(self):
-        exec ('from data.models import proj_'+str(self.p.pk)+' as data')
-        for pla in range(self.plates_num):
-            #csub the submission_palte_list entry for this plate
-            csub=submission_plate_list(library=self.library,plate=self.plates[pla],submission_id=self.sub)
-            #check if there is already a plate
-            if submission_plate_list.objects.filter(library=self.library,plate=self.plates[pla],status='s'):
-                
-                csub.status='f'
-                csub.messages+='plate '+str(pla)+' already exists!<br>'
-                
-            
-            else:
-    
-                for rep in range(self.replicate_num):
-    
-                    for row in range(len(self.row)):
-    
-                        for col in range(len(self.col)):
-                            
-                            entry=data(
-                            submission=self.sub,
-                            library = self.library,
-                            plate = self.plates[pla],
-                            well=self.row[row]+self.col[col],
-                            replicate=self.replicate[rep],
-                            project=self.p,
-                            create_date=self.datetime,
-                            create_by=self.sub.submit_by,
-                            )
+        exec ('from data.models import proj_'+str(self.proj_id)+' as data')
+        for pla in range(self.plates_num):            
 
-                            
-                            for i in self.readout.all(): 
-                                j=self.map[pla][rep][i.name.encode('utf8')]
-                                exec('entry.'+i.name+'=self.rawdata[row+j][col+1]')
-#                                readout=data_readout(
-#                                data_entry=entry,
-#                                readout=i,
-#                                reading=self.rawdata[row+j][col+1],
-#                                )
-#                                readout.save()
+            for row in range(len(self.row)):
 
-                            entry.save()
+                for col in range(len(self.col)):
+                    
+                    #update_or_create: if same well already exists, it will be over written.
+                    entry, created=data.objects.get_or_create(
+                    library = self.library,
+                    plate = self.plates[pla],
+                    well=self.row[row]+self.col[col],
+                    project=self.p,
+                    defaults={'submission':self.sub,'create_date':self.datetime,'create_by':self.sub.submit_by}
+                    )
+
+                    entry.submission=self.sub
+                    entry.create_date=self.datetime
+                    entry.create_by=self.sub.submit_by
+
+                    for rep in range(self.replicate_num):
+                    
+                        for i in self.readout.all(): 
+                            j=self.map[pla][rep][i.name.encode('utf8')]
+                            exec('entry.%(readout)s_%(rep)s=self.rawdata[row+j][col+1]'%{'readout':i,'rep':self.replicate[rep]})
+
+                    entry.save()
                             
-                csub.status='s'
+                self.sub.log+=',plate: %s uploaded'%self.plates[pla]
                 
-            csub.save()
-            self.sub.status='c'
-            self.sub.save(update_fields=['status'])
-        return 'saved'
+        self.sub.status='c'
+        self.sub.save(update_fields=['status'])
+        return 'uploaded'
 
 
 #wrap  rawdata class in a function for easier queue.
 @task()
-def submit_queue(*args):
-    data = rawdata(*args)
-    data.parse()
-    data.save()
-    return "parsed"
+def submit_queue(d):
+    d.save()
+    return True
     
-def submit_data(formdata):
-    #create a entries in submission.
-    sub=submission(comments=formdata['comments'],
-                      project=project.objects.get(pk=formdata['project']),
-                      submit_by=User.objects.get(pk=formdata['user']),
-                      submit_time=dt.datetime.now(),
-                      status='p')
-    sub.save()
-
+def submit_data(*args):
+    d = rawdatafile(*args)
+    if d.parse():
     #then parse_data in background
-    submit_queue.delay(formdata,sub)
-    
+        submit_queue(d)
     return 'submitted'

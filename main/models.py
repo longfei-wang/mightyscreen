@@ -93,7 +93,7 @@ class plate(models.Model):
     )
     origin = models.CharField(max_length=2, choices=ochoice)
 
-
+#job list/track table
 class submission(models.Model):
     def __unicode__(self):
         return self.get_status_display()
@@ -102,28 +102,24 @@ class submission(models.Model):
     submit_time = models.DateTimeField()
     submit_by = models.ForeignKey(User)
     comments=models.TextField(blank=True)
+    log=models.TextField(blank=True)
     schoice = (
     ('p','pending'),
     ('c','complete'),
     )
     status=models.CharField(max_length=1, choices=schoice)
-    
-class submission_plate_list(models.Model):
-    def __unicode__(self):
-        return self.get_status_display()
-    submission=models.ForeignKey('submission')
-    project=models.ForeignKey('project')
-    library = models.CharField(max_length=50)
-    plate=models.CharField(max_length=50)
-    schoice = (
-    ('f','failed'),
-    ('s','succeed'),
-    )
-    status=models.CharField(max_length=1, choices=schoice)
-    messages = models.TextField(blank=True)
 
-#Data object for all screening raw data, readout is stored in comma seperated array, well posistion is refering another table   
+#Table record all the plates submitted to the database. Do we really need it? Naah. Use group by
+# class submission_plate_list(models.Model):
+#     def __unicode__(self):
+#         return self.plate
+#     submission=models.ForeignKey('submission')
+#     project=models.ForeignKey('project')
+#     library = models.CharField(max_length=50)
+#     plate=models.CharField(max_length=50)
 
+#Data object abstract for all screening raw data. Real table is in app:data
+#Two ways of identify compound. FaciclityID? or Plate+Well
 class data_base(models.Model):
     def __unicode__(self):
         return self.well
