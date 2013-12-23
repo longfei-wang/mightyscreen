@@ -111,7 +111,7 @@ class submission(models.Model):
 class submission_plate_list(models.Model):
     def __unicode__(self):
         return self.get_status_display()
-    submission_id=models.ForeignKey('submission')
+    submission=models.ForeignKey('submission')
     project=models.ForeignKey('project')
     library = models.CharField(max_length=50)
     plate=models.CharField(max_length=50)
