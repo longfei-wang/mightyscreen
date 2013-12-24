@@ -3,7 +3,8 @@ from django.core.context_processors import csrf
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login,logout
 from account.models import RegisterForm, ProjectForm
-
+from main.models import project
+import os
 # Create your views here.
 def signin(request):
     form=AuthenticationForm()
@@ -53,11 +54,10 @@ def profile(request):
 
 #view and manage projects
 def projects(request):
-
     if request.GET.get('p'):
         proj=request.user.project_set.get(pk=request.GET.get('p'))
        # raise Exception(dir(proj.submission_set.get(pk=1).submission_plate_list_set))
-        field_list=['project','submit_time','submit_by','comments','status','plates']
+        field_list=['project','submit_time','submit_by','comments','status','log']
         return render(request,'account/projectdetail.html',{'proj':proj,'field_list':field_list})
         
 
@@ -77,5 +77,28 @@ def projselect(request):
     return render(request,'main/error.html',{})
 
 def projedit(request):
-    form=ProjectForm
-    return render(request,'account/projectedit.html',{'form':form})
+
+    form=ProjectForm()
+    proj_id=''
+    if request.method=='POST':
+        if request.POST.get('proj_id'):#decide if create a new project or update one
+            form=ProjectForm(request.POST,instance=project.objects.get(pk=request.POST.get('proj_id')))
+
+        else:
+            form=ProjectForm(request.POST)
+        if form.is_valid():
+            form.save()
+            #not sure if this is safe here. guess so
+            dir=os.path.dirname(os.path.dirname(__file__))
+            os.system('python %s\manage.py schemamigration data --auto'%dir)
+            os.system('python %s\manage.py migrate data'%dir)
+
+            return render(request,'main/redirect.html',{'message':'Project Created.','dest':'index'})
+    if request.method=='GET':
+        if request.GET.get('p'):
+            proj=project.objects.get(pk=request.GET.get('p'))
+            if request.user in proj.user.all():
+                form=ProjectForm(instance=proj)
+                proj_id=proj.pk
+
+    return render(request,'account/projectedit.html',{'form':form,'proj_id':proj_id})

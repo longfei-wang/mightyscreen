@@ -3,7 +3,6 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-from django import forms
 
 # Create your models here.
 
@@ -96,7 +95,7 @@ class plate(models.Model):
 #job list/track table
 class submission(models.Model):
     def __unicode__(self):
-        return self.get_status_display()
+        return self.pk
     jobtype=models.CharField(max_length=20)
     project=models.ForeignKey('project')
     submit_time = models.DateTimeField()
@@ -122,9 +121,13 @@ class submission(models.Model):
 #Two ways of identify compound. FaciclityID? or Plate+Well
 class data_base(models.Model):
     def __unicode__(self):
-        return self.well
+        return self.library+self.plate+self.well
     class Meta:
         abstract=True
+    
+
+    hidden_field=['submission','project']
+
     library = models.CharField(max_length=50)
     plate = models.CharField(max_length=20)
     well = models.CharField(max_length=20)
@@ -142,15 +145,3 @@ class data_base(models.Model):
     submission=models.ForeignKey('submission')
     create_date = models.DateTimeField()
     create_by = models.ForeignKey(User)
-
-class UploadFileForm(forms.Form):
-    
-    #title = forms.CharField(max_length=50)
-    project = forms.CharField(widget=forms.HiddenInput)
-    user = forms.CharField(widget=forms.HiddenInput)
-    library = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Library Name'}))
-    plates = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Plates List, like 1,2,3 '}))
-    datafile  = forms.FileField(widget=forms.FileInput())
-    comments = forms.CharField(widget=forms.Textarea(),required=False)
-
-

@@ -2,6 +2,10 @@
 {% load staticfiles %}
 
 {% block content %}
+
+{% include 'main/table.html' %}
+
+
 <div class="well">
 <form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url "score" %}">{% csrf_token %}
     <div class="form-group">

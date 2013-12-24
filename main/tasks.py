@@ -10,15 +10,16 @@ import datetime as dt
 from celery.decorators import task
 
 from main.models import project, submission
-
-
+from django import forms
 
 class rawdatafile():
     def __init__(self,formdata):
         """formdata is the django UploadFileForm in main.models
         pandas is used to parse the datafile"""   
+        filetype=formdata['datafile'].name.split(".")[-1]
+        
 
-        if formdata['datafile'].content_type=='text/csv':
+        if filetype=='csv':
             self.rawdata=pd.read_csv(formdata['datafile'],header=None).fillna('').values
         #self.rawdata=pd.read_csv(formdata['datafile'],header=None).values.astype(str)
         self.library=formdata['library']
@@ -109,10 +110,10 @@ class rawdatafile():
 
                     entry.save()
                             
-                self.sub.log+=',plate: %s uploaded'%self.plates[pla]
-                
+            self.sub.log+=';plate: %s uploaded'%self.plates[pla]
+
         self.sub.status='c'
-        self.sub.save(update_fields=['status'])
+        self.sub.save()
         return 'uploaded'
 
 
@@ -121,10 +122,22 @@ class rawdatafile():
 def submit_queue(d):
     d.save()
     return True
-    
-def submit_data(*args):
-    d = rawdatafile(*args)
-    if d.parse():
-    #then parse_data in background
-        submit_queue(d)
-    return 'submitted'
+
+
+class UploadFileForm(forms.Form):
+    def submit_data(self):
+        #define the submission method here.
+        d = rawdatafile(self.cleaned_data)
+        if d.parse():
+        #then parse_data in background
+            submit_queue(d)
+        return 'submitted'
+    #title = forms.CharField(max_length=50)
+    project = forms.CharField(widget=forms.HiddenInput)
+    user = forms.CharField(widget=forms.HiddenInput)
+    library = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Library Name'}))
+    plates = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Plates List, like 1,2,3 '}))
+    datafile  = forms.FileField(widget=forms.FileInput())
+    comments = forms.CharField(widget=forms.Textarea(),required=False)
+
+

@@ -1,5 +1,4 @@
 {% extends 'main/base.html' %}
-{% load filters %}
 
 {% block content %}
 
@@ -99,30 +98,7 @@
 </ul>
 
 
-
-
-<table class="table table-striped table-hover table-condensed table-responsive">
-
-
-    <tr>
-        {% for i in field_list %}
-            <td>
-                <strong><a href='?order={% if i == pre_order %}-{% endif %}{{i}}'>{{ i|title }}</a></strong>
-            </td>
-        {% endfor %}
-    </tr>
-
-    {% for j in entry_list %}
-        <tr>
-            {% for i in field_list %}
-                  <td>{{ j|getattr:i }}</td>
-            {% endfor %}
-        </tr>
-    
-    {% endfor %}
-
-</table>
-
+{% include "main/table.html" %}
 
 <ul class="pagination">
     <li class="{{pbutton_attr}}"><a href='?page=1'>First</a></li>

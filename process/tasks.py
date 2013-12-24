@@ -32,6 +32,7 @@ def process_score(data,proj,plates):
 
 			#pass stats to names spaces that user use
 			for k in proj.experiment.readout.all():
+
 				exec('%(readout)s_%(rep)s_com_avg=com["%(readout)s_%(rep)s__avg"]'%{'readout':k.name,'rep':j})
 				exec('%(readout)s_%(rep)s_com_sd=com["%(readout)s_%(rep)s__stddev"]'%{'readout':k.name,'rep':j})
 				exec('%(readout)s_%(rep)s_pos_avg=pos["%(readout)s_%(rep)s__avg"]'%{'readout':k.name,'rep':j})
@@ -42,19 +43,19 @@ def process_score(data,proj,plates):
 
 		#calculate avg and sd of one well within all reps
 		for l in data.filter(plate=i,welltype__in=['X','P','N']):
-			
 			#calculate score based on user's equation for each well.	
-
-			#one well				
-			for k in proj.experiment.readout.all():
-				exec('%(readout)s_%(rep)s=l.%(readout)s_%(rep)s'%{'readout':k.name,'rep':j})
-			
+			for j in proj.rep():
+				#one well				
+				for k in proj.experiment.readout.all():
+					exec('%(readout)s_%(rep)s=l.%(readout)s_%(rep)s'%{'readout':k.name,'rep':j})
+				
 			for h in proj.score.all():
 				try:
 					score=eval(h.formular)
 				except SyntaxError:
 					return False
-				exec ('onerep.update(%(name)s=%(value)s)'%{'name':h.name,'value':score})
+				
+				exec ('l.%(name)s=%(value)s;l.save()'%{'name':h.name,'value':score})
 
 	umes.success(proj.leader,'Score Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
 	return True

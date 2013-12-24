@@ -2,10 +2,9 @@ from django.shortcuts import render
 from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.db.models import Q
+from django.db.models import Q,Count
 from django.core.paginator import Paginator
-from main.tasks import submit_data
-from main.models import UploadFileForm
+from main.tasks import UploadFileForm
 from django.core.cache import cache
 from django.contrib import messages
 
@@ -54,24 +53,23 @@ def datalist(request):
 
             if request.GET.get('order'):
                 pre_order=request.GET.get('order')
-                query='entry_list.order_by("'+pre_order+'")'
+                #intense query sting cause we need to put null entries last..
+                query='entry_list.extra(select={"z":"%(x)s IS NULL"}).order_by("z","%(y)s")'%{'x':pre_order.replace('-',''),'y':pre_order}
 
                 #raise Exception(query)
                 exec("entry_list = "+query)
                 
         else:
-            entry_list = data.objects.all()
+            entry_list = data.objects.order_by('pk')
 
 
     cache.set('dataview'+request.session['proj_id'],entry_list)
 
 
-
-
     field_list = list()
     for i in data._meta.fields:
-        field_list.append(i.name)
-
+        if i.name not in data.hidden_field:
+            field_list.append(i.name)
     current_page = (request.GET.get('page'))
 
     if not current_page:
@@ -114,7 +112,7 @@ def upload(request):
             
             if form.is_valid():
     
-                submit_data(form.cleaned_data)
+                form.submit_data()
                 return render(request,'main/redirect.html',{'message':'Data submitted to queue!','dest':'index'})
     
         #a form to upload raw data
