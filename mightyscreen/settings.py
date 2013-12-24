@@ -71,8 +71,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mightyscreen',
     	'HOST': '',
-    	'USER' : 'root',
-    	'PASSWORD': 'wanglf2011',
+    	'USER' : 'test',
+    	'PASSWORD': 'test',
     	'PORT': '',
     }
 }
