@@ -77,32 +77,14 @@ def compound_list(request):
      
 def details(request):
     """ display detailed information of compounds, use list"""
-    entry_list = compound.objects.filter(plate = '3266')#.filter(well = 'A05')
-    field_list = []
-    for i in compound._meta.fields:
-        if i.name not in 'id fp2 fp3 fp4 sdf':            
-            field_list.append((i.name))
-                        
-    current_page = (request.GET.get('page'))
-        
-    p = Paginator(entry_list,per_page = 1)    
-    
-    if not current_page:
-        current_page=1
-    
-    if p.num_pages <=7:
-        page_range = range(1,(p.num_pages+1))        
-    elif int(current_page)+3 >= p.num_pages:
-        page_range = range(p.num_pages - 7, p.num_pages)
-    else:
-        page_range = range(max(1,int(current_page)-3),max(1,int(current_page)-3)+7) 
-        
-    
-    return render(request, "statistics/details.html", {'field_list':field_list,
-                                                       'entry_list': p.page(current_page),
-                                                       'pages': page_range,
-                                                       'last_page':p.num_pages,
-                                                       })
+    try:
+        cmpd = compound.objects.get(plate = request.GET.get('plate'),well=request.GET.get('well'))
+    except:
+        cmpd= False
+    field_list="chemical_name molecular_weight formula library_name facility_reagent_id plate well pubchem_id tpsa logp inchikey canonical_smiles".split()
+    if request.GET.get('t'):#if t then show as tooltip
+        return render(request, "statistics/detail_tooltip.html", {'cmpd': cmpd,'field_list':field_list})    
+    return render(request, "statistics/details.html", {'cmpd': cmpd,'field_list':field_list})
 
 def heatmap(request):
     """ basic function to plot heatmaps for plate replicates\

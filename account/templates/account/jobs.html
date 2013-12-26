@@ -1,0 +1,54 @@
+{% extends 'main/base.html' %}
+{% load filters %}
+
+{% block content %}
+
+<div class="page-header">
+<h2>List of {{user.username}}'s Jobs</h2>
+</div>
+
+
+<div class="panel-group" id="accordion">
+{% for x in user.project_set.all %}
+
+<div class="panel panel-info">
+
+<div class="panel-heading">
+    <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{x.pk}}">
+    <h4 class="panel-title">Project: {{x.name}}</h4>
+    </a>
+</div>
+
+<div id="collapse{{x.pk}}" class="panel-collapse collapse{% if x.pk == proj_id %} in{% endif %}">
+<table class="table table-bordered table-striped .table-hover">
+
+
+    <tr>
+        {% for i in field_list %}
+              <td>{{ i }}</td>
+        {% endfor %}
+    </tr>
+    {% for j in x.submission_set.all %}
+        <tr>
+            {% for i in field_list %}
+
+
+                {% if i == "status" %}
+                    <td>{{j.get_status_display}}</td>                  
+                {% else %}
+                    <td>{{ j|getattr:i }}</td>
+                {% endif %}
+
+
+
+            {% endfor %}
+        </tr>
+    {% endfor %}
+
+</table>
+</div>
+</div>
+
+{% endfor %}
+</div>
+{% endblock %}

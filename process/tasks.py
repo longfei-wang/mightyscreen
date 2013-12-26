@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from async_messages import messages as umes
 from django.contrib.auth.models import User
 from celery.decorators import task
+from django.contrib import messages
 
 @task()
 def process_score(data,proj,plates):
@@ -27,6 +28,10 @@ def process_score(data,proj,plates):
 		exec('pos=data.filter(plate=i,welltype="P").aggregate(%s)'%aggs)
 		#negative wells
 		exec('neg=data.filter(plate=i,welltype="N").aggregate(%s)'%aggs)
+
+		#it is likely that no positive or negative control is marked
+		if not (pos and neg):
+			messages.error(request,'No Positive/Negative control on plate %s'%i)
 
 		for j in proj.rep():
 
@@ -55,7 +60,8 @@ def process_score(data,proj,plates):
 				except SyntaxError:
 					return False
 				
-				exec ('l.%(name)s=%(value)s;l.save()'%{'name':h.name,'value':score})
+				exec ('l.%(name)s=%(value)s'%{'name':h.name,'value':score})
+			l.save()
 
 	umes.success(proj.leader,'Score Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
 	return True

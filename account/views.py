@@ -4,6 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login,logout
 from account.models import RegisterForm, ProjectForm
 from main.models import project
+from django.conf import settings
 import os
 # Create your views here.
 def signin(request):
@@ -33,8 +34,12 @@ def signup(request):
             form.save()
             return render(request,'main/redirect.html',{'message':'Congrats! You are registered!','dest':'index'})
 
+    #read user agreement
+    f=open(settings.BASE_DIR+'/README.md')
+    agreement=f.read()
+    f.close()
 
-    args={'form':form}
+    args={'form':form,'agreement':agreement}
     args.update(csrf(request))
 
     return render(request,'account/register.html',args)
@@ -52,13 +57,16 @@ def profile(request):
 #    raise Exception(user.project_set.values_list())
     return render(request,'account/profile.html',{'user':user,'profile':profile})
 
+def jobview(request):
+    #proj=request.user.project_set.get(pk=request.session.get('proj_id'))
+    field_list=['project','submit_time','submit_by','comments','status','log']
+    return render(request,'account/jobs.html',{'field_list':field_list,'proj_id':int(request.session.get('proj_id'))})
+
 #view and manage projects
 def projects(request):
     if request.GET.get('p'):
         proj=request.user.project_set.get(pk=request.GET.get('p'))
-       # raise Exception(dir(proj.submission_set.get(pk=1).submission_plate_list_set))
-        field_list=['project','submit_time','submit_by','comments','status','log']
-        return render(request,'account/projectdetail.html',{'proj':proj,'field_list':field_list})
+        return render(request,'account/projectdetail.html',{'proj':proj})
         
 
     field_list=['name','description','agreement','experiment','plate','replicate','leader']
@@ -89,7 +97,7 @@ def projedit(request):
         if form.is_valid():
             form.save()
             #not sure if this is safe here. guess so
-            dir=os.path.dirname(os.path.dirname(__file__))
+            dir=settings.BASE_DIR
             os.system('python %s\manage.py schemamigration data --auto'%dir)
             os.system('python %s\manage.py migrate data'%dir)
 

@@ -14,7 +14,10 @@
     {% for j in entry_list %}
         <tr>
             {% for i in field_list %}
-                  <td>{{ j|getattr:i|tabler }}</td>
+                <td>         
+                    {{ j|getattr:i|tabler }}
+
+                </td>
             {% endfor %}
         </tr>
     

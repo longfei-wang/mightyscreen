@@ -54,7 +54,7 @@ def datalist(request):
             if request.GET.get('order'):
                 pre_order=request.GET.get('order')
                 #intense query sting cause we need to put null entries last..
-                query='entry_list.extra(select={"z":"%(x)s IS NULL"}).order_by("z","%(y)s")'%{'x':pre_order.replace('-',''),'y':pre_order}
+                query='entry_list.order_by("%s")'%pre_order
 
                 #raise Exception(query)
                 exec("entry_list = "+query)

@@ -7,6 +7,7 @@ Created on Thu Dec  5 22:40:26 2013
 from django import template
 from django.db import models
 from datetime import datetime
+import re
 
 register = template.Library()
 
@@ -46,3 +47,15 @@ def tabler(value):
     else:
       return "{:5.2f}".format(value) 
   return value
+
+
+@register.filter
+def paragraphs(value):
+  """
+  Turns paragraphs delineated with newline characters into
+  paragraphs wrapped in <p> and </p> HTML tags.
+  """
+  paras = re.split(r'[\r\n]+', value)
+  paras = ['<p>%s</p>' % p.strip() for p in paras]
+  return '\n'.join(paras)
+  paragraphs = stringfilter(paragraphs)
