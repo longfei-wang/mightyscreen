@@ -15,7 +15,7 @@ if project.objects.all():
 	    
 	    for l in i.score.all():
 	        
-	        n+=l.name+'=models.FloatField(null=True);'
+	        n+=l.name+'=models.FloatField(default=0);'
 	    
 	    #raise Exception(n)
 	    exec ('class proj_'+str(i.pk)+'(data_base):'+n)

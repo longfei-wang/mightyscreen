@@ -101,21 +101,13 @@ class submission(models.Model):
     submit_time = models.DateTimeField()
     submit_by = models.ForeignKey(User)
     comments=models.TextField(blank=True)
+    #progress=models.PositiveIntegerField(default=0)#percentage
     log=models.TextField(blank=True)
     schoice = (
     ('p','pending'),
     ('c','complete'),
     )
     status=models.CharField(max_length=1, choices=schoice)
-
-#Table record all the plates submitted to the database. Do we really need it? Naah. Use group by
-# class submission_plate_list(models.Model):
-#     def __unicode__(self):
-#         return self.plate
-#     submission=models.ForeignKey('submission')
-#     project=models.ForeignKey('project')
-#     library = models.CharField(max_length=50)
-#     plate=models.CharField(max_length=50)
 
 #Data object abstract for all screening raw data. Real table is in app:data
 #Two ways of identify compound. FaciclityID? or Plate+Well
@@ -131,7 +123,7 @@ class data_base(models.Model):
     library = models.CharField(max_length=50)
     plate = models.CharField(max_length=20)
     well = models.CharField(max_length=20)
-
+    #need to add a unqiue key here maybe onetoone to library
     schoice = (
     ('E','empty'),
     ('P','positive control'),
@@ -145,3 +137,5 @@ class data_base(models.Model):
     submission=models.ForeignKey('submission')
     create_date = models.DateTimeField()
     create_by = models.ForeignKey(User)
+
+
