@@ -25,8 +25,9 @@ class rawdatafile():#a base class for all file format
         self.datetime=dt.datetime.now()
         self.row=self.p.plate.row()
         self.col=self.p.plate.col()
-
+        self.table_reg=dict()
         self.read_file()
+        self.wells=self.p.plate.numofwells
 
 
     def read_file(self):
@@ -52,7 +53,7 @@ class rawdatafile():#a base class for all file format
 
     def update_job_status(self,log='',progress=0):
         """update logs and progress"""
-        self.sub.log+=';plate: %s uploaded'%self.plates[pla]
+        self.sub.log+=log#';plate: %s uploaded'%self.plates[pla]
         #self.sub.progress=progress
         self.sub.save()
 
@@ -63,7 +64,25 @@ class rawdatafile():#a base class for all file format
     def report_job_fail(self):
         self.sub.status='f'
         self.sub.save()
+    
+    def is_table(self,row):#tell if within +- 2 row current posistion is a table, if so return the dimension of this table
+        start=0
+        for i in range(row-2,row+3):
+            if '' not in self.rawdata[i]:
+                x=len(self.rawdata[i])
+                start=i
+                break
+        n=start
+
+        while '' not in self.rawdata[n]:
+            n+=1
+        y=n-row
         
+        if y<1:
+            return False
+
+        return {'start':start,'x':x,'y':y}
+
     def test(self):
 
         return self.rawdata[10]
@@ -78,30 +97,70 @@ class Envision_Grid_Reader(rawdatafile):
 # a.experiment.readout.all(), a.experiment.readout.count(), a.experiment.readout.get(name='FP').keywords
     def parse(self):
         n=0
-        readout_count=0
-        replicate_count=0
-        plate_count=0
-
-        for row in self.rawdata:
+        self.table_count=0
+        for row in self.rawdata:#read through whole file and find out all the tables
             n+=1
-
             for m in self.readout.all():
                 if m.keywords in row[0]:
-                    self.map[plate_count][replicate_count][m.name.encode('utf8')]=n+1
-                    readout_count+=1
-                if readout_count==self.readout_num:
-                    readout_count=0
+                    result=self.is_table(n)
+                    if result:
+                        if result['x']>=len(self.col) and result['y']>=len(self.row):
+                            self.table_reg[result['start']]=m.name
+                            self.table_count+=1
+
+        
+        return self.map_table()
+        
+    def map_table(self):
+        #creat pointers that point at each table
+
+        replicate_count=0
+        plate_count=0
+        readout_list=list()
+
+        if self.wells==384:
+            
+            if self.table_count < self.replicate_num*self.plates_num*self.readout_num:
+                return False#raise exception might be good
+            
+            for i in sorted(self.table_reg):#go over each replicate and plate
+                if self.table_reg[i] not in readout_list:
+                    readout_list.append(self.table_reg[i]) 
+                else:
+                    readout_list=list()
+                    readout_list.append(self.table_reg[i]) 
                     replicate_count+=1
-                if replicate_count==self.replicate_num:
-                    replicate_count=0
-                    plate_count+=1
-                if plate_count==self.plates_num:
-                    return True
-        
-        return  False
-        
+                    if replicate_count==self.replicate_num:
+                        replicate_count=0
+                        plate_count+=1
+                        if plate_count==self.plates_num:
+                            break
 
+                self.map[plate_count][replicate_count][self.table_reg[i]]=[i,1]
+        
+        elif self.wells==1536:
 
+            if self.table_count*4 < self.replicate_num*self.plates_num*self.readout_num:
+                return False#raise exception might be good
+
+            for i in sorted(self.table_reg):#go over each replicate and plate
+                if self.table_reg[i] not in readout_list:
+                    readout_list.append(self.table_reg[i]) 
+                else:
+                    readout_list=list()
+                    readout_list.append(self.table_reg[i]) 
+                    replicate_count+=1
+                    if replicate_count==self.replicate_num:
+                        replicate_count=0
+                        plate_count+=4
+                        if plate_count>=self.plates_num:
+                            break
+
+                self.map[plate_count][replicate_count][self.table_reg[i]]=[i,1]
+                self.map[plate_count+1][replicate_count][self.table_reg[i]]=[i,2]
+                self.map[plate_count+2][replicate_count][self.table_reg[i]]=[i+1,1]
+                self.map[plate_count+3][replicate_count][self.table_reg[i]]=[i+1,2]
+        return self.map
 
 #save tables into database row by row, might take some time.
     def save(self):
@@ -131,8 +190,13 @@ class Envision_Grid_Reader(rawdatafile):
                     for rep in range(self.replicate_num):#all the readouts
                     
                         for i in self.readout.all(): 
-                            j=self.map[pla][rep][i.name.encode('utf8')]
-                            exec('entry.%(readout)s_%(rep)s=self.rawdata[row+j][col+1]'%{'readout':i,'rep':self.replicate[rep]})
+                            y=self.map[pla][rep][i.name][0]
+                            x=self.map[pla][rep][i.name][1]
+
+                            if self.wells==384:
+                                exec('entry.%(readout)s_%(rep)s=self.rawdata[row+y][col+x]'%{'readout':i,'rep':self.replicate[rep]})
+                            elif self.wells==1536:
+                                exec('entry.%(readout)s_%(rep)s=self.rawdata[row*2+y][col*2+x]'%{'readout':i,'rep':self.replicate[rep]})
 
                     entry.save()
                             

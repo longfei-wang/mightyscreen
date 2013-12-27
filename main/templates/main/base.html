@@ -119,6 +119,23 @@
                     </ul>
 
             </div>
+
+            {% if plates %}
+            <div class="well"><!-- plate selector -->
+                <form class="form-horizontal">
+                <div class="form-group">
+                <label class="col-sm-2 control-label">Plates Selector</label>
+                    <div class="col-sm-10">
+                        <select multiple id="plate-selector" class="form-control">
+                        {% for i in plates %}
+                            <option value="{{i}}">{{i}}</option>    
+                        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                </form>
+            </div>
+            {% endif %}
         </div>
         <div class="col-lg-9 col-md-9 col-sm-12">
                 {# all messages will be displayed here #}
