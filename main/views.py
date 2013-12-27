@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db.models import Q,Count
 from django.core.paginator import Paginator
-from main.tasks import UploadFileForm
+from main.forms import UploadFileForm
 from django.core.cache import cache
 from django.contrib import messages
 
