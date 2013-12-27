@@ -20,8 +20,7 @@
 </div>
 
 <div id="collapse{{x.pk}}" class="panel-collapse collapse{% if x.pk == proj_id %} in{% endif %}">
-<table class="table table-bordered table-striped .table-hover">
-
+<table class="table table-striped table-hover">
 
     <tr>
         {% for i in field_list %}
@@ -39,16 +38,13 @@
                     <td>{{ j|getattr:i }}</td>
                 {% endif %}
 
-
-
             {% endfor %}
         </tr>
     {% endfor %}
-
 </table>
 </div>
+<div class="panel-footer"></div>
 </div>
-
 {% endfor %}
 </div>
 {% endblock %}

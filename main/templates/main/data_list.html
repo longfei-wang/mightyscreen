@@ -112,7 +112,7 @@
         <tr>
             {% for i in field_list %}
                 <td>
-                {% if i == 'id' %}
+                {% if i == 'id' and j.welltype == 'X' %}
                     <a href="javascript:;" plate="{{j.plate}}" well="{{j.well}}" class="cmpdTrigger">{{ j|getattr:i|tabler }}</a>
                 {% else %}
                     {{ j|getattr:i|tabler }}

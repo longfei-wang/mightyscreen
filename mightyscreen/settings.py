@@ -68,7 +68,7 @@ WSGI_APPLICATION = 'mightyscreen.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mightyscreen',
     	'HOST': '',
     	'USER' : 'test',

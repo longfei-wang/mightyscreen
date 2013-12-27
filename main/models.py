@@ -101,10 +101,12 @@ class submission(models.Model):
     submit_time = models.DateTimeField()
     submit_by = models.ForeignKey(User)
     comments=models.TextField(blank=True)
+    progress=models.PositiveIntegerField(default=0)#percentage?
     log=models.TextField(blank=True)
     schoice = (
     ('p','pending'),
     ('c','complete'),
+    ('f','fail')
     )
     status=models.CharField(max_length=1, choices=schoice)
 
