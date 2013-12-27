@@ -37,7 +37,6 @@ class rawdatafile():#a base class for all file format
         #self.rawdata=pd.read_csv(formdata['datafile'],header=None).values.astype(str)
     
 
-
     def open_job_entry(self):
         """if everything is ready, create a pending job entry."""
         if self.p and self.rawdata.any():
@@ -61,6 +60,10 @@ class rawdatafile():#a base class for all file format
         self.sub.status='c'
         self.sub.save()
 
+    def report_job_fail(self):
+        self.sub.status='f'
+        self.sub.save()
+        
     def test(self):
 
         return self.rawdata[10]
