@@ -15,7 +15,7 @@ class UploadFileForm(forms.Form):
     project = forms.CharField(widget=forms.HiddenInput)
     user = forms.CharField(widget=forms.HiddenInput)
     library = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Library Name'}))
-    plates = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Plates List, like 1,2,3 '}))
+    plates = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Plates List, like 1,2,3'}))
     datafile  = forms.FileField(widget=forms.FileInput())
     comments = forms.CharField(widget=forms.Textarea(),required=False)
 

@@ -39,7 +39,7 @@
                     {% include "bootstrap/_field_errors_block.html" %}
                     {% include "bootstrap/_field_help_text.html" %}
                 {% else %}
-                    {{ field|formcontrol|safe }}
+                    {{ field|formcontrol|cleanspace|safe }}
                     {% include "bootstrap/_field_errors.html" %}
                     {% include "bootstrap/_field_help_text.html" %}
                 {% endif %}

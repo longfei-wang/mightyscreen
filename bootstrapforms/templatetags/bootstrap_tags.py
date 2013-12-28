@@ -31,3 +31,7 @@ def formcontrol(field):
 	x = field.__str__().split()
 	x.insert(1,'class="form-control"')
 	return " ".join(x)
+
+@register.filter
+def cleanspace(value):#this is for a wierd django bug that textarea are always with a white space inside....
+    return value.replace('> <','><')
