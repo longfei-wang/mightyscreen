@@ -20,7 +20,7 @@
 
 <form enctype="multipart/form-data" method="post" class="form-inline" role="form" action="{% url "view" %}">
 {% csrf_token %}
-
+    <input type="hidden" name="plates" id="selector-target">
     <div class="form-group">
         <input type="submit" value="Update" class="btn btn-primary">
     </div>
@@ -101,6 +101,7 @@
 <table class="table table-striped table-hover table-condensed table-responsive" id="list">
 
     <tr>
+        <td></td>
         {% for i in field_list %}
             <td>
                 <strong><a href='?order={% if i == pre_order %}-{% endif %}{{i}}'>{{ i|title }}</a></strong>
@@ -110,13 +111,14 @@
 
     {% for j in entry_list %}
         <tr>
+            <td>{% if j.welltype == "X" %}
+                <a href="javascript:;" plate="{{j.plate}}" well="{{j.well}}" class="cmpdTrigger"><button class="btn btn-default btn-xs">view</button></a>
+                {% endif %}
+            </td>
             {% for i in field_list %}
                 <td>
-                {% if i == 'id' and j.welltype == 'X' %}
-                    <a href="javascript:;" plate="{{j.plate}}" well="{{j.well}}" class="cmpdTrigger">{{ j|getattr:i|tabler }}</a>
-                {% else %}
                     {{ j|getattr:i|tabler }}
-                {% endif %}
+
                 </td>
             {% endfor %}
         </tr>

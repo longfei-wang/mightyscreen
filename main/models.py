@@ -102,7 +102,7 @@ class submission(models.Model):
     submit_by = models.ForeignKey(User)
     comments=models.TextField(blank=True)
 
-    progress=models.PositiveIntegerField(default=0)#percentage?
+    #progress=models.PositiveIntegerField(default=0)#percentage?
 
     log=models.TextField(blank=True)
     schoice = (
@@ -121,7 +121,7 @@ class data_base(models.Model):
         abstract=True
     
 
-    hidden_field=['submission','project']
+    hidden_field=['id','library','submission','project']
 
     library = models.CharField(max_length=50)
     plate = models.CharField(max_length=20)

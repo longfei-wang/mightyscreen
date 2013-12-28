@@ -28,14 +28,28 @@ def datalist(request):
     """list view of data in current project. Dynamically import the right model/table for project"""
 
     pre_order='id'
-    
+    plates_selected=list()
+
     if not 'proj' in request.session:
         return render(request,"main/error.html",{'error_msg':"No project specified!"})
         
         
     exec ('from data.models import proj_'+request.session['proj_id']+' as data')
     
-    
+    plates=list()
+    for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
+        plates.append(i['plate'])
+    plates=sorted(plates)
+
+
+    if request.POST.get('plates'):
+        plates_selected=request.POST.get('plates').split(',')
+        querybase=data.objects.filter(plate__in=plates_selected).order_by('pk')
+
+    else:
+        querybase=data.objects.order_by('pk')
+
+
     if request.POST.get('querytext'):
 
         query='Q('+request.POST.get('field')+'__'+request.POST.get('sign')+' = "'+request.POST.get('querytext')+'")'
@@ -44,7 +58,7 @@ def datalist(request):
 
             query+=request.POST.get('joint')+'Q('+request.POST.get('field2')+'__'+request.POST.get('sign2')+' = "'+request.POST.get('querytext2')+'")'
         #raise Exception(query)
-        exec('entry_list = data.objects.filter('+query+')')
+        exec('entry_list = querybase.filter('+query+')')
         
     else:
         #if this is just turning pages then use the latest query
@@ -60,7 +74,7 @@ def datalist(request):
                 exec("entry_list = "+query)
                 
         else:
-            entry_list = data.objects.order_by('pk')
+            entry_list = querybase
 
 
     cache.set('dataview'+request.session['proj_id'],entry_list)
@@ -98,6 +112,8 @@ def datalist(request):
                                                   'prev_page':max(1,int(current_page)-1),
                                                   'pbutton_attr':pb_attr,
                                                   'pre_order':pre_order,
+                                                  'plates':plates,
+                                                  'plates_selected':plates_selected,
                                                 })
 
 

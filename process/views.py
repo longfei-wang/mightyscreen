@@ -63,4 +63,3 @@ def score(request):
                 'entry_list':entry_list,
                 'field_list':field_list,
                 'form':form})
-
