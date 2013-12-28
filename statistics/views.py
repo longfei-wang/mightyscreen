@@ -137,7 +137,7 @@ def heatmap(request):
         for k in replicate_dic.keys():
             well_list = replicate_dic[k][0]
             fp_list = replicate_dic[k][1]            
-            img_strings += stat.plot_plate_heatmap(well_list, fp_list,plate_number = (plate_number+k))     
+            img_strings += stat.plot_interactive_heatmap(well_list, fp_list,plate_number = (plate_number+k))     
         
         ## Plot Reproductivity   
         ## This plot might have bug if A and B doesn't have same well number
@@ -151,9 +151,10 @@ def heatmap(request):
         c = stat.test_cluster(replicate_dic['A'][1])   
         
         ## plot cluster
-        c= stat.test_hierarchical_cluster()
+#        c= stat.test_hierarchical_cluster()
         
-        return HttpResponse(c)        
+        
+        return HttpResponse(img_strings)        
 
     else:
         return render(request,"main/data_list.html",{}) ## return address need to be re-defined
@@ -169,10 +170,8 @@ def interactive_heatmap(request):
         ## Retrive data to be ploted
         plate_number = '2'        
         entry_list = data.objects.filter(plate = plate_number)
-        welltypes=od(sorted(dict(data_base.schoice).items()))        
-        proj=project.objects.get(pk=request.session['proj_id'])        
+        
         replicate_dic = {}       
-      
         for e in entry_list:
             if e.replicate not in replicate_dic.keys():
                 well = []
@@ -183,7 +182,20 @@ def interactive_heatmap(request):
             else:
                 replicate_dic[e.replicate][0].append(e.well)
                 replicate_dic[e.replicate][1].append(float(e.FP))
-	return render(request,'statistics/heatmap.html',{'proj':proj,'welltypes':welltypes,'plates':plate_number})
+
+        ## Plot Heat maps
+        img_strings = ''
+        for k in replicate_dic.keys():
+            well_list = replicate_dic[k][0]
+            fp_list = replicate_dic[k][1]            
+            c = stat.plot_interactive_heatmap(well_list, fp_list,plate_number = (plate_number+k))     
+        
+        
+        return HttpResponse(c)        
+
+    else:
+        return render(request,"main/data_list.html",{}) ## return address need to be re-defined
+
 
 #=============================================================================
 ## Testing views
@@ -197,8 +209,8 @@ def fingerprint_cluster(request):
     for entry in entry_list:
         fp2_list.append(entry.fp2)
     
-#    c = cluster.test_hierarchical_cluster(fp2_list)
-    c = cluster.test_MDS(fp2_list)
+    c = cluster.test_hierarchical_cluster(fp2_list)
+#    c = cluster.test_MDS(fp2_list)
     
     return HttpResponse(c)     
     
