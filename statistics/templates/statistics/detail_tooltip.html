@@ -1,0 +1,20 @@
+{% load filters %}
+
+<div class="panel panel-default">
+
+{% if cmpd %}
+
+&nbsp;&nbsp;&nbsp;&nbsp;{{cmpd.svg|safe}}
+    <hr>
+    <dl class="dl-horizontal">
+        {% for i in field_list %}
+        <dt><strong>{{i|title}}</strong></dt><dd>{{ cmpd|getattr:i }}</dd>
+        {% endfor %}
+    </dl>
+
+
+{% else%}
+No Results Found!
+{% endif %}
+
+</div>

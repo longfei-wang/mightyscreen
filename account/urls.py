@@ -15,8 +15,6 @@ urlpatterns = patterns('',
     url(r'^projects', views.projects, name='projects'),
     url(r'^projselect/', views.projselect, name='projselect'),
     url(r'^projedit/', views.projedit, name='projedit'),
-
+    url(r'^jobview/', views.jobview, name='jobview'),
     )
-
-
 

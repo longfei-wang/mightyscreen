@@ -7,6 +7,8 @@
 <div class="well">
 <form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url "projedit" %}">{% csrf_token %}
 
+<input type="hidden" name="proj_id" value="{{proj_id}}">
+
 {{form|as_bootstrap_h}}
 
 	    <div class="form-group">

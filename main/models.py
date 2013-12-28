@@ -3,32 +3,8 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-from django import forms
 
 # Create your models here.
-
-#class ReadoutListField(models.TextField):
-#    __metaclass__ = models.SubfieldBase
-#
-#    def __init__(self, *args, **kwargs):
-#        self.token = kwargs.pop('token', ',')
-#        super(ReadoutListField, self).__init__(*args, **kwargs)
-#
-#    def to_python(self, value):
-#        if not value: return
-#        if isinstance(value, list):
-#            return value
-#        return value.split(self.token)
-#
-#    def get_db_prep_value(self, value, connection, prepared = False):
-#        if not value: return
-#        assert(isinstance(value, list) or isinstance(value, tuple))
-#        return self.token.join([unicode(s) for s in value])
-#
-#    def value_to_string(self, obj):
-#        value = self._get_val_from_obj(obj)
-#        return self.get_db_prep_value(value)
-
 
 #define a screening, basically list of projects with their relations. like primary screen, secondary screen.
 class screen(models.Model):
@@ -43,10 +19,10 @@ class project(models.Model):
     
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
-    agreement = models.CharField(max_length=20)
+    agreement = models.CharField(max_length=50)
     experiment = models.ForeignKey('experiment')
     plate = models.ForeignKey('plate')
-    replicate = models.TextField()
+    replicate = models.CharField(max_length=50)
     score = models.ManyToManyField('score',blank=True)
     leader = models.ForeignKey(User,related_name='leader')
     user = models.ManyToManyField(User)
@@ -85,7 +61,7 @@ class readout(models.Model):
 class fileformat(models.Model):
     def __unicode__(self):
         return self.name
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=50)
 
 
 #All the plate types.
@@ -116,66 +92,41 @@ class plate(models.Model):
     )
     origin = models.CharField(max_length=2, choices=ochoice)
 
+#job list/track table
 class submission(models.Model):
     def __unicode__(self):
-        return self.get_status_display()
+        return self.pk
+    jobtype=models.CharField(max_length=20)
     project=models.ForeignKey('project')
     submit_time = models.DateTimeField()
     submit_by = models.ForeignKey(User)
     comments=models.TextField(blank=True)
+
+    progress=models.PositiveIntegerField(default=0)#percentage?
+
+    log=models.TextField(blank=True)
     schoice = (
     ('p','pending'),
     ('c','complete'),
+    ('f','fail')
     )
     status=models.CharField(max_length=1, choices=schoice)
-    
-class submission_plate_list(models.Model):
-    def __unicode__(self):
-        return self.get_status_display()
-    submission_id=models.ForeignKey('submission')
-    project=models.ForeignKey('project')
-    library = models.CharField(max_length=50)
-    plate=models.CharField(max_length=50)
-    schoice = (
-    ('f','failed'),
-    ('s','succeed'),
-    )
-    status=models.CharField(max_length=1, choices=schoice)
-    messages = models.TextField(blank=True)
 
-#Data object for all screening raw data, readout is stored in comma seperated array, well posistion is refering another table   
-#class data(models.Model):
-#    def __unicode__(self):
-#        return self.readout
-#    library = models.CharField(max_length=20)
-#    plate = models.CharField(max_length=10)
-#    well = models.CharField(max_length=10)
-#    replicate = models.CharField(max_length=10)
-#    project = models.ForeignKey('project')
-#    submission=models.ForeignKey('submission')
-#    create_date = models.DateTimeField()
-#    create_by = models.ForeignKey(User)
-#    def _get_readout(self):
-#        return data_readout.objects.filter(data_entry=self)
-#    readout=property(_get_readout)
-#
-#class data_readout(models.Model):
-#    def __unicode__(self):
-#        return self.reading
-#    data_entry=models.ForeignKey('data')
-#    readout=models.ForeignKey('readout')
-#    reading=models.TextField()
-
+#Data object abstract for all screening raw data. Real table is in app:data
+#Two ways of identify compound. FaciclityID? or Plate+Well
 class data_base(models.Model):
     def __unicode__(self):
-        return self.well
+        return self.library+self.plate+self.well
     class Meta:
         abstract=True
+    
+
+    hidden_field=['submission','project']
+
     library = models.CharField(max_length=50)
     plate = models.CharField(max_length=20)
     well = models.CharField(max_length=20)
-    replicate = models.CharField(max_length=20)
-
+    #need to add a unqiue key here maybe onetoone to library
     schoice = (
     ('E','empty'),
     ('P','positive control'),
@@ -189,15 +140,5 @@ class data_base(models.Model):
     submission=models.ForeignKey('submission')
     create_date = models.DateTimeField()
     create_by = models.ForeignKey(User)
-
-class UploadFileForm(forms.Form):
-    
-    #title = forms.CharField(max_length=50)
-    project = forms.CharField(widget=forms.HiddenInput)
-    user = forms.CharField(widget=forms.HiddenInput)
-    library = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Library Name'}))
-    plates = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Plates List, like 1,2,3 '}))
-    datafile  = forms.FileField(widget=forms.FileInput())
-    comments = forms.CharField(widget=forms.Textarea(),required=False)
 
 

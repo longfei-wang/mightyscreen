@@ -1,6 +1,5 @@
 {% extends 'main/base.html' %}
 {% load filters %}
-
 {% block content %}
 
 {% if entry_list %}
@@ -99,10 +98,7 @@
 </ul>
 
 
-
-
-<table class="table table-striped table-hover table-condensed table-responsive">
-
+<table class="table table-striped table-hover table-condensed table-responsive" id="list">
 
     <tr>
         {% for i in field_list %}
@@ -115,14 +111,19 @@
     {% for j in entry_list %}
         <tr>
             {% for i in field_list %}
-                  <td>{{ j|getattr:i }}</td>
+                <td>
+                {% if i == 'id' and j.welltype == 'X' %}
+                    <a href="javascript:;" plate="{{j.plate}}" well="{{j.well}}" class="cmpdTrigger">{{ j|getattr:i|tabler }}</a>
+                {% else %}
+                    {{ j|getattr:i|tabler }}
+                {% endif %}
+                </td>
             {% endfor %}
         </tr>
     
     {% endfor %}
 
 </table>
-
 
 <ul class="pagination">
     <li class="{{pbutton_attr}}"><a href='?page=1'>First</a></li>
@@ -134,7 +135,53 @@
     <li class="{{pbutton_attr}}"><a href='?page={{last_page}}'>Last</a></li>
 </ul>
 
+<div class="modal fade" id="cmpdDetail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Compound Detail</h4>
+        </div>
+        <div class="modal-body" id="cmpdContent">
+
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Add to HitList</button>
+        </div>
+    </div><!-- /.modal-content-->
+</div><!-- /.modal-dialog -->
+</div>
+
 
 {% endif %}
 
+{% endblock %}
+
+{% block script %}
+<script>
+
+//$("#cmpdDetail").modal('show');
+$(".cmpdTrigger").each(function(){
+
+
+    $(this).click(function(){
+        $("#cmpdContent").html('');
+        plate=$(this).attr('plate');
+        well=$(this).attr('well');
+        
+        $.get("/stats/details/",
+            {plate:plate,well:well,t:1},
+            function(data){
+                $("#cmpdContent").html(data);
+            });
+
+        $("#cmpdDetail").modal('show');
+        //alert(plate+well);
+    });
+
+});
+
+</script>
 {% endblock %}

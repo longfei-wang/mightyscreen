@@ -70,10 +70,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mightyscreen',
-	'HOST': '',
-	'USER' : 'root',
-	'PASSWORD': 'wanglf2011',
-	'PORT': '',
+    	'HOST': '',
+    	'USER' : 'test',
+    	'PASSWORD': 'test',
+    	'PORT': '',
     }
 }
 

@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from async_messages import messages as umes
 from django.contrib.auth.models import User
 from celery.decorators import task
+from django.contrib import messages
 
 @task()
 def process_score(data,proj,plates):
@@ -13,9 +14,9 @@ def process_score(data,proj,plates):
 	currently very low speed, need code optimization"""
 	agg=list()
 	for i in proj.experiment.readout.all():
-		agg.append("Avg('%(col)s'),StdDev('%(col)s')"%{'col':i.name})
+		for j in proj.rep():
+			agg.append("Avg('%(col)s_%(rep)s'),StdDev('%(col)s_%(rep)s')"%{'col':i.name,'rep':j})
 	aggs=",".join(agg)
-	
 	#first calculate all the constants name space user can use, eg:
 	# FP_pos_avg
 	# FP_pos_sd
@@ -27,58 +28,40 @@ def process_score(data,proj,plates):
 		exec('pos=data.filter(plate=i,welltype="P").aggregate(%s)'%aggs)
 		#negative wells
 		exec('neg=data.filter(plate=i,welltype="N").aggregate(%s)'%aggs)
-		#pass stats to names spaces that user use
-		for k in proj.experiment.readout.all():
-			exec('%(readout)s_com_rep_avg=com["%(readout)s__avg"]'%{'readout':k.name})
-			exec('%(readout)s_com_rep_sd=com["%(readout)s__stddev"]'%{'readout':k.name})
-			exec('%(readout)s_pos_rep_avg=pos["%(readout)s__avg"]'%{'readout':k.name})
-			exec('%(readout)s_pos_rep_sd=pos["%(readout)s__stddev"]'%{'readout':k.name})
-			exec('%(readout)s_neg_rep_avg=neg["%(readout)s__avg"]'%{'readout':k.name})
-			exec('%(readout)s_neg_rep_sd=neg["%(readout)s__stddev"]'%{'readout':k.name})
+
+		#it is likely that no positive or negative control is marked
+		if not (pos and neg):
+			messages.error(request,'No Positive/Negative control on plate %s'%i)
 
 		for j in proj.rep():
-			#individual plate
-			#all wells
-			exec('com=data.filter(plate=i,replicate=j,welltype="X").aggregate(%s)'%aggs)
-			#positive wells
-			exec('pos=data.filter(plate=i,replicate=j,welltype="P").aggregate(%s)'%aggs)
-			#negative wells
-			exec('neg=data.filter(plate=i,replicate=j,welltype="N").aggregate(%s)'%aggs)
+
 			#pass stats to names spaces that user use
 			for k in proj.experiment.readout.all():
-				exec('%(readout)s_com_avg=com["%(readout)s__avg"]'%{'readout':k.name})
-				exec('%(readout)s_com_sd=com["%(readout)s__stddev"]'%{'readout':k.name})
-				exec('%(readout)s_pos_avg=pos["%(readout)s__avg"]'%{'readout':k.name})
-				exec('%(readout)s_pos_sd=pos["%(readout)s__stddev"]'%{'readout':k.name})
-				exec('%(readout)s_neg_avg=neg["%(readout)s__avg"]'%{'readout':k.name})
-				exec('%(readout)s_neg_sd=neg["%(readout)s__stddev"]'%{'readout':k.name})
+
+				exec('%(readout)s_%(rep)s_com_avg=com["%(readout)s_%(rep)s__avg"]'%{'readout':k.name,'rep':j})
+				exec('%(readout)s_%(rep)s_com_sd=com["%(readout)s_%(rep)s__stddev"]'%{'readout':k.name,'rep':j})
+				exec('%(readout)s_%(rep)s_pos_avg=pos["%(readout)s_%(rep)s__avg"]'%{'readout':k.name,'rep':j})
+				exec('%(readout)s_%(rep)s_pos_sd=pos["%(readout)s_%(rep)s__stddev"]'%{'readout':k.name,'rep':j})
+				exec('%(readout)s_%(rep)s_neg_avg=neg["%(readout)s_%(rep)s__avg"]'%{'readout':k.name,'rep':j})
+				exec('%(readout)s_%(rep)s_neg_sd=neg["%(readout)s_%(rep)s__stddev"]'%{'readout':k.name,'rep':j})
 			#1-3*(FP_pos_sd+FP_neg_sd)/abs(FP_pos_avg-FP_neg_avg) Zscore for plate
 
-			#calculate avg and sd of one well within all reps
-			oneplate = data.filter(plate=i,welltype__in=['X','P','N'])
-			for l in proj.plate.well():
-				#one well of all replicates
-				onewell=oneplate.filter(well=l)
-				#raise Exception(dir(l))
-				exec('rep=onewell.aggregate(%s)'%aggs)
-				
+		#calculate avg and sd of one well within all reps
+		for l in data.filter(plate=i,welltype__in=['X','P','N']):
+			#calculate score based on user's equation for each well.	
+			for j in proj.rep():
+				#one well				
 				for k in proj.experiment.readout.all():
-					exec('%(readout)s_rep_avg=rep["%(readout)s__avg"]'%{'readout':k.name})
-					exec('%(readout)s_rep_sd=rep["%(readout)s__stddev"]'%{'readout':k.name})
+					exec('%(readout)s_%(rep)s=l.%(readout)s_%(rep)s'%{'readout':k.name,'rep':j})
 				
-				#calculate score based on user's equation for each well.	
-				onerep=onewell.filter(replicate=j)
-				x=onerep.first()
-				#one well on a replicate plate				
-				for k in proj.experiment.readout.all():
-					exec('%(readout)s=float(x.%(readout)s)'%{'readout':k.name})
+			for h in proj.score.all():
+				try:
+					score=eval(h.formular)
+				except SyntaxError:
+					return False
 				
-				for h in proj.score.all():
-					try:
-						score=eval(h.formular)
-					except SyntaxError:
-						return False
-					exec ('onerep.update(%(name)s=%(value)s)'%{'name':h.name,'value':score})
+				exec ('l.%(name)s=%(value)s'%{'name':h.name,'value':score})
+			l.save()
 
 	umes.success(proj.leader,'Score Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
 	return True

@@ -11,7 +11,7 @@ class user_profile (models.Model):
     affiliation = models.CharField(max_length=100)
     position = models.CharField(max_length=50)
 
-class RegisterForm(UserCreationForm):
+class RegisterForm(UserCreationForm):#a extension model form based on usercreateform
     first_name=forms.CharField(max_length=30)
     last_name=models.CharField(max_length=30)
     email=forms.EmailField()
@@ -32,7 +32,21 @@ class RegisterForm(UserCreationForm):
         return user, user_profile
 
 
-class ProjectForm(forms.ModelForm):
+class ProjectForm(forms.ModelForm):#a model form for project
+    def __init__(self, *args, **kwargs):
+        super(ProjectForm, self).__init__(*args, **kwargs)
+        instance = getattr(self, 'instance', None)
+        if instance and instance.pk:#make sure when edit a existing entry you don't mess around with certain fields
+            for i in 'name replicate leader experiment plate leader'.split():
+                self.fields[i].widget.attrs['readonly'] = True
+            for i in 'experiment plate leader'.split():#select box also need disabled
+                self.fields[i].widget.attrs['disabled'] = 'disabled'
+
     class Meta:
         model=project
-        fields=['name','description','agreement','experiment','plate','replicate','score','leader','user']
+        fields='name description agreement experiment plate replicate score leader user'.split()
+
+class ScoreForm(forms.ModelForm):
+    class Meta:
+        model=score
+        fields='name description formular'.split()

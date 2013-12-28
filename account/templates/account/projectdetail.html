@@ -1,45 +1,28 @@
 {% extends 'main/base.html' %}
-{% load filters %}
 
 {% block content %}
-
 <div class="page-header">
-<h2>All Submissions of Project: {{proj.name}}</h2>
+<h2>Project Detail:</h2>
 </div>
 
+<!-- <div class="col-md-8 col-lg-6 col-sm-12"> -->
+	<div class="well">
+	<br>	
+				<dl class="dl-horizontal">
+					<dt><strong>Name:</strong></dt><dd>{{proj.name}}</dd>
+					<dt><strong>Description</strong></dt><dd>{{proj.description}}</dd>
+					<dt><strong>Agreement:</strong></dt><dd>{{proj.agreement}} </dd>
+					<dt><strong>Experiment:</strong></dt><dd>{{proj.experiment}} </dd>
+					<dt><strong>Plate:</strong></dt><dd>{{proj.plate}} </dd>
+					<dt><strong>Replicate:</strong></dt><dd>{{proj.replicate}} </dd>
+					<dt><strong>Score:</strong></dt><dd>{% for i in proj.score.all %}{{i.name}}&nbsp;{% endfor %}</dd>
+					<dt><strong>Leader:</strong></dt><dd>{{proj.leader}} </dd>
+					<dt><strong>Associate Users:</strong></dt><dd>{% for i in proj.user.all %} {{i.username}} {% endfor %}</dd>
+					<dt><strong>Actions</strong></dt><dd><a href="{% url 'projedit' %}?p={{proj.pk}}"><button class="btn btn-warning btn-xs">Edit</button></a></dd>
+				</dl>
 
-<table class="table table-bordered table-striped .table-hover">
-
-
-    <tr>
-        {% for i in field_list %}
-              <td>{{ i }}</td>
-        {% endfor %}
-    </tr>
-    
-    {% for j in proj.submission_set.all %}
-        <tr>
-            {% for i in field_list %}
-
-
-                {% if i == "status" %}
-                    <td>{{j.get_status_display}}</td>                  
-                {% else %}{% if i == "plates" %}
-                    <td>
-                    {% for l in j.submission_plate_list_set.all %}
-                    {{l.plate}}
-                    {% endfor %}
-                    </td>
-                {% else %}
-                    <td>{{ j|getattr:i }}</td>
-                {% endif %}{% endif %}
-
-
-
-            {% endfor %}
-        </tr>
-    {% endfor %}
-
-</table>
+	</div>
+<!-- </div> -->
 
 {% endblock %}
+

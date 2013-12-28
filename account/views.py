@@ -2,8 +2,10 @@ from django.shortcuts import render
 from django.core.context_processors import csrf
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login,logout
-from account.models import RegisterForm, ProjectForm
-
+from account.models import RegisterForm, ProjectForm, ScoreForm
+from main.models import project
+from django.conf import settings
+import os
 # Create your views here.
 def signin(request):
     form=AuthenticationForm()
@@ -32,8 +34,12 @@ def signup(request):
             form.save()
             return render(request,'main/redirect.html',{'message':'Congrats! You are registered!','dest':'index'})
 
+    #read user agreement
+    f=open(settings.BASE_DIR+'/README.md')
+    agreement=f.read()
+    f.close()
 
-    args={'form':form}
+    args={'form':form,'agreement':agreement}
     args.update(csrf(request))
 
     return render(request,'account/register.html',args)
@@ -51,14 +57,16 @@ def profile(request):
 #    raise Exception(user.project_set.values_list())
     return render(request,'account/profile.html',{'user':user,'profile':profile})
 
+def jobview(request):
+    #proj=request.user.project_set.get(pk=request.session.get('proj_id'))
+    field_list=['project','submit_time','submit_by','comments','status','log']
+    return render(request,'account/jobs.html',{'field_list':field_list,'proj_id':int(request.session.get('proj_id'))})
+
 #view and manage projects
 def projects(request):
-
     if request.GET.get('p'):
         proj=request.user.project_set.get(pk=request.GET.get('p'))
-       # raise Exception(dir(proj.submission_set.get(pk=1).submission_plate_list_set))
-        field_list=['project','submit_time','submit_by','comments','status','plates']
-        return render(request,'account/projectdetail.html',{'proj':proj,'field_list':field_list})
+        return render(request,'account/projectdetail.html',{'proj':proj})
         
 
     field_list=['name','description','agreement','experiment','plate','replicate','leader']
@@ -77,5 +85,58 @@ def projselect(request):
     return render(request,'main/error.html',{})
 
 def projedit(request):
-    form=ProjectForm
-    return render(request,'account/projectedit.html',{'form':form})
+
+    form=ProjectForm()
+    proj_id=''
+    if request.method=='POST':
+        if request.POST.get('proj_id'):#decide if create a new project or update one
+            form=ProjectForm(request.POST,instance=project.objects.get(pk=request.POST.get('proj_id')))
+
+        else:
+            form=ProjectForm(request.POST)
+        if form.is_valid():
+            form.save()
+            #not sure if this is safe here. guess so. what if users submit at the same time? has to be queued
+            dir=settings.BASE_DIR
+            os.system('python %s\manage.py schemamigration data --auto'%dir)
+            os.system('python %s\manage.py migrate data'%dir)
+
+            return render(request,'main/redirect.html',{'message':'Project Created.','dest':'index'})
+    if request.method=='GET':
+        if request.GET.get('p'):
+            proj=project.objects.get(pk=request.GET.get('p'))
+            if request.user in proj.user.all():
+                form=ProjectForm(instance=proj)
+                proj_id=proj.pk
+
+    return render(request,'account/projectedit.html',{'form':form,'proj_id':proj_id})
+
+
+def editscore(request):
+    form=ScoreForm()
+    score_id=''
+    if request.method=='POST':
+        if request.POST.get('score_id'):#decide if create a new score or update one
+            form=ScoreForm(request.POST,instance=project.objects.get(pk=request.POST.get('score_id')))
+
+        else:
+            form=ScoreForm(request.POST)
+        if form.is_valid():
+            form.save()
+
+            return render(request,'main/redirect.html',{'message':'Score Created.','dest':'index'})
+    if request.method=='GET':
+        if request.GET.get('s'):
+            score=score.objects.get(pk=request.GET.get('s'))
+            form=ProjectForm(instance=score)
+            score_id=score.pk
+
+    return render(request,'account/projectedit.html',{'form':form,'score_id':score_id})
+
+
+
+
+
+
+
+
