@@ -45,8 +45,3 @@ class ProjectForm(forms.ModelForm):#a model form for project
     class Meta:
         model=project
         fields='name description agreement experiment plate replicate score leader user'.split()
-
-class ScoreForm(forms.ModelForm):
-    class Meta:
-        model=score
-        fields='name description formular'.split()

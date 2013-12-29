@@ -2,10 +2,10 @@ from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.core.context_processors import csrf
 from django.contrib import messages
-from main.models import project, data_base
+from main.models import project, data_base, score
 from collections import OrderedDict as od
 from process.tasks import process_score
-from process.forms import PlatesToUpdate
+from process.forms import PlatesToUpdate, ScoreForm
 from django.db.models import Count
 #from main.utils import get_platelist
 # Create your views here.
@@ -64,4 +64,24 @@ def score(request):
 		'field_list':field_list,
 		'form':form})
 
+def editscore(request):
+    form=ScoreForm()
+    score_id=''
+    if request.method=='POST':
+        if request.POST.get('score_id'):#decide if create a new score or update one
+            form=ScoreForm(request.POST,instance=project.objects.get(pk=request.POST.get('score_id')))
+
+        else:
+            form=ScoreForm(request.POST)
+        if form.is_valid():
+            form.save()
+
+            return render(request,'main/redirect.html',{'message':'Score Created.','dest':'index'})
+    if request.method=='GET':
+        if request.GET.get('s'):
+            score=score.objects.get(pk=request.GET.get('s'))
+            form=ProjectForm(instance=score)
+            score_id=score.pk
+
+    return render(request,'account/projectedit.html',{'form':form,'score_id':score_id})
 

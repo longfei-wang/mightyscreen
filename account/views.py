@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.core.context_processors import csrf
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login,logout
-from account.models import RegisterForm, ProjectForm, ScoreForm
+from account.models import RegisterForm, ProjectForm
 from main.models import project
 from django.conf import settings
 import os
@@ -111,27 +111,6 @@ def projedit(request):
 
     return render(request,'account/projectedit.html',{'form':form,'proj_id':proj_id})
 
-
-def editscore(request):
-    form=ScoreForm()
-    score_id=''
-    if request.method=='POST':
-        if request.POST.get('score_id'):#decide if create a new score or update one
-            form=ScoreForm(request.POST,instance=project.objects.get(pk=request.POST.get('score_id')))
-
-        else:
-            form=ScoreForm(request.POST)
-        if form.is_valid():
-            form.save()
-
-            return render(request,'main/redirect.html',{'message':'Score Created.','dest':'index'})
-    if request.method=='GET':
-        if request.GET.get('s'):
-            score=score.objects.get(pk=request.GET.get('s'))
-            form=ProjectForm(instance=score)
-            score_id=score.pk
-
-    return render(request,'account/projectedit.html',{'form':form,'score_id':score_id})
 
 
 

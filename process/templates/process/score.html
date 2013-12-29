@@ -1,11 +1,44 @@
 {% extends 'main/base.html' %}
 {% load staticfiles %}
 {% load bootstrap_tags %}
+{% load filters %}
 
 {% block content %}
 
-{% include 'main/table.html' %}
 
+{# the table list 2 variable needed. field_list and entry_list one optional pre_order#}
+<table class="table table-striped table-hover table-condensed table-responsive">
+
+
+    <tr>
+    	<td>
+			<button class="btn btn-default btn-xs" data-toggle="modal" data-target="#editscore" >New</button>
+    	</td>
+        {% for i in field_list %}
+            <td>
+                <strong><a href='#'>{{ i|title }}</a></strong>
+            </td>
+        {% endfor %}
+    </tr>
+
+    {% for j in entry_list %}
+        <tr>
+        	<td>
+        		<a href=""><button class="btn btn-default btn-xs">Edit</button></a>
+        	</td>
+            {% for i in field_list %}
+                <td>         
+                    {{ j|getattr:i|tabler }}
+
+                </td>
+            {% endfor %}
+        </tr>
+    
+    {% endfor %}
+
+</table>
+
+<hr>
 
 <div class="well">
 <form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url "score" %}">{% csrf_token %}
@@ -21,4 +54,5 @@
 </form>
 
 </div>
+
 {% endblock %}

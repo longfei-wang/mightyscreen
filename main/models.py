@@ -26,8 +26,8 @@ class project(models.Model):
     score = models.ManyToManyField('score',blank=True)
     leader = models.ForeignKey(User,related_name='leader')
     user = models.ManyToManyField(User)
-
-        
+    #deleted = models.BooleanField(default=False)
+   
 #define a experiemnt
 class experiment(models.Model):
     def __unicode__(self):

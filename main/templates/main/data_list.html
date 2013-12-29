@@ -112,7 +112,7 @@
     {% for j in entry_list %}
         <tr>
             <td>{% if j.welltype == "X" %}
-                <a href="javascript:;" plate="{{j.plate}}" well="{{j.well}}" class="cmpdTrigger"><button class="btn btn-default btn-xs">view</button></a>
+                <button class="btn btn-default btn-xs cmpdTrigger" plate="{{j.plate}}" well="{{j.well}}">view</button>
                 {% endif %}
             </td>
             {% for i in field_list %}
