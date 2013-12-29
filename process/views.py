@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.core.context_processors import csrf
 from django.contrib import messages
-from main.models import project, data_base, score
+from main.models import project, data_base, score as sc
 from collections import OrderedDict as od
 from process.tasks import process_score
 from process.forms import PlatesToUpdate, ScoreForm
@@ -33,7 +33,7 @@ def mark(request):
                             if request.POST.get(j):
                                     x=request.POST.get(j)
                                     data.objects.filter(plate__in=form.cleaned_data['plates'].split(','),well__in=x.split(',')).update(welltype=j)
-                                    messages.success(request,'WellType Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
+                    messages.success(request,'WellType Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
     
     return render(request,'process/markwell.html',{'proj':proj,'welltypes':welltypes,'plates':plates,'form':form})
 
@@ -45,7 +45,12 @@ def score(request):
     exec ('from data.models import proj_'+request.session['proj_id']+' as data')        
     proj=project.objects.get(pk=request.session['proj_id'])
 
-    entry_list=proj.score.all()
+    entry_list=sc.objects.all()
+    
+    table_success_list=list()
+    for i in proj.score.values('pk'):
+        table_success_list.append(i['pk'])
+
     field_list=['name','description','formular']
 
     #get list of plates
@@ -63,26 +68,5 @@ def score(request):
     return render(request,'process/score.html',{'plates':plates,
             'entry_list':entry_list,
             'field_list':field_list,
-            'form':form})
-
-
-def editscore(request):
-    form=ScoreForm()
-    score_id=''
-    if request.method=='POST':
-        if request.POST.get('score_id'):#decide if create a new score or update one
-            form=ScoreForm(request.POST,instance=project.objects.get(pk=request.POST.get('score_id')))
-
-        else:
-            form=ScoreForm(request.POST)
-        if form.is_valid():
-            form.save()
-
-            return render(request,'main/redirect.html',{'message':'Score Created.','dest':'index'})
-    if request.method=='GET':
-        if request.GET.get('s'):
-            score=score.objects.get(pk=request.GET.get('s'))
-            form=ProjectForm(instance=score)
-            score_id=score.pk
-
-    return render(request,'account/projectedit.html',{'form':form,'score_id':score_id})
+            'form':form,
+            'table_success_list':table_success_list})

@@ -8,10 +8,6 @@ from main.forms import UploadFileForm
 from django.core.cache import cache
 from django.contrib import messages
 
-
-
-
-
 # Create your views here.
 
 #def handle_uploaded_file(f):
