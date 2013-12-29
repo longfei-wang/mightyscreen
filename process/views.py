@@ -11,58 +11,60 @@ from django.db.models import Count
 # Create your views here.
     
 def mark(request):
-	form=PlatesToUpdate()
-	if not 'proj' in request.session:
-		return render(request,"main/error.html",{'error_msg':"No project specified!"})
-	
-	exec ('from data.models import proj_'+request.session['proj_id']+' as data')
-	welltypes=od(sorted(dict(data_base.schoice).items()))
-	proj=project.objects.get(pk=request.session['proj_id'])
+    form=PlatesToUpdate()
+    if not 'proj' in request.session:
+            return render(request,"main/error.html",{'error_msg':"No project specified!"})
+    
+    exec ('from data.models import proj_'+request.session['proj_id']+' as data')
+    welltypes=od(sorted(dict(data_base.schoice).items()))
+    proj=project.objects.get(pk=request.session['proj_id'])
 
-	#get list of plates
-	plates=list()
-	for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
-		plates.append(i['plate'])
-	plates=sorted(plates)
+    #get list of plates
+    plates=list()
+    for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
+            plates.append(i['plate'])
+    plates=sorted(plates)
 
-	if request.method=='POST':
-		form=PlatesToUpdate(request.POST)
-		if form.is_valid():
-			#raise Exception(form.cleaned_data)
-			for j in welltypes.keys():
-				if request.POST.get(j):
-					x=request.POST.get(j)
-					data.objects.filter(plate__in=form.cleaned_data['plates'].split(','),well__in=x.split(',')).update(welltype=j)
-					messages.success(request,'WellType Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
-	
-	return render(request,'process/markwell.html',{'proj':proj,'welltypes':welltypes,'plates':plates,'form':form})
+    if request.method=='POST':
+            form=PlatesToUpdate(request.POST)
+            if form.is_valid():
+                    #raise Exception(form.cleaned_data)
+                    for j in welltypes.keys():
+                            if request.POST.get(j):
+                                    x=request.POST.get(j)
+                                    data.objects.filter(plate__in=form.cleaned_data['plates'].split(','),well__in=x.split(',')).update(welltype=j)
+                                    messages.success(request,'WellType Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
+    
+    return render(request,'process/markwell.html',{'proj':proj,'welltypes':welltypes,'plates':plates,'form':form})
 
 def score(request):
-	form=PlatesToUpdate()
+    form=PlatesToUpdate()
 
-	if not 'proj' in request.session:
-		return render(request,"main/error.html",{'error_msg':"No project specified!"})
-	exec ('from data.models import proj_'+request.session['proj_id']+' as data')	
-	proj=project.objects.get(pk=request.session['proj_id'])
+    if not 'proj' in request.session:
+            return render(request,"main/error.html",{'error_msg':"No project specified!"})
+    exec ('from data.models import proj_'+request.session['proj_id']+' as data')        
+    proj=project.objects.get(pk=request.session['proj_id'])
 
-	entry_list=proj.score.all()
-	field_list=['name','description','formular']
+    entry_list=proj.score.all()
+    field_list=['name','description','formular']
 
-	#get list of plates
-	plates=list()
-	for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
-		plates.append(i['plate'])
-	plates=sorted(plates)
+    #get list of plates
+    plates=list()
+    for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
+            plates.append(i['plate'])
+    plates=sorted(plates)
 
-	if request.method=='POST':
-		form=PlatesToUpdate(request.POST)
-		if form.is_valid():
-			if process_score(data.objects.all(),proj,form.cleaned_data['plates'].split(',')):
-				messages.success(request,'Job has been sent. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
-	return render(request,'process/score.html',{'plates':plates,
-		'entry_list':entry_list,
-		'field_list':field_list,
-		'form':form})
+
+    if request.method=='POST':
+            form=PlatesToUpdate(request.POST)
+            if form.is_valid():
+                    if process_score(data.objects.all(),proj,form.cleaned_data['plates'].split(',')):
+                            messages.success(request,'Job has been sent. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
+    return render(request,'process/score.html',{'plates':plates,
+            'entry_list':entry_list,
+            'field_list':field_list,
+            'form':form})
+
 
 def editscore(request):
     form=ScoreForm()
@@ -84,4 +86,3 @@ def editscore(request):
             score_id=score.pk
 
     return render(request,'account/projectedit.html',{'form':form,'score_id':score_id})
-

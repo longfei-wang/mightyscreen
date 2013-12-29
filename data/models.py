@@ -6,19 +6,18 @@ from main.models import data_base,project
 #figured that the table would be too big to store all the data. 
 #A HTS project can easily have millions of entries. Better handle project seperately
 if project.objects.all():
-	for i in project.objects.all():
-	    n=''
-	    for j in i.experiment.readout.all():
-	    	for h in i.rep():
+        for i in project.objects.all():
+            n=''
+            for j in i.experiment.readout.all():
+                    for h in i.rep():
 
-	    	    n+='%(readout)s_%(rep)s=models.FloatField(null=True);'%{'readout':j,'rep':h}
-	    
-	    for l in i.score.all():
-	        
-	        n+=l.name+'=models.FloatField(default=0);'
-	    
-	    #raise Exception(n)
-	    exec ('class proj_'+str(i.pk)+'(data_base):'+n)
-
+                        n+='%(readout)s_%(rep)s=models.FloatField(null=True);'%{'readout':j,'rep':h}
+            
+            for l in i.score.all():
+                
+                n+=l.name+'=models.FloatField(null=True);'
+            
+            #raise Exception(n)
+            exec ('class proj_'+str(i.pk)+'(data_base):'+n)
 
 

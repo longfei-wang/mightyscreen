@@ -1,0 +1,83 @@
+{% extends 'main/base.html' %}
+{% load filters %}
+{% load staticfiles %}
+{% load bootstrap_tags %}
+
+
+{% block content %}
+
+<form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url url_name %}">
+    {% csrf_token %}
+    {{form|as_bootstrap}}
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-success">Plot</button>
+            <button type="reset" class="btn btn-default">Clear</button>
+        </div>
+    </div>
+</form>    
+    
+    
+<div class= 'img_list'>
+    {%if img_list|length == 0%}
+        <p> Please select plates </p>
+    {%else%}
+    {%for img in img_list%}
+        <div class= 'img'>{{img|safe}}</div>
+    {% endfor %}
+    {%endif%}
+</div>
+
+
+
+<div class="modal fade" id="cmpdDetail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Compound Detail</h4>
+        </div>
+        <div class="modal-body" id="heatmapContent">
+
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Add to HitList</button>
+        </div>
+    </div><!-- /.modal-content-->
+</div><!-- /.modal-dialog -->
+</div>
+
+
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+//$("#cmpdDetail").modal('show');
+
+var $patch = $("g[id^='patch_ax']");
+
+$patch.each(function(){
+    $(this).click(function(){
+        $("#heatmapContent").html('');
+        
+        info=$(this).attr("id").split('_');
+        plate = info[info.length-2]
+        well = info[info.length-1]
+        
+        $.get("/statistics/details/",
+            {plate:plate, well:well,t:1},
+            function(data){
+                $("#heatmapContent").html(data);
+            });
+        $("#cmpdDetail").modal('show');
+        //alert(plate+well);
+    });
+
+});
+
+</script>
+{% endblock %}
