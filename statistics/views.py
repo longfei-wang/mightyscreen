@@ -65,7 +65,7 @@ def heatmap(request):
    
     for plate_number in plates_selected:    
         data_columns = ['FP_A','FP_B','zscore']
-        entry_list = data.objects.filter(plate = plate_number)
+        entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])
         
         for data_column in data_columns:
             well_list = []
@@ -112,7 +112,7 @@ def replicates(request):
    
     for plate_number in plates_selected:    
         data_columns = ['FP_A','FP_B']
-        entry_list = data.objects.filter(plate = plate_number)         
+        entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1]) 
         replicate_list = []
         for data_column in data_columns:
             well_list = []
@@ -163,7 +163,7 @@ def scatter(request):
    
     for plate_number in plates_selected:    
         data_columns = ['FP_A','FP_B']
-        entry_list = data.objects.filter(plate = plate_number)         
+        entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])      
         for data_column in data_columns:
             well_list = []
             plate_well_list = []
