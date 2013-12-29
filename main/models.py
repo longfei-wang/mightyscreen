@@ -117,6 +117,7 @@ class submission(models.Model):
 class data_base(models.Model):
     def __unicode__(self):
         return self.library+self.plate+self.well
+        
     class Meta:
         abstract=True
     

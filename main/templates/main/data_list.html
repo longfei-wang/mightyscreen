@@ -173,7 +173,7 @@ $(".cmpdTrigger").each(function(){
         plate=$(this).attr('plate');
         well=$(this).attr('well');
         
-        $.get("/stats/details/",
+        $.get("/statistics/details/",
             {plate:plate,well:well,t:1},
             function(data){
                 $("#cmpdContent").html(data);
