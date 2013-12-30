@@ -47,11 +47,11 @@ def datalist(request):
         querybase=data.objects.order_by('pk')
 
 
-    if request.POST.get('querytext'):
+    if request.POST.get('querytext'):#first query box
 
         query='Q('+request.POST.get('field')+'__'+request.POST.get('sign')+' = "'+request.POST.get('querytext')+'")'
 
-        if request.POST.get('querytext2') and request.POST.get('joint'):
+        if request.POST.get('querytext2') and request.POST.get('joint'):#second querybox
 
             query+=request.POST.get('joint')+'Q('+request.POST.get('field2')+'__'+request.POST.get('sign2')+' = "'+request.POST.get('querytext2')+'")'
         #raise Exception(query)

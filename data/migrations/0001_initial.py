@@ -31,61 +31,10 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'data', ['proj_1'])
 
-        # Adding model 'proj_3'
-        db.create_table(u'data_proj_3', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('library', self.gf('django.db.models.fields.CharField')(max_length=50)),
-            ('plate', self.gf('django.db.models.fields.CharField')(max_length=20)),
-            ('well', self.gf('django.db.models.fields.CharField')(max_length=20)),
-            ('welltype', self.gf('django.db.models.fields.CharField')(default='X', max_length=1)),
-            ('project', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['main.project'])),
-            ('submission', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['main.submission'])),
-            ('create_date', self.gf('django.db.models.fields.DateTimeField')()),
-            ('create_by', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('FP_1', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('FP_2', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('FI_1', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('FI_2', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('PC_1', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('PC_2', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('SC_1', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('SC_2', self.gf('django.db.models.fields.FloatField')(null=True)),
-        ))
-        db.send_create_signal(u'data', ['proj_3'])
-
-        # Adding model 'proj_2'
-        db.create_table(u'data_proj_2', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('library', self.gf('django.db.models.fields.CharField')(max_length=50)),
-            ('plate', self.gf('django.db.models.fields.CharField')(max_length=20)),
-            ('well', self.gf('django.db.models.fields.CharField')(max_length=20)),
-            ('welltype', self.gf('django.db.models.fields.CharField')(default='X', max_length=1)),
-            ('project', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['main.project'])),
-            ('submission', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['main.submission'])),
-            ('create_date', self.gf('django.db.models.fields.DateTimeField')()),
-            ('create_by', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('FP_1', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('FP_2', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('FI_1', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('FI_2', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('PC_1', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('PC_2', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('SC_1', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('SC_2', self.gf('django.db.models.fields.FloatField')(null=True)),
-            ('zscore', self.gf('django.db.models.fields.FloatField')(null=True)),
-        ))
-        db.send_create_signal(u'data', ['proj_2'])
-
 
     def backwards(self, orm):
         # Deleting model 'proj_1'
         db.delete_table(u'data_proj_1')
-
-        # Deleting model 'proj_3'
-        db.delete_table(u'data_proj_3')
-
-        # Deleting model 'proj_2'
-        db.delete_table(u'data_proj_2')
 
 
     models = {
@@ -145,47 +94,6 @@ class Migration(SchemaMigration):
             'well': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
             'welltype': ('django.db.models.fields.CharField', [], {'default': "'X'", 'max_length': '1'}),
             'zscore': ('django.db.models.fields.FloatField', [], {'null': 'True'})
-        },
-        u'data.proj_2': {
-            'FI_1': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'FI_2': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'FP_1': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'FP_2': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'Meta': {'object_name': 'proj_2'},
-            'PC_1': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'PC_2': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'SC_1': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'SC_2': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'create_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'create_date': ('django.db.models.fields.DateTimeField', [], {}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'library': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
-            'plate': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
-            'project': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['main.project']"}),
-            'submission': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['main.submission']"}),
-            'well': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
-            'welltype': ('django.db.models.fields.CharField', [], {'default': "'X'", 'max_length': '1'}),
-            'zscore': ('django.db.models.fields.FloatField', [], {'null': 'True'})
-        },
-        u'data.proj_3': {
-            'FI_1': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'FI_2': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'FP_1': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'FP_2': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'Meta': {'object_name': 'proj_3'},
-            'PC_1': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'PC_2': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'SC_1': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'SC_2': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
-            'create_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'create_date': ('django.db.models.fields.DateTimeField', [], {}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'library': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
-            'plate': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
-            'project': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['main.project']"}),
-            'submission': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['main.submission']"}),
-            'well': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
-            'welltype': ('django.db.models.fields.CharField', [], {'default': "'X'", 'max_length': '1'})
         },
         u'main.experiment': {
             'Meta': {'object_name': 'experiment'},

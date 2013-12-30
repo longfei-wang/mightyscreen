@@ -42,8 +42,7 @@ def _select_plates(request):
     for i in data._meta.fields:
         if i.name not in "id library plate well welltype project submission create_date create_by":
             field_list.append(i.name)    
-    
-    
+
     return [plates,plates_selected,data,field_list,data_columns]
 
 
@@ -82,7 +81,7 @@ def heatmap(request):
     ### This function is still in the testing phase
     ### because one plate seems like have more than 384 wells...
   
-    plates, plates_selected,data,field_list,data_columns =_select_plates(request)
+    plates,plates_selected,data,field_list,data_columns =_select_plates(request)
     form=PlatesToUpdate()    
     img_list = []  
 

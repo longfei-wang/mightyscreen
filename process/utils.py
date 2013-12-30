@@ -41,12 +41,12 @@ class ScoreReader():
 	def flush(self):#flush all cache, should do this when changing plate
 		cache.set('ScoreReader',None)
 
-	def parse(self,curRow,formular='{FP_A}'):#parse user's formular 
+	def parse(self,curRow,formular='{FP_A}',mysql=True):#parse user's formular 
 		curPlate=curRow.plate
 		curWell=curRow.well
 		var=re.findall('{[^}]+}',formular)
 		cursor = connection.cursor()
-		
+		col_quote= '' if mysql == True else '"'		
 
 		for i in var:
 
@@ -61,14 +61,28 @@ class ScoreReader():
 						if j[1] == 'all':#all replicates
 							arg=list()
 							for x in self.rep:
-								arg.append("""(SELECT "%(col)s_%(rep)s" AS VAL FROM data_proj_%(proj_id)s WHERE plate='%(plate)s' and welltype='%(welltype)s')"""%{'proj_id':self.proj.pk,'col':j[0],'rep':x,'plate':curPlate,'welltype':self.dict[j[2]]})
-							query=" UNION ALL ".join(arg)
+								arg.append("""(SELECT %(quote)s%(col)s_%(rep)s%(quote)s AS VAL FROM data_proj_%(proj_id)s WHERE plate='%(plate)s' and welltype='%(welltype)s')"""%{
+								               'quote':col_quote,
+								               'proj_id':self.proj.pk,
+								               'col':j[0],
+								               'rep':x,
+								               'plate':curPlate,
+								               'welltype':self.dict[j[2]]})
 
+							query=" UNION ALL ".join(arg)
 							cursor.execute("""SELECT %(f)s(VAL) FROM (%(query)s) as subquery"""%{'f':self.dict[j[3]],'query':query})
 							row = cursor.fetchone()
 
 						else:
-							query="""SELECT %(f)s("%(col)s_%(rep)s") FROM data_proj_%(proj_id)s WHERE plate='%(plate)s' and welltype='%(welltype)s'"""%{'proj_id':self.proj.pk,'col':j[0],'rep':j[1],'plate':curPlate,'welltype':self.dict[j[2]],'f':self.dict[j[3]]}
+							query="""SELECT %(f)s(%(quote)s%(col)s_%(rep)s%(quote)s) FROM data_proj_%(proj_id)s WHERE plate='%(plate)s' and welltype='%(welltype)s'"""%{
+									'quote':col_quote,
+									'proj_id':self.proj.pk,
+									'col':j[0],
+									'rep':j[1],
+									'plate':curPlate,
+									'welltype':self.dict[j[2]],
+									'f':self.dict[j[3]]}
+							
 							cursor.execute(query)
 							row = cursor.fetchone()
 
@@ -81,7 +95,13 @@ class ScoreReader():
 					if j[1] == 'all':#all replicates
 						arg=list()
 						for x in self.rep:
-							arg.append("""(SELECT "%(col)s_%(rep)s" AS VAL FROM data_proj_%(proj_id)s WHERE plate='%(plate)s' and well='%(well)s')"""%{'proj_id':self.proj.pk,'col':j[0],'rep':x,'plate':curPlate,'well':curWell})
+							arg.append("""(SELECT %(quote)s%(col)s_%(rep)s%(quote)s AS VAL FROM data_proj_%(proj_id)s WHERE plate='%(plate)s' and well='%(well)s')"""%{
+										   'quote':col_quote,
+										   'proj_id':self.proj.pk,
+										   'col':j[0],'rep':x,
+										   'plate':curPlate,
+										   'well':curWell})
+						
 						query=" UNION ALL ".join(arg)
 						cursor.execute("""SELECT %(f)s(VAL) FROM (%(query)s) as subquery"""%{'f':self.dict[j[2]],'query':query})
 						row = cursor.fetchone()
