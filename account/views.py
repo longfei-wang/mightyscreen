@@ -2,9 +2,13 @@ from django.shortcuts import render
 from django.core.context_processors import csrf
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login,logout
-from account.models import RegisterForm, ProjectForm, ScoreForm
-from main.models import project
+from account.models import RegisterForm, ProjectForm
+from main.models import project,score,experiment,readout
 from django.conf import settings
+from django.forms.models import modelform_factory,modelformset_factory
+from django.contrib import messages
+import main.utils
+import json
 import os
 # Create your views here.
 def signin(request):
@@ -64,10 +68,6 @@ def jobview(request):
 
 #view and manage projects
 def projects(request):
-    if request.GET.get('p'):
-        proj=request.user.project_set.get(pk=request.GET.get('p'))
-        return render(request,'account/projectdetail.html',{'proj':proj})
-        
 
     field_list=['name','description','agreement','experiment','plate','replicate','leader']
     args={'field_list':field_list}
@@ -97,11 +97,13 @@ def projedit(request):
         if form.is_valid():
             form.save()
             #not sure if this is safe here. guess so. what if users submit at the same time? has to be queued
-            dir=settings.BASE_DIR
-            os.system('python %s\manage.py schemamigration data --auto'%dir)
-            os.system('python %s\manage.py migrate data'%dir)
+            dir=os.path.join(settings.BASE_DIR,'manage.py')
+            os.system('python %s schemamigration data --auto'%dir)
+            os.system('python %s migrate data'%dir)
+            main.utils.flush_transaction()
 
             return render(request,'main/redirect.html',{'message':'Project Created.','dest':'index'})
+            
     if request.method=='GET':
         if request.GET.get('p'):
             proj=project.objects.get(pk=request.GET.get('p'))
@@ -109,34 +111,53 @@ def projedit(request):
                 form=ProjectForm(instance=proj)
                 proj_id=proj.pk
 
-    return render(request,'account/projectedit.html',{'form':form,'proj_id':proj_id})
+    return render(request,'account/projectedit.html',{'form':form,
+                                                    'proj_id':proj_id,
+                                                    })
+
+def filternedit(request):
+    if request.GET.get('edit'):
+        edit=request.GET.get('edit')
+        if request.GET.get('edit')=='score':
+            obj=score
+        elif request.GET.get('edit')=='experiment':
+            obj=experiment
+        elif request.GET.get('edit')=='readout':
+            obj=readout
+    else:
+        obj=score
+        edit='score'
+
+    entry_list=obj.objects.all()
+    jsonstring = json.dumps(list(entry_list.values('id','name')))
+
+    formsetobject=modelformset_factory(obj,max_num=1)
 
 
-def editscore(request):
-    form=ScoreForm()
-    score_id=''
-    if request.method=='POST':
-        if request.POST.get('score_id'):#decide if create a new score or update one
-            form=ScoreForm(request.POST,instance=project.objects.get(pk=request.POST.get('score_id')))
-
-        else:
-            form=ScoreForm(request.POST)
-        if form.is_valid():
-            form.save()
-
-            return render(request,'main/redirect.html',{'message':'Score Created.','dest':'index'})
-    if request.method=='GET':
-        if request.GET.get('s'):
-            score=score.objects.get(pk=request.GET.get('s'))
-            form=ProjectForm(instance=score)
-            score_id=score.pk
-
-    return render(request,'account/projectedit.html',{'form':form,'score_id':score_id})
+    if request.POST.get('ispost'):
+        formset=formsetobject(request.POST)
+        if formset.is_valid():
+                #check if creater of this entry, otherwise no permission!
+            formset.save()
+            messages.success(request,'Entry Updated!')
+    else:
+        formset=formsetobject(queryset=obj.objects.filter(
+                    pk__in=map(int,request.POST.getlist('selection'))
+                    ))
 
 
+    # field_list = list()
+    # for i in score._meta.fields:
+    #     if i.name not in 'id':
+    #         field_list.append(i.name)
 
+    
+    
 
-
+    return render(request,'account/filternedit.html',{'formset':formset,
+                                                    'entry_list':entry_list,
+                                                    'edit':edit,
+                                                    'jsonstring':jsonstring})
 
 
 

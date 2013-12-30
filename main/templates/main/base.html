@@ -113,22 +113,23 @@
 
                         <li><a href="{% url "view" %}">View</a></li>
                         <li><a href="{% url "upload" %}">Upload</a></li>
-                        <li><a href="{% url "mark" %}">MaskWell</a></li>
+                        <li><a href="{% url "mark" %}">MarkWell</a></li>
                         <li><a href="{% url "score" %}">Score</a></li>
-                        <li><a href="">Plots</a> 
+                        <li><a href="{% url "stat_index" %}">Plots</a> </li>
                     </ul>
 
             </div>
 
             {% if plates %}
             <div class="well"><!-- plate selector -->
-                <form class="form-horizontal">
+                <form role="form" class="form-horizontal">
                 <div class="form-group">
-                <label class="col-sm-2 control-label">Plates Selector</label>
-                    <div class="col-sm-10">
+                <label class="col-sm-3 control-label">Plates</label>
+                    <div class="col-sm-9">
                         <select multiple id="plate-selector" class="form-control">
                         {% for i in plates %}
-                            <option value="{{i}}">{{i}}</option>    
+
+                            <option {% if i in plates_selected %}selected="selected"{% endif %} value="{{i}}">{{i}}</option>    
                         {% endfor %}
                         </select>
                     </div>
@@ -169,7 +170,13 @@
 
 <script src="{% static "main/js/jquery-2.0.3.min.js" %}"></script>
 <script src="{% static "main/js/bootstrap.min.js" %}"></script>
+<script>
 
+$("#plate-selector").change(function(){
+    $("#selector-target").val($(this).val());
+});
+
+</script>
 {% block script %}
 {% endblock %}
 </body>

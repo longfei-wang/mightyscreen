@@ -4,22 +4,35 @@
 
 
 {% block content %}
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#">Project</a></li>
+  <li><a href="{% url 'filternedit' %}?edit=score">Score</a></li>
+  <li><a href="{% url 'filternedit' %}?edit=experiment" >Experiment</a></li>
+  <li><a href="{% url 'filternedit' %}?edit=readout" >Readouts</a></li>
+</ul>
+
+
+
+<br>
 <div class="well">
-<form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url "projedit" %}">{% csrf_token %}
+	<form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url "projedit" %}">{% csrf_token %}
 
-<input type="hidden" name="proj_id" value="{{proj_id}}">
+	<input type="hidden" name="proj_id" value="{{proj_id}}">
 
-{{form|as_bootstrap_h}}
+	{{form|as_bootstrap_h}}
 
-	    <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
-            <button type="submit" class="btn btn-success">Update</button>
-            <button type="reset" class="btn btn-default">Clear</button>
-        </div>
-    </div>
+		    <div class="form-group">
+	        <div class="col-sm-offset-2 col-sm-10">
+	            <button type="submit" class="btn btn-success">Update</button>
+	            <button type="reset" class="btn btn-default">Clear</button>
+	        </div>
+	    </div>
 
-</form>
+	</form>
 
 </div>
+
+
+
 
 {% endblock %}

@@ -7,6 +7,8 @@ from main.models import project,experiment,readout,score,plate
 
 
 class user_profile (models.Model):
+    def __unicode__(self):
+        return self.user.username
     user = models.OneToOneField(User)
     affiliation = models.CharField(max_length=100)
     position = models.CharField(max_length=50)
@@ -39,14 +41,9 @@ class ProjectForm(forms.ModelForm):#a model form for project
         if instance and instance.pk:#make sure when edit a existing entry you don't mess around with certain fields
             for i in 'name replicate leader experiment plate leader'.split():
                 self.fields[i].widget.attrs['readonly'] = True
-            for i in 'experiment plate leader'.split():#select box also need disabled
-                self.fields[i].widget.attrs['disabled'] = 'disabled'
+            # for i in 'experiment plate leader'.split():#select box also need disabled
+            #     self.fields[i].widget.attrs['disabled'] = 'disabled'
 
     class Meta:
         model=project
         fields='name description agreement experiment plate replicate score leader user'.split()
-
-class ScoreForm(forms.ModelForm):
-    class Meta:
-        model=score
-        fields='name description formular'.split()

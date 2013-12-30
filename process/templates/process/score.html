@@ -1,24 +1,36 @@
 {% extends 'main/base.html' %}
 {% load staticfiles %}
+{% load bootstrap_tags %}
+{% load filters %}
 
 {% block content %}
 
-{% include 'main/table.html' %}
 
+{# the table list 2 variable needed. field_list and entry_list one optional pre_order#}
+
+<div class="panel">
+<table class="table table-hover table-condensed table-responsive">
+
+
+{% include 'main/table.html '%}
+
+
+</table>
+<div class="panel-footer">
+<p>Note: Score used in the current project is highlighted.</p>
+</div>
+</div>
+<a href="{% url 'filternedit' %}?edit=score"><button class="btn btn-default btn-sm">Edit Score</button></a>
+
+<hr>
 
 <div class="well">
 <form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url "score" %}">{% csrf_token %}
-    <div class="form-group">
-        <label class="col-sm-2 control-label">Plates to Update</label>
-        <div class="col-sm-10">
-            <textarea name="plates" rows=5 class="form-control" id="selector-target"></textarea>
-
-        </div>
-    </div>
+{{form|as_bootstrap_h}}
 
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
-            <button type="submit" class="btn btn-success">Update</button>
+            <button type="submit" class="btn btn-primary">Update</button>
             <button type="reset" class="btn btn-default">Clear</button>
         </div>
     </div>
@@ -26,12 +38,5 @@
 </form>
 
 </div>
-{% endblock %}
 
-{% block script %}
-<script>
-    $("#plate-selector").change(function(){
-        $("#selector-target").val($(this).val());
-    });
-</script>
 {% endblock %}

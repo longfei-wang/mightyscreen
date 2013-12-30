@@ -1,30 +1,58 @@
-{# This is the base template for all web pages #}
-<!doctype html>
-<html>
+{% extends 'main/base.html' %}
+{% load filters %}
+{% load staticfiles %}
+{% load bootstrap_tags %}
 
-
-<head>
-<meta charset="UTF-8">
-<title>MightyScreen</title>
-</head>
-
-<body>
-
-<header>
-<h1>MightyScreen Under Development</h1>
-</header>
-
-<nav>
-<a href="{% url "statindex" %}">Main Page</a>|
-<a href="{% url "compounds" %}">compound lists</a>|
-<a href="{% url "upload" %}">Upload Data</a></nav>
-
-{% block title %}{% endblock %}
 
 {% block content %}
-{%endblock%}
+<div >
+<ul class="nav nav-pills nav-pills-plots" >
+    <li class ="stat_heatmap"><a href="{% url "stat_heatmap" %}">heatmap</a></li>
+    <li class ="stat_scatter"><a href="{% url "stat_scatter" %}">scatter</a></li>
+    <li class ="stat_correlation"><a href="{% url "stat_correlation" %}">correlation</a></li>
+</ul><br>
+</div>
 
-<footer>copyright reserved</footer>
+{%if url_name|length > 0%}
+<ul class="nav-pills-data_column" >
+    {%for field in field_list%}
+        <li class = "btn btn-default" data_column = {{field}} data_column_to_plot = "">{{field}}</li>
+    {%endfor%}
+</ul>
+{%endif%}
 
-</body>
-</html>
+
+
+{% block plots %}{% endblock %}
+
+{% endblock %}
+
+
+{% block script %}
+<script src="{% static "main/js/jquery-ui.min.js" %}"></script>
+<script>
+    
+$('ul.nav-pills-plots > li[class*={{url_name}}]').addClass("active")
+
+data_column_to_plot = []
+$('ul.nav-pills-data_column > li').click(function(){
+    x=$(this).attr("data_column");
+    
+    if ($(this).hasClass("btn-default")){
+        $(this).removeClass("btn-default")
+        $(this).addClass("btn-warning")
+        data_column_to_plot.push(x)
+    }
+    else{
+        $(this).addClass("btn-default")
+        $(this).removeClass("btn-warning")
+        data_column_to_plot = jQuery.grep(data_column_to_plot, function(value) {
+        return value != x;})
+    }
+    $("textarea.data_column_to_plot").val(data_column_to_plot.join(','));
+})
+</script>
+
+
+{% block script-tooltip %}{% endblock %}
+{% endblock %}

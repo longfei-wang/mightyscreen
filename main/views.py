@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import HttpResponse
 from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -7,11 +8,8 @@ from django.core.paginator import Paginator
 from main.forms import UploadFileForm
 from django.core.cache import cache
 from django.contrib import messages
-
-
-
-
-
+from django.core import serializers
+import csv
 # Create your views here.
 
 #def handle_uploaded_file(f):
@@ -21,21 +19,34 @@ from django.contrib import messages
 
 def index(request):
     return render(request, "main/index.html")
-#"""request.FILES['datafile'],"""'test','longfei',['1','2']
 
 
 def datalist(request):
     """list view of data in current project. Dynamically import the right model/table for project"""
 
     pre_order='id'
-    
+    plates_selected=list()
+
     if not 'proj' in request.session:
         return render(request,"main/error.html",{'error_msg':"No project specified!"})
         
         
     exec ('from data.models import proj_'+request.session['proj_id']+' as data')
     
-    
+    plates=list()
+    for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
+        plates.append(i['plate'])
+    plates=sorted(plates)
+
+
+    if request.POST.get('plates'):
+        plates_selected=request.POST.get('plates').split(',')
+        querybase=data.objects.filter(plate__in=plates_selected).order_by('pk')
+
+    else:
+        querybase=data.objects.order_by('pk')
+
+
     if request.POST.get('querytext'):
 
         query='Q('+request.POST.get('field')+'__'+request.POST.get('sign')+' = "'+request.POST.get('querytext')+'")'
@@ -44,7 +55,7 @@ def datalist(request):
 
             query+=request.POST.get('joint')+'Q('+request.POST.get('field2')+'__'+request.POST.get('sign2')+' = "'+request.POST.get('querytext2')+'")'
         #raise Exception(query)
-        exec('entry_list = data.objects.filter('+query+')')
+        exec('entry_list = querybase.filter('+query+')')
         
     else:
         #if this is just turning pages then use the latest query
@@ -60,7 +71,7 @@ def datalist(request):
                 exec("entry_list = "+query)
                 
         else:
-            entry_list = data.objects.order_by('pk')
+            entry_list = querybase
 
 
     cache.set('dataview'+request.session['proj_id'],entry_list)
@@ -98,6 +109,8 @@ def datalist(request):
                                                   'prev_page':max(1,int(current_page)-1),
                                                   'pbutton_attr':pb_attr,
                                                   'pre_order':pre_order,
+                                                  'plates':plates,
+                                                  'plates_selected':plates_selected,
                                                 })
 
 
@@ -123,3 +136,52 @@ def upload(request):
         return render(request,'main/error.html',{'error_msg':'No working project specified!'})
     return render(request,'main/upload.html', c)
 
+def export(request):
+
+
+    if cache.get('dataview'+request.session['proj_id']):
+        
+        obj=cache.get('dataview'+request.session['proj_id'])
+
+        if request.GET.get('format')=='csv':
+
+            response = HttpResponse(mimetype='text/csv')
+
+            response['Content-Disposition'] = 'attachment;filename="export.csv"'
+
+            writer = csv.writer(response)
+
+            header_row=True
+            header=[]
+            for i in obj.values():
+                values=[]
+                for key in i:
+                    if header_row:
+                        header.append(key)
+                    values.append(i[key])
+                if header_row:
+                    writer.writerow(header)
+                    header_row=False
+                writer.writerow(values)
+
+            return response
+
+        elif request.GET.get('format')=='xml':
+
+            data = serializers.serialize("xml", obj)
+
+            response = HttpResponse(mimetype='application/xml')
+            response['Content-Disposition'] = 'attachment;filename="export.xml"'
+            response.write(data)
+
+            return response
+
+        elif  request.GET.get('format')=='json':
+
+            data = serializers.serialize("json", obj)
+            
+            response = HttpResponse(mimetype='application/json')
+            response['Content-Disposition'] = 'attachment;filename="export.json"'
+            response.write(data)
+
+            return response

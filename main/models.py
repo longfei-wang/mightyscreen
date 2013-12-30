@@ -26,8 +26,8 @@ class project(models.Model):
     score = models.ManyToManyField('score',blank=True)
     leader = models.ForeignKey(User,related_name='leader')
     user = models.ManyToManyField(User)
-
-        
+    #deleted = models.BooleanField(default=False)
+   
 #define a experiemnt
 class experiment(models.Model):
     def __unicode__(self):
@@ -36,6 +36,7 @@ class experiment(models.Model):
     name = models.CharField(max_length=50)
     description =  models.TextField(blank=True)
     readout = models.ManyToManyField('readout')
+    #create_by = models.ForeignKey(User)
 
 
 
@@ -46,7 +47,7 @@ class score(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
     formular = models.TextField()
-
+    #create_by = models.ForeignKey(User)
 
 #since differnet experiment has different readouts, this is a table define specific readout of a experiment
 class readout(models.Model):
@@ -55,7 +56,7 @@ class readout(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
     keywords = models.TextField()
-
+    #create_by = models.ForeignKey(User)
 
 #the format of the file user upload.
 class fileformat(models.Model):
@@ -102,7 +103,7 @@ class submission(models.Model):
     submit_by = models.ForeignKey(User)
     comments=models.TextField(blank=True)
 
-    progress=models.PositiveIntegerField(default=0)#percentage?
+    #progress=models.PositiveIntegerField(default=0)#percentage?
 
     log=models.TextField(blank=True)
     schoice = (
@@ -117,11 +118,12 @@ class submission(models.Model):
 class data_base(models.Model):
     def __unicode__(self):
         return self.library+self.plate+self.well
+        
     class Meta:
         abstract=True
     
 
-    hidden_field=['submission','project']
+    hidden_field=['id','library','submission','project']
 
     library = models.CharField(max_length=50)
     plate = models.CharField(max_length=20)

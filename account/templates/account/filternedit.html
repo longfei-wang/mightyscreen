@@ -1,0 +1,67 @@
+{% extends 'main/base.html' %}
+{% load staticfiles %}
+{% load bootstrap_tags %}
+
+
+{% block content %}
+<ul class="nav nav-tabs">
+  <li><a href="{% url 'projedit' %}">Project</a></li>
+  <li {% if edit == 'score' %}class="active"{% endif %}><a href="{% url 'filternedit' %}?edit=score">Score</a></li>
+  <li {% if edit == 'experiment' %}class="active"{% endif %}><a href="{% url 'filternedit' %}?edit=experiment" >Experiment</a></li>
+  <li {% if edit == 'readout' %}class="active"{% endif %}><a href="{% url 'filternedit' %}?edit=readout" >Readouts</a></li>
+</ul>
+
+<br>
+
+<form role="form" class="form" id="selectorform" enctype="multipart/form-data" method="post" action="{% url "filternedit" %}?edit={{edit}}">{% csrf_token %}
+
+<!-- 	<div class="form-group">
+		<input class="form-control" id="filtertextinput">
+	</div> -->
+
+	<div class="form-group">
+		<label>Choose {{edit|title}} to Edit</label>
+		<select id="entryselector" class="form-control" multiple="multiple" name="selection" size=10>
+		<option value=0>New</option>
+		{% for i in entry_list %}
+			<option value="{{i.pk}}">{{i.name}}</option>
+		{% endfor %}
+		</select>
+	</div>
+</form>
+
+<form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url "filternedit" %}?edit={{edit}}">{% csrf_token %}
+{{ formset.management_form }}
+<input type="hidden" name="ispost" value="1">
+
+{% for form in formset %}
+<div class="well">
+{{form|as_bootstrap_h}}
+
+	    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-success">Update</button>
+            <button type="reset" class="btn btn-default">Clear</button>
+        </div>
+    	</div>
+</div>
+{% endfor %}
+
+
+
+</form>
+
+
+
+{% endblock %}
+
+{% block script %}
+<script>
+	//data={{jsonstring|safe}};
+	//alert(data[0].name);
+	$("#entryselector").change(function(){
+		$("#selectorform").submit();
+
+	});
+</script>
+{% endblock %}
