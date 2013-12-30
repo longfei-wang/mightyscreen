@@ -6,14 +6,14 @@
 
 {% block plots %}
 
-
+<div class="well">
 <form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url url_name %}">
     {% csrf_token %}
  
     <textarea class = "data_column_to_plot" name= "data_column_to_plot" style="display:none;"></textarea>
-    <div class="well">
+    
     {{form|as_bootstrap_h}}       
-    </div>
+    
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
             <button type="submit" class="btn btn-success">Plot</button>
@@ -21,7 +21,7 @@
         </div>
     </div>
 </form>    
-    
+</div> 
     
 <div class= 'img_list'>
     {%if img_list|length == 0%}
