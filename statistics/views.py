@@ -1,5 +1,5 @@
 from django.shortcuts import render
-#from django.http import StreamingHttpResponse, HttpResponse
+from django.http import StreamingHttpResponse, HttpResponse
 #from django.core.paginator import Paginator
 #from django.core.context_processors import csrf
 #from django.contrib import messages
@@ -15,6 +15,36 @@ from process.forms import PlatesToUpdate
 #=============================================================================
 ## facilitate functions    
 
+def _select_plates(request):
+#    form=PlatesToUpdate()
+    if not 'proj' in request.session:
+        return render(request,"main/error.html",{'error_msg':"No project specified!"})   
+        
+    exec ('from data.models import proj_'+request.session['proj_id']+' as data')
+        ## Retrive data to be ploted
+    plates=list()
+    for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
+        plates.append(i['plate'])
+    plates=sorted(plates)    
+
+    if request.POST.get('plates'):
+        plates_selected=request.POST.get('plates').split(',')
+        
+    else:
+        plates_selected = []   
+
+    if request.POST.get('data_column_to_plot'):
+        data_columns=request.POST.get('data_column_to_plot').split(',')        
+    else:
+        data_columns = []
+
+    field_list = []
+    for i in data._meta.fields:
+        if i.name not in "id library plate well welltype project submission create_date create_by":
+            field_list.append(i.name)    
+    
+    
+    return [plates,plates_selected,data,field_list,data_columns]
 
 
 
@@ -23,7 +53,14 @@ from process.forms import PlatesToUpdate
 
 
 def index(request):
-    return render(request, "statistics/index.html")
+    plates, plates_selected,data,field_list,data_columns =_select_plates(request)
+    form=PlatesToUpdate()    
+    img_list = []     
+    url_name = ''
+    return render(request, "statistics/index.html", {'url_name':url_name,
+                                                     'field_list':field_list
+                                                     })
+#    return HttpResponse(field_list)
 
 
 def details(request):
@@ -44,27 +81,13 @@ def heatmap(request):
     """
     ### This function is still in the testing phase
     ### because one plate seems like have more than 384 wells...
-    form=PlatesToUpdate()
-    if not 'proj' in request.session:
-        return render(request,"main/error.html",{'error_msg':"No project specified!"})   
-        
-    exec ('from data.models import proj_'+request.session['proj_id']+' as data')
-        ## Retrive data to be ploted
+  
+    plates, plates_selected,data,field_list,data_columns =_select_plates(request)
+    form=PlatesToUpdate()    
+    img_list = []  
 
-    plates=list()
-    for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
-        plates.append(i['plate'])
-    plates=sorted(plates)
-    img_list = []
-    
-    if request.POST.get('plates'):
-        plates_selected=request.POST.get('plates').split(',')
-        
-    else:
-        plates_selected = []
    
     for plate_number in plates_selected:    
-        data_columns = ['FP_A','FP_B','zscore']
         entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])
         
         for data_column in data_columns:
@@ -79,62 +102,56 @@ def heatmap(request):
             ## Plot Heat maps        
             c = stat.plot_heatmap(well_list, fp_list,plate_well_list,plate_number = (plate_number+' '+data_column))             
             img_list.append(c)        
+
     url_name = 'stat_heatmap'
     return render(request,"statistics/plots.html",{'img_list':img_list,
                                                      'plates':plates,
                                                      'form':form,
                                                      'url_name':url_name,
+                                                     'field_list':field_list,
                                                      })  
 
-def replicates(request):
+def correlation(request):
     """ basic function to plot heatmaps 
     """
     ### This function is still in the testing phase
     ### because one plate seems like have more than 384 wells...
-    form=PlatesToUpdate()
-    if not 'proj' in request.session:
-        return render(request,"main/error.html",{'error_msg':"No project specified!"})   
-        
-    exec ('from data.models import proj_'+request.session['proj_id']+' as data')
-        ## Retrive data to be ploted
-
-    plates=list()
-    for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
-        plates.append(i['plate'])
-    plates=sorted(plates)
-    img_list = []
+    plates, plates_selected,data,field_list,data_columns =_select_plates(request)
+    form=PlatesToUpdate()    
+    img_list = []  
     
-    if request.POST.get('plates'):
-        plates_selected=request.POST.get('plates').split(',')
-        
+    if len(data_columns)>1:
+        for plate_number in plates_selected:    
+    #        data_columns = ['FP_A','FP_B']
+            entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1]) 
+            correlation_list = []
+            for data_column in data_columns:
+                well_list = []
+                plate_well_list = []
+                fp_list = []
+                well_type_list = []
+                for e in entry_list:
+                    well_list.append(e.well)
+                    fp_list.append(float(getattr(e,data_column)))
+                    plate_well_list.append(plate_number+'_'+e.well)
+                    well_type_list.append(e.welltype)
+                correlation_list.append(fp_list)
+            ## Plot Reproductivity   
+            ## This plot might have bug if A and B doesn't have same well number
+            ## This will be addressed in the future
+            label_x = data_columns[0]
+            label_y = data_columns[1]
+            c = stat.plot_linearfit(correlation_list[0],correlation_list[1], plate_well_list, plate_number,well_type_list,label_x,label_y)
+            img_list.append(c) 
     else:
-        plates_selected = []
-   
-    for plate_number in plates_selected:    
-        data_columns = ['FP_A','FP_B']
-        entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1]) 
-        replicate_list = []
-        for data_column in data_columns:
-            well_list = []
-            plate_well_list = []
-            fp_list = []
-            well_type_list = []
-            for e in entry_list:
-                well_list.append(e.well)
-                fp_list.append(float(getattr(e,data_column)))
-                plate_well_list.append(plate_number+'_'+e.well)
-                well_type_list.append(e.welltype)
-            replicate_list.append(fp_list)
-        ## Plot Reproductivity   
-        ## This plot might have bug if A and B doesn't have same well number
-        ## This will be addressed in the future
-        c = stat.plot_linearfit(replicate_list[0],replicate_list[1], plate_well_list, plate_number,well_type_list)
-        img_list.append(c)     
-    url_name = 'stat_replicates'
+        img_list.append("Please select more than one parameters for correlation calculation")              
+            
+    url_name = 'stat_correlation'
     return render(request,"statistics/plots.html",{'img_list':img_list,
                                                      'plates':plates,
                                                      'form':form,
                                                      'url_name':url_name,
+                                                     'field_list':field_list,
                                                      })  
                                                      
 def scatter(request):
@@ -142,27 +159,11 @@ def scatter(request):
     """
     ### This function is still in the testing phase
     ### because one plate seems like have more than 384 wells...
-    form=PlatesToUpdate()
-    if not 'proj' in request.session:
-        return render(request,"main/error.html",{'error_msg':"No project specified!"})   
+    plates, plates_selected,data,field_list,data_columns =_select_plates(request)
+    form=PlatesToUpdate()    
+    img_list = [] 
         
-    exec ('from data.models import proj_'+request.session['proj_id']+' as data')
-        ## Retrive data to be ploted
-
-    plates=list()
-    for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
-        plates.append(i['plate'])
-    plates=sorted(plates)
-    img_list = []
-    
-    if request.POST.get('plates'):
-        plates_selected=request.POST.get('plates').split(',')
-        
-    else:
-        plates_selected = []
-   
     for plate_number in plates_selected:    
-        data_columns = ['FP_A','FP_B']
         entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])      
         for data_column in data_columns:
             well_list = []
@@ -185,6 +186,7 @@ def scatter(request):
                                                      'plates':plates,
                                                      'form':form,
                                                      'url_name':url_name,
+                                                     'field_list':field_list,
                                                      })  
                                                      
 

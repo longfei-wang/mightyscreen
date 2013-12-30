@@ -192,10 +192,10 @@ def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1):
 
 
 
-def plot_linearfit(fp_list_a,fp_list_b,plate_well_list, plate_number,well_type_list):
+def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,label_x,label_y):
     
-    xs = fp_list_a
-    ys = fp_list_b    
+    xs = data_a
+    ys = data_b    
 
     color_dict = {'B':['bad well', '#bdbdbd'], 
                   'P':['positive control', '#de2d26'],
@@ -212,8 +212,8 @@ def plot_linearfit(fp_list_a,fp_list_b,plate_well_list, plate_number,well_type_l
     fig = pylab.figure(figsize=(12,6))   
     ax = fig.add_axes([0.1, 0.15, 0.8, 0.7])
     pylab.title('Data replicability\n Plate: %s'%plate_number)
-    pylab.xlabel('FP of plate: %s A'%plate_number)
-    pylab.ylabel('FP of plate: %s B'%plate_number)       
+    pylab.xlabel('%s of plate: %s'%(label_x,plate_number))
+    pylab.ylabel('%s of plate: %s'%(label_y,plate_number))       
     
     x = scipy.linspace(min(xs),max(xs),100)
     pylab.plot(x,fitfunc(x),'b', label=('fitting\n R=%f'%r_value))          

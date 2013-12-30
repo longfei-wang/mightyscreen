@@ -1,14 +1,18 @@
-{% extends 'main/base.html' %}
+{% extends 'statistics/index.html' %}
 {% load filters %}
 {% load staticfiles %}
 {% load bootstrap_tags %}
 
 
-{% block content %}
+{% block plots %}
+
 
 <form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url url_name %}">
     {% csrf_token %}
-    {{form|as_bootstrap}}
+ 
+    <textarea class = "data_column_to_plot" name= "data_column_to_plot" style="display:none;"></textarea>
+    {{form|as_bootstrap}}       
+    
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
             <button type="submit" class="btn btn-success">Plot</button>
@@ -27,7 +31,6 @@
     {% endfor %}
     {%endif%}
 </div>
-
 
 
 <div class="modal fade" id="cmpdDetail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -49,11 +52,12 @@
 </div><!-- /.modal-dialog -->
 </div>
 
-
-
 {% endblock %}
 
-{% block script %}
+
+
+
+{% block script-tooltip %}
 <script>
 
 //$("#cmpdDetail").modal('show');
@@ -78,6 +82,7 @@ $patch.each(function(){
     });
 
 });
-
 </script>
+
+
 {% endblock %}
