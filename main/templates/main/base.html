@@ -41,17 +41,20 @@
                     {% if user.is_authenticated %}
                     <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                    Workspace{% if request.session.proj %}<span class="badge">{{request.session.proj}}</span>{% endif %}
+                    MyWorkSpace{% if request.session.proj %}<span class="badge">{{request.session.proj}}</span>{% endif %}
                      <span class="caret"></span>
                     </a>
                         <ul class="dropdown-menu">
-                            <li><a href="{% url 'projedit' %}">New Project</a></li>
+                            <li><a href="{% url 'projedit' %}?action=new">New Project</a></li>
+                            <li><a href="{% url 'projedit' %}">Edit Project</a></li>
+                            <li><a href="{% url "projects" %}">View Project</a></li>
                             <li class="divider"></li>
                             {% for i in user.project_set.all %}
-                                <li><a href="{% url "projselect" %}?p={{i.pk}}">{{i.name}}</a></li>
-                            {% endfor %}
+                                <li><a href="{% url "projselect" %}?p={{i.pk}}">{{i.name|title}}</a></li>
+                            {% endfor %}                            
                         </ul>
                     </li>
+                    <li><a href="{% url "jobview" %}">Jobs</a></li>
                     {% endif %}
 
                     <li><a>Documents</a></li>
@@ -68,9 +71,6 @@
                         </a>
                             <ul class="dropdown-menu">
                                 <li><a href="{% url "profile" %}">Profile</a></li>
-                                <li class="divider"></li>
-                                <li><a href="{% url "projects" %}">Projects</a></li>
-                                <li><a href="{% url "jobview" %}">Jobs</a></li>
                                 <li class="divider"></li>
                                 <li><a href="{% url "logout" %}">Logout</a></li>
                             </ul>

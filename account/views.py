@@ -17,8 +17,8 @@ def signin(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
 
-        if form.is_valid():            
-            #form.save
+        if form.is_valid():
+
             login(request,form.get_user())
             return render(request,'main/redirect.html',{'message':'You are logged in!','dest':'index'})
 
@@ -28,8 +28,6 @@ def signin(request):
 
 def signup(request):
     form=RegisterForm()
-    #for i in form:
-        # raise Exception(i.__str__())
     if request.method == 'POST':
 
         form = RegisterForm(request.POST)
@@ -55,10 +53,8 @@ def logoff(request):
     
 #user profile
 def profile(request):
-    #raise Exception(dir(request))
     user = request.user
     profile = user.get_profile()
-#    raise Exception(user.project_set.values_list())
     return render(request,'account/profile.html',{'user':user,'profile':profile})
 
 def jobview(request):
@@ -85,9 +81,8 @@ def projselect(request):
     return render(request,'main/error.html',{})
 
 def projedit(request):
-
+    warning_fields=''
     form=ProjectForm()
-    proj_id=''
     if request.method=='POST':
         if request.POST.get('proj_id'):#decide if create a new project or update one
             form=ProjectForm(request.POST,instance=project.objects.get(pk=request.POST.get('proj_id')))
@@ -95,21 +90,32 @@ def projedit(request):
         else:
             form=ProjectForm(request.POST)
         if form.is_valid():
-            form.save()
-            #not sure if this is safe here. guess so. what if users submit at the same time? has to be queued
-            dir=os.path.join(settings.BASE_DIR,'manage.py')
-            os.system('python %s schemamigration data --auto'%dir)
-            os.system('python %s migrate data'%dir)
-            main.utils.flush_transaction()
 
-            return render(request,'main/redirect.html',{'message':'Project Created.','dest':'index'})
-            
+            if request.POST.get('proj_id') and [i for i in ['experiment','plate','replicate','leader','name'] if i in form.changed_data] and not request.POST.get('warning_fields') :
+                warning_fields=', '.join(form.changed_data)#pop the warning message
+                return render(request,'account/projectedit.html',{'form':form,
+                                                                'proj_id':request.POST.get('proj_id'),
+                                                                'warning_fields':warning_fields
+                                                                })
+            else:
+                form.save()
+                #not sure if this is safe here. guess so. what if users submit at the same time? has to be queued
+                dir=os.path.join(settings.BASE_DIR,'manage.py')
+                os.system('python %s schemamigration data --auto'%dir)
+                os.system('python %s migrate data'%dir)
+                main.utils.flush_transaction()
+
+                return render(request,'main/redirect.html',{'message':'Project Created.','dest':'index'})
+        
+    proj_id=''    
     if request.method=='GET':
-        if request.GET.get('p'):
-            proj=project.objects.get(pk=request.GET.get('p'))
-            if request.user in proj.user.all():
-                form=ProjectForm(instance=proj)
-                proj_id=proj.pk
+        if request.GET.get('action') != 'new':
+            if request.GET.get('p') or request.session.get('proj_id'):
+                proj_pid= request.GET.get('p') if request.GET.get('p') else request.session.get('proj_id')
+                proj=project.objects.get(pk=proj_pid)
+                if request.user in proj.user.all():
+                    form=ProjectForm(instance=proj)
+                    proj_id=proj.pk
 
     return render(request,'account/projectedit.html',{'form':form,
                                                     'proj_id':proj_id,
@@ -118,11 +124,11 @@ def projedit(request):
 def filternedit(request):
     if request.GET.get('edit'):
         edit=request.GET.get('edit')
-        if request.GET.get('edit')=='score':
+        if edit=='score':
             obj=score
-        elif request.GET.get('edit')=='experiment':
+        elif edit=='experiment':
             obj=experiment
-        elif request.GET.get('edit')=='readout':
+        elif edit=='readout':
             obj=readout
     else:
         obj=score
@@ -144,15 +150,6 @@ def filternedit(request):
         formset=formsetobject(queryset=obj.objects.filter(
                     pk__in=map(int,request.POST.getlist('selection'))
                     ))
-
-
-    # field_list = list()
-    # for i in score._meta.fields:
-    #     if i.name not in 'id':
-    #         field_list.append(i.name)
-
-    
-    
 
     return render(request,'account/filternedit.html',{'formset':formset,
                                                     'entry_list':entry_list,

@@ -21,12 +21,37 @@
 
 	{{form|as_bootstrap_h}}
 
+{% if not warning_fields %}
 		    <div class="form-group">
 	        <div class="col-sm-offset-2 col-sm-10">
 	            <button type="submit" class="btn btn-success">Update</button>
 	            <button type="reset" class="btn btn-default">Clear</button>
 	        </div>
-	    </div>
+	    
+
+	    	</div>
+{% else %}
+	<input type="hidden" name="warning_fields" value="1">
+	<!-- Warning Messages -->
+	<div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog alert-danger">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	        <h4 class="modal-title" id="myModalLabel">Warning!!!</h4>
+	      </div>
+	      <div class="modal-body">
+			Changing field: {{warning_fields}} may cause the lost of all your experimental data in the current project!
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+	        <input type="submit" class="btn btn-danger" value="Submit Anyway"/>
+	      </div>
+	    </div><!-- /.modal-content -->
+	  </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+
+{% endif %}
 
 	</form>
 
@@ -35,4 +60,19 @@
 
 
 
+
+
 {% endblock %}
+
+
+{% block script %}
+<script>
+
+$(document).ready(function(){
+	$("#warningModal").modal('show');	
+});
+
+</script>
+
+{% endblock %}
+
