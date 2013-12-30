@@ -9,6 +9,7 @@ from main.forms import UploadFileForm
 from django.core.cache import cache
 from django.contrib import messages
 from django.core import serializers
+from main.utils import get_platelist
 import csv
 # Create your views here.
 
@@ -28,16 +29,11 @@ def datalist(request):
     plates_selected=list()
 
     if not 'proj' in request.session:
-        return render(request,"main/error.html",{'error_msg':"No project specified!"})
-        
+        return render(request,"main/error.html",{'error_msg':"No project specified!"})      
         
     exec ('from data.models import proj_'+request.session['proj_id']+' as data')
     
-    plates=list()
-    for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
-        plates.append(i['plate'])
-    plates=sorted(plates)
-
+    plates=get_platelist(model=data)#get array of plates
 
     if request.POST.get('plates'):
         plates_selected=request.POST.get('plates').split(',')

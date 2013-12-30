@@ -11,7 +11,7 @@
 
 {% for j in user.project_set.all %}
 
-<div class="panel panel-info">
+<div class="panel panel-default">
 
 <div class="panel-heading">
     <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{j.pk}}">
@@ -36,7 +36,6 @@
     </dl>
 
 </div>
-<div class="panel-footer"></div>
 </div>
 {% endfor %}
 </div>

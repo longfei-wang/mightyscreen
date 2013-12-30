@@ -2,14 +2,24 @@
 from django.db.models import Count
 from django.db import transaction
 
-def get_platelist(proj_id,withtime=True):#get the platelists of current project, ranked by time
-	exec ('from data.models import proj_'+proj_id+' as data')
-	plates=list()
-	for i in list(data.objects.order_by('-create_date','plate').values('plate','create_date').annotate(x=Count('plate'))):
-		plates.append(i['plate'])
-	# plates=sorted(plates)
-	raise Exception(plates)
+def get_platelist(**kwargs):
+	
+    """get the platelists of current project, 
+    can use model, or a project_id, order by create_date)
+    proj_id=xxx or model=xxx"""
+    
+    if 'proj_id' in kwargs:
+        exec ('from data.models import proj_'+kwargs['proj_id']+' as data')
+    elif 'model' in kwargs:
+        data=kwargs['model']
+    else:
+        return []
 
+    plates=list()
+    for i in list(data.objects.order_by('-create_date','plate').values('plate','create_date').annotate(x=Count('plate'))):
+    	plates.append(i['plate'])
+
+    return plates
 
 
 @transaction.commit_manually

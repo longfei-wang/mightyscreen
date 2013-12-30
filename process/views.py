@@ -2,11 +2,12 @@ from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.core.context_processors import csrf
 from django.contrib import messages
-from main.models import project, data_base, score as sc
+from main.models import project, data_base, score as sc#alias cause name conflict with method
 from collections import OrderedDict as od
 from process.tasks import process_score
 from process.forms import PlatesToUpdate, ScoreForm
 from django.db.models import Count
+from main.utils import get_platelist
 #from main.utils import get_platelist
 # Create your views here.
     
@@ -19,16 +20,11 @@ def mark(request):
     welltypes=od(sorted(dict(data_base.schoice).items()))
     proj=project.objects.get(pk=request.session['proj_id'])
 
-    #get list of plates
-    plates=list()
-    for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
-            plates.append(i['plate'])
-    plates=sorted(plates)
+    plates=get_platelist(model=data)#get list of plates
 
     if request.method=='POST':
             form=PlatesToUpdate(request.POST)
             if form.is_valid():
-                    #raise Exception(form.cleaned_data)
                     for j in welltypes.keys():
                             if request.POST.get(j):
                                     x=request.POST.get(j)
@@ -53,11 +49,7 @@ def score(request):
 
     field_list=['name','description','formular']
 
-    #get list of plates
-    plates=list()
-    for i in list(data.objects.values('plate').annotate(x=Count('plate'))):
-            plates.append(i['plate'])
-    plates=sorted(plates)
+    plates=get_platelist(model=data)#get list of plates
 
 
     if request.method=='POST':
