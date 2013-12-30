@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import HttpResponse
 from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -7,7 +8,8 @@ from django.core.paginator import Paginator
 from main.forms import UploadFileForm
 from django.core.cache import cache
 from django.contrib import messages
-
+from django.core import serializers
+import csv
 # Create your views here.
 
 #def handle_uploaded_file(f):
@@ -17,7 +19,6 @@ from django.contrib import messages
 
 def index(request):
     return render(request, "main/index.html")
-#"""request.FILES['datafile'],"""'test','longfei',['1','2']
 
 
 def datalist(request):
@@ -135,3 +136,52 @@ def upload(request):
         return render(request,'main/error.html',{'error_msg':'No working project specified!'})
     return render(request,'main/upload.html', c)
 
+def export(request):
+
+
+    if cache.get('dataview'+request.session['proj_id']):
+        
+        obj=cache.get('dataview'+request.session['proj_id'])
+
+        if request.GET.get('format')=='csv':
+
+            response = HttpResponse(mimetype='text/csv')
+
+            response['Content-Disposition'] = 'attachment;filename="export.csv"'
+
+            writer = csv.writer(response)
+
+            header_row=True
+            header=[]
+            for i in obj.values():
+                values=[]
+                for key in i:
+                    if header_row:
+                        header.append(key)
+                    values.append(i[key])
+                if header_row:
+                    writer.writerow(header)
+                    header_row=False
+                writer.writerow(values)
+
+            return response
+
+        elif request.GET.get('format')=='xml':
+
+            data = serializers.serialize("xml", obj)
+
+            response = HttpResponse(mimetype='application/xml')
+            response['Content-Disposition'] = 'attachment;filename="export.xml"'
+            response.write(data)
+
+            return response
+
+        elif  request.GET.get('format')=='json':
+
+            data = serializers.serialize("json", obj)
+            
+            response = HttpResponse(mimetype='application/json')
+            response['Content-Disposition'] = 'attachment;filename="export.json"'
+            response.write(data)
+
+            return response

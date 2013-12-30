@@ -6,6 +6,7 @@ from account.models import RegisterForm, ProjectForm
 from main.models import project,score,experiment,readout
 from django.conf import settings
 from django.forms.models import modelform_factory,modelformset_factory
+from django.contrib import messages
 import main.utils
 import json
 import os
@@ -96,12 +97,13 @@ def projedit(request):
         if form.is_valid():
             form.save()
             #not sure if this is safe here. guess so. what if users submit at the same time? has to be queued
-            dir=settings.BASE_DIR
-            os.system('python %s\manage.py schemamigration data --auto'%dir)
-            os.system('python %s\manage.py migrate data'%dir)
+            dir=os.path.join(settings.BASE_DIR,'manage.py')
+            os.system('python %s schemamigration data --auto'%dir)
+            os.system('python %s migrate data'%dir)
             main.utils.flush_transaction()
 
             return render(request,'main/redirect.html',{'message':'Project Created.','dest':'index'})
+            
     if request.method=='GET':
         if request.GET.get('p'):
             proj=project.objects.get(pk=request.GET.get('p'))
@@ -135,7 +137,9 @@ def filternedit(request):
     if request.POST.get('ispost'):
         formset=formsetobject(request.POST)
         if formset.is_valid():
+                #check if creater of this entry, otherwise no permission!
             formset.save()
+            messages.success(request,'Entry Updated!')
     else:
         formset=formsetobject(queryset=obj.objects.filter(
                     pk__in=map(int,request.POST.getlist('selection'))

@@ -11,6 +11,8 @@ urlpatterns = patterns('',
     url(r'^$', views.index,name='index'),
     url(r'^view/', views.datalist, name='view'),
     url(r'^upload/', views.upload, name='upload'),
+    url(r'^export/', views.export, name='export'),
+
     )    
 
 

@@ -36,6 +36,7 @@ class experiment(models.Model):
     name = models.CharField(max_length=50)
     description =  models.TextField(blank=True)
     readout = models.ManyToManyField('readout')
+    #create_by = models.ForeignKey(User)
 
 
 
@@ -46,7 +47,7 @@ class score(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
     formular = models.TextField()
-
+    #create_by = models.ForeignKey(User)
 
 #since differnet experiment has different readouts, this is a table define specific readout of a experiment
 class readout(models.Model):
@@ -55,7 +56,7 @@ class readout(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
     keywords = models.TextField()
-
+    #create_by = models.ForeignKey(User)
 
 #the format of the file user upload.
 class fileformat(models.Model):
