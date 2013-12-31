@@ -260,16 +260,34 @@ def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,la
     return image_string
 
 
-def plot_histogram(fp_list, num_bins = 100):
+def plot_histogram(data_list, plate_number = 1,bins = 100):
+    """plot histogram, with gauss fitting \n
+    Code modified from http://stackoverflow.com/questions/17779316
+    """
+    y = data_list
+    y = numpy.random.standard_normal(10000)
+        
+    fig = pylab.figure(figsize=_figsize())   
+    ax = fig.add_axes([0.1, 0.15, 0.8, 0.7])
     
-    num_bins = 100
+    ## Plot the histogram    
+    data = pylab.hist(y, bins = bins,facecolor='green', alpha=0.5)
+
+    # Generate data from bins as a set of points 
+    x = [0.5 * (data[1][i] + data[1][i+1]) for i in xrange(len(data[1])-1)]
+    y = data[0]    
+    popt, pcov = scipy.optimize.curve_fit(_gauss, x, y)
+
+    # Plot the fitting data    
+    x_fit = pylab.linspace(x[0], x[-1], 100)
+    y_fit = _gauss(x_fit, *popt)    
+    pylab.plot(x_fit, y_fit, "r--",lw=1, label = "Gaussian Fit")
     
-    pylab.figure(figsize=(12,6))
-    pylab.hist(fp_list,num_bins, facecolor='green',alpha=0.5)
-    pylab.title('Result distribution')
-    pylab.xlabel('Intenstiy')
-    pylab.ylabel('Probability')       
-#    pylab.legend('',loc='best')    
+    ## legands and labels
+    plate_pro = "plate" if len(plate_number.split(','))==1 else "plates" 
+    pylab.title('Histogram\n %s: %s'%(plate_pro,plate_number))
+    pylab.xlabel('%s: %s'%(plate_pro,plate_number))
+    pylab.legend(loc='best') 
     
     image_string = _fig_out()
     return image_string
