@@ -251,6 +251,69 @@ def scatter(request):
                                                      })  
                                                      
 
+
+def histogram(request):
+    """ basic function to plot histogram 
+    """
+    ### This function is still in the testing phase
+    ### because one plate seems like have more than 384 wells...
+    plates, plates_selected,data,field_list,data_columns =_select_plates(request)
+    form=PlatesToUpdate()    
+    img_list = [] 
+    all_plates =True
+
+    if all_plates == False:        
+        for plate_number in plates_selected:    
+            entry_list = data.objects.filter(plate = plate_number)     
+            for data_column in data_columns:
+                well_list = []
+                plate_well_list = []
+                fp_list = []
+                well_type_list = []
+                for e in entry_list:
+#                    well_list.append(e.well)
+                    fp_list.append(float(getattr(e,data_column)))
+#                    plate_well_list.append(plate_number+'_'+e.well)
+#                    well_type_list.append(e.welltype)
+    
+            ## Plot Reproductivity   
+            ## This plot might have bug if A and B doesn't have same well number
+            ## This will be addressed in the future
+                c = stat.plot_histogram(fp_list, plate_number = (plate_number+' '+data_column),)
+                img_list.append(c)        
+
+    if all_plates == True:        
+        for data_column in data_columns:
+            well_list = []
+            plate_well_list = []
+            fp_list = []
+            well_type_list = []
+            for plate_number in plates_selected:    
+                entry_list = data.objects.filter(plate = plate_number)                 
+                for e in entry_list:
+#                    well_list.append(e.well)
+                    fp_list.append(float(getattr(e,data_column)))
+#                    plate_well_list.append(plate_number+'_'+e.well)
+#                    well_type_list.append(e.welltype)
+    
+            ## Plot Reproductivity   
+            ## This plot might have bug if A and B doesn't have same well number
+            ## This will be addressed in the future
+            plate_number = (', ').join(map(str, plates_selected))
+            c = stat.plot_histogram(fp_list,plate_number = (plate_number+' '+data_column),)
+            img_list.append(c)  
+
+
+
+    url_name = 'stat_histogram'
+    return render(request,"statistics/plots.html",{'img_list':img_list,
+                                                     'plates':plates,
+                                                     'form':form,
+                                                     'url_name':url_name,
+                                                     'field_list':field_list,
+                                                     })
+
+
 #=============================================================================
 ## Testing views
 
