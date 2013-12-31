@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     url(r'^heatmap/', views.heatmap, name='stat_heatmap'),
     url(r'^correlation/', views.correlation, name='stat_correlation'),
     url(r'^scatter/', views.scatter, name='stat_scatter'),
+    url(r'^histogram/', views.histogram, name='stat_histogram'),
     )    
 
 
