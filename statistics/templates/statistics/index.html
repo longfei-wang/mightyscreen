@@ -10,6 +10,7 @@
     <li class ="stat_heatmap"><a href="{% url "stat_heatmap" %}">heatmap</a></li>
     <li class ="stat_scatter"><a href="{% url "stat_scatter" %}">scatter</a></li>
     <li class ="stat_correlation"><a href="{% url "stat_correlation" %}">correlation</a></li>
+    <li class ="stat_histogram"><a href="{% url "stat_histogram" %}">correlation</a></li>    
 </ul>
 <br>
 
@@ -57,7 +58,7 @@
     <li class = "btn btn-default"> Sort by value</li>
     </div>
 </ul><hr>
-{%elif url_name == "stat_correlation"%}
+{%elif url_name == "stat_correlation" or url_name == "stat_histogram"%}
 <ul class="nav nav-pills" >
     <div class="btn-group">
     <li class = "btn btn-default" >Plot all plates together</li>
