@@ -45,6 +45,12 @@ def _func_sigmoid(x,EC50,k,base,amp):
 def _gauss(x, a, b, c):
     return a * pylab.exp(-(x - b)**2.0 / (2 * c**2))
 
+def _figsize(x = 12, y = 6):
+    """ To set the output figure size \n
+    Default is 12 x 6"""
+    figsize=(x,y)
+    return figsize
+
 def _plate_base(plate_type):
     s_384 = """A01 A02 A03 A04 A05 A06 A07 A08 A09 A10 A11 A12 A13 A14 A15 A16 A17 A18 A19 A20 A21 A22 A23 A24 
     B01 B02 B03 B04 B05 B06 B07 B08 B09 B10 B11 B12 B13 B14 B15 B16 B17 B18 B19 B20 B21 B22 B23 B24 
@@ -161,7 +167,7 @@ def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1, sor
 #    fitfunc = numpy.poly1d(z)    
 
     ## Creat the canves    
-    fig = pylab.figure(figsize=(12,6))   
+    fig = pylab.figure(figsize=_figsize())   
     ax = fig.add_axes([0.1, 0.15, 0.8, 0.7])
     plate_pro = "plate" if len(plate_number.split(','))==1 else "plates" 
     pylab.title('Scatter Plot\n %s: %s'%(plate_pro,plate_number))
@@ -218,7 +224,7 @@ def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,la
     fitfunc = numpy.poly1d(z)    
 
     ## Creat the canves    
-    fig = pylab.figure(figsize=(12,6))   
+    fig = pylab.figure(figsize=_figsize())   
     ax = fig.add_axes([0.1, 0.15, 0.8, 0.7])
     plate_pro = "plate" if len(plate_number.split(','))==1 else "plates" 
     pylab.title('Data replicability\n %s: %s'%(plate_pro,plate_number))
@@ -286,7 +292,7 @@ def plot_heatmap(well, intensity,plate_well_list, plate_number = 1, cmap = 'jet_
     ys_row_inverse = numpy.multiply(ys_row,[-1])
 
     ## Creat the canves    
-    fig = pylab.figure(figsize=(12,6))   
+    fig = pylab.figure(figsize=_figsize())   
     
     ## Plot colorbar
     ax2 = fig.add_axes([0.1, 0.1, 0.4, 0.03])
@@ -356,7 +362,7 @@ def test_cluster(data_in, n = 10):
     from numpy.random import rand
     from scipy.cluster.vq import kmeans,vq
     
-    fig = pylab.figure(figsize=(12,6))    
+    fig = pylab.figure(figsize=_figsize())    
     
     # data generation
 #    data = vstack((rand(150,2) + array([.5,.5]),rand(150,2)))
