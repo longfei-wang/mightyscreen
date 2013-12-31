@@ -175,14 +175,13 @@ def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1, sor
     patch_id = []
     for n in range(len(xs)):
         patch_id.append(('patch_ax_%s'%plate_well_list[n]))
-
     well_types = []
-    for x,y,w,id in itertools.izip(xs,ys,well_type_list,patch_id):
+    for x,y,w,gid in itertools.izip(xs,ys,well_type_list,patch_id):
         if w not in well_types:
-            pylab.scatter(x,y, s=60, c = color_dict[w][1], gid = id, label = color_dict[w][0].title())
+            pylab.scatter(x,y, s=60, c = color_dict[w][1], gid = gid, label = color_dict[w][0].title())
             well_types.append(w)
         else:
-            pylab.scatter(x,y, s=60, c = color_dict[w][1], gid = id)  
+            pylab.scatter(x,y, s=60, c = color_dict[w][1], gid = gid)  
     
     ## Plot legend
     # Shink current axis by 20%

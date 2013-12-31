@@ -99,7 +99,7 @@ def heatmap(request):
                 plate_well_list.append(plate_number+'_'+e.well)
             
             ## Plot Heat maps        
-            c = stat.plot_heatmap(well_list, fp_list,plate_well_list,cmap='jet',plate_number = (plate_number+' '+data_column))             
+            c = stat.plot_heatmap(well_list, fp_list,plate_well_list,cmap='BrBG_r',plate_number = (plate_number+' '+data_column))             
             img_list.append(c)        
 
     url_name = 'stat_heatmap'
@@ -125,7 +125,7 @@ def correlation(request):
     if len(data_columns)>1:
         if all_plates == False:
             for plate_number in plates_selected:    
-                entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1]) 
+                entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])
                 correlation_list = []
                 for data_column in data_columns:
                     well_list = []
@@ -153,13 +153,14 @@ def correlation(request):
                 plate_well_list = []
                 fp_list = []
                 well_type_list = []
-                for plate_number in plates_selected:
-                    entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1]) 
-                    for e in entry_list:
-                        well_list.append(e.well)
-                        fp_list.append(float(getattr(e,data_column)))
-                        plate_well_list.append(plate_number+'_'+e.well)
-                        well_type_list.append(e.welltype)
+                #for plate_number in plates_selected:
+                entry_list = data.objects.filter(plate__in = plates_selected)
+                #raise Exception([x['FP_A'] for x in entry_list.values('plate','well','welltype','FP_A')])
+                for e in entry_list:
+                    well_list.append(e.well)
+                    fp_list.append(float(getattr(e,data_column)))
+                    plate_well_list.append(e.plate+'_'+e.well)
+                    well_type_list.append(e.welltype)
                 correlation_list.append(fp_list)
                 ## Plot Reproductivity   
                 ## This plot might have bug if A and B doesn't have same well number
@@ -200,7 +201,7 @@ def scatter(request):
 
     if all_plates == False:        
         for plate_number in plates_selected:    
-            entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])      
+            entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])     
             for data_column in data_columns:
                 well_list = []
                 plate_well_list = []
