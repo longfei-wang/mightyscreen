@@ -42,6 +42,9 @@ def _findNearest(array,value):
 def _func_sigmoid(x,EC50,k,base,amp):
     return amp / (1 + 10**(-1*(x-EC50))) + base
 
+def _gauss(x, a, b, c):
+    return a * pylab.exp(-(x - b)**2.0 / (2 * c**2))
+
 def _plate_base(plate_type):
     s_384 = """A01 A02 A03 A04 A05 A06 A07 A08 A09 A10 A11 A12 A13 A14 A15 A16 A17 A18 A19 A20 A21 A22 A23 A24 
     B01 B02 B03 B04 B05 B06 B07 B08 B09 B10 B11 B12 B13 B14 B15 B16 B17 B18 B19 B20 B21 B22 B23 B24 
