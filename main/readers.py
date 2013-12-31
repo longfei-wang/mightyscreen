@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from collections import defaultdict
+from library.models import library, compound
+from django.core.exceptions import ObjectDoesNotExist
 #from astropy.table import Table
 import pandas as pd
 import datetime as dt
@@ -11,8 +13,11 @@ class rawdatafile():#a base class for all file format
         """formdata is the django UploadFileForm in main.models
         pandas is used to parse the datafile"""   
         
+        self.library_obj=formdata['library_pointer']
+        self.library=self.library_obj.library_name if self.library_obj else formdata['library']
+
         self.formdata=formdata
-        self.library=formdata['library']
+        
         self.proj_id=formdata['project']
         self.plates=formdata['plates'].split(',')
         self.plates_num=len(self.plates)
@@ -25,7 +30,6 @@ class rawdatafile():#a base class for all file format
         self.datetime=dt.datetime.now()
         self.row=self.p.plate.row()
         self.col=self.p.plate.col()
-        self.table_reg=dict()
         self.read_file()
         self.wells=self.p.plate.numofwells
 
@@ -97,6 +101,7 @@ class Envision_Grid_Reader(rawdatafile):
 # a.experiment.readout.all(), a.experiment.readout.count(), a.experiment.readout.get(name='FP').keywords
     def parse(self):
         n=0
+        table_reg=dict()
         self.table_count=0
         for row in self.rawdata:#read through whole file and find out all the tables
             n+=1
@@ -105,13 +110,14 @@ class Envision_Grid_Reader(rawdatafile):
                     result=self.is_table(n)
                     if result:
                         if result['x']>=len(self.col) and result['y']>=len(self.row):
-                            self.table_reg[result['start']]=m.name
+                            table_reg[result['start']]=m.name
                             self.table_count+=1
 
+        self.map_table(table_reg)
+
+        return table_reg
         
-        return self.map_table()
-        
-    def map_table(self):
+    def map_table(self,table_reg):
         #creat pointers that point at each table
 
         replicate_count=0
@@ -123,12 +129,12 @@ class Envision_Grid_Reader(rawdatafile):
             if self.table_count < self.replicate_num*self.plates_num*self.readout_num:
                 return False#raise exception might be good
             
-            for i in sorted(self.table_reg):#go over each replicate and plate
-                if self.table_reg[i] not in readout_list:
-                    readout_list.append(self.table_reg[i]) 
+            for i in sorted(table_reg):#go over each replicate and plate
+                if table_reg[i] not in readout_list:
+                    readout_list.append(table_reg[i]) 
                 else:
                     readout_list=list()
-                    readout_list.append(self.table_reg[i]) 
+                    readout_list.append(table_reg[i]) 
                     replicate_count+=1
                     if replicate_count==self.replicate_num:
                         replicate_count=0
@@ -136,19 +142,19 @@ class Envision_Grid_Reader(rawdatafile):
                         if plate_count==self.plates_num:
                             break
 
-                self.map[plate_count][replicate_count][self.table_reg[i]]=[i,1]
+                self.map[plate_count][replicate_count][table_reg[i]]=[i,1]
         
         elif self.wells==1536:
 
             if self.table_count*4 < self.replicate_num*self.plates_num*self.readout_num:
                 return False#raise exception might be good
 
-            for i in sorted(self.table_reg):#go over each replicate and plate
-                if self.table_reg[i] not in readout_list:
-                    readout_list.append(self.table_reg[i]) 
+            for i in sorted(table_reg):#go over each replicate and plate
+                if table_reg[i] not in readout_list:
+                    readout_list.append(table_reg[i]) 
                 else:
                     readout_list=list()
-                    readout_list.append(self.table_reg[i]) 
+                    readout_list.append(table_reg[i]) 
                     replicate_count+=1
                     if replicate_count==self.replicate_num:
                         replicate_count=0
@@ -156,10 +162,10 @@ class Envision_Grid_Reader(rawdatafile):
                         if plate_count>=self.plates_num:
                             break
 
-                self.map[plate_count][replicate_count][self.table_reg[i]]=[i,1]
-                self.map[plate_count+1][replicate_count][self.table_reg[i]]=[i,2]
-                self.map[plate_count+2][replicate_count][self.table_reg[i]]=[i+1,1]
-                self.map[plate_count+3][replicate_count][self.table_reg[i]]=[i+1,2]
+                self.map[plate_count][replicate_count][table_reg[i]]=[i,1]
+                self.map[plate_count+1][replicate_count][table_reg[i]]=[i,2]
+                self.map[plate_count+2][replicate_count][table_reg[i]]=[i+1,1]
+                self.map[plate_count+3][replicate_count][table_reg[i]]=[i+1,2]
         return self.map
 
 #save tables into database row by row, might take some time.
@@ -173,19 +179,33 @@ class Envision_Grid_Reader(rawdatafile):
             for row in range(len(self.row)):
 
                 for col in range(len(self.col)):
+
+                    platewell=self.plates[pla]+self.row[row]+self.col[col]
                     
+                    try:#check if this well has coresponding compound in our library
+                        cmpd=compound.objects.get(plate_well = platewell,library_name=self.library_obj)
+                    except ObjectDoesNotExist:
+                        cmpd=None
+
                     #update_or_create: if same well already exists, it will be over written.
                     entry, created=data.objects.get_or_create(
                     library = self.library,
+                    platewell=platewell,
                     plate = self.plates[pla],
                     well=self.row[row]+self.col[col],
                     project=self.p,
-                    defaults={'submission':self.sub,'create_date':self.datetime,'create_by':self.sub.submit_by}
+                    defaults={'submission':self.sub,
+                              'create_date':self.datetime,
+                              'create_by':self.sub.submit_by,
+                              'compound_pointer':cmpd,
+                              'library_pointer':self.library_obj}
                     )
 
                     entry.submission=self.sub
                     entry.create_date=self.datetime
                     entry.create_by=self.sub.submit_by
+                    entry.compound_pointer=cmpd
+                    entry.library_pointer=self.library_obj
 
                     for rep in range(self.replicate_num):#all the readouts
                     

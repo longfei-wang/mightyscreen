@@ -1,22 +1,17 @@
 from django import forms
 import main.readers as readers
-from main.tasks import queue
+from main.models import data_base
 
-
-class UploadFileForm(forms.Form):
-    def submit_data(self):
-        #define the submission method here.
-        d = readers.Envision_Grid_Reader(self.cleaned_data)
-        if d.parse():
-        	#then parse_data in background
-			queue(d,"save()")
-			return 'submitted'
+class UploadFileForm(forms.ModelForm):
+    class Meta:
+        model = data_base
+        fields=['library_pointer']
+    
     #title = forms.CharField(max_length=50)
     project = forms.CharField(widget=forms.HiddenInput)
     user = forms.CharField(widget=forms.HiddenInput)
-    library = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Library Name'}))
-    plates = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Plates List, like 1,2,3'}))
+    library = forms.CharField(required=False,label='Library Name [Optional]',widget=forms.TextInput(attrs={'placeholder':'name of the library if it\'s not in our list'}))
+    plates = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'plate list, like 1,2,3'}))
     datafile  = forms.FileField(widget=forms.FileInput())
     comments = forms.CharField(widget=forms.Textarea(),required=False)
-
 

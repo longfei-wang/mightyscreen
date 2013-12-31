@@ -59,7 +59,7 @@ def profile(request):
 
 def jobview(request):
     #proj=request.user.project_set.get(pk=request.session.get('proj_id'))
-    field_list=['project','submit_time','submit_by','comments','status','log']
+    field_list=['project','jobtype','submit_time','submit_by','comments','status','log']
     return render(request,'account/jobs.html',{'field_list':field_list,'proj_id':int(request.session.get('proj_id'))})
 
 #view and manage projects

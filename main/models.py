@@ -3,7 +3,7 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-
+from library.models import library as lib, compound
 # Create your models here.
 
 #define a screening, basically list of projects with their relations. like primary screen, secondary screen.
@@ -15,18 +15,22 @@ class project(models.Model):
     def __unicode__(self):
         return self.name
     def rep(self):
-        return self.replicate.split(',')
-    
+        return 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split()[:self.replicate]
+    def readouts(self):
+        return [ i for i in self.experiment.readout.all()]
+    def scores(self):
+        return [ i for i in self.score.all()]
+
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
-    agreement = models.CharField(max_length=50)
+    agreement = models.CharField(max_length=50,blank=True)
     experiment = models.ForeignKey('experiment')
     plate = models.ForeignKey('plate')
-    replicate = models.CharField(max_length=50)
+    replicate = models.PositiveSmallIntegerField(verbose_name='num of replicates')
     score = models.ManyToManyField('score',blank=True)
     leader = models.ForeignKey(User,related_name='leader')
     user = models.ManyToManyField(User)
-    #deleted = models.BooleanField(default=False)
+    deleted = models.BooleanField(default=False)
    
 #define a experiemnt
 class experiment(models.Model):
@@ -36,7 +40,7 @@ class experiment(models.Model):
     name = models.CharField(max_length=50)
     description =  models.TextField(blank=True)
     readout = models.ManyToManyField('readout')
-    #create_by = models.ForeignKey(User)
+    create_by = models.ForeignKey(User)
 
 
 
@@ -47,7 +51,7 @@ class score(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
     formular = models.TextField()
-    #create_by = models.ForeignKey(User)
+    create_by = models.ForeignKey(User)
 
 #since differnet experiment has different readouts, this is a table define specific readout of a experiment
 class readout(models.Model):
@@ -56,7 +60,7 @@ class readout(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
     keywords = models.TextField()
-    #create_by = models.ForeignKey(User)
+    create_by = models.ForeignKey(User)
 
 #the format of the file user upload.
 class fileformat(models.Model):
@@ -82,7 +86,7 @@ class plate(models.Model):
         return well
 
     name = models.CharField(max_length=50)
-    numofwells = models.PositiveIntegerField()
+    numofwells = models.PositiveSmallIntegerField()
     columns = models.TextField()
     rows = models.TextField()
     ochoice = (
@@ -102,9 +106,8 @@ class submission(models.Model):
     submit_time = models.DateTimeField()
     submit_by = models.ForeignKey(User)
     comments=models.TextField(blank=True)
-
-    #progress=models.PositiveIntegerField(default=0)#percentage?
-
+    progress=models.PositiveSmallIntegerField(default=0)#percentage?
+    result=models.FileField(upload_to='job_results',blank=True,null=True)
     log=models.TextField(blank=True)
     schoice = (
     ('p','pending'),
@@ -122,13 +125,21 @@ class data_base(models.Model):
     class Meta:
         abstract=True
     
+    hidden_field=['id','library','library_pointer','create_by','compound_pointer','platewell','ishit','submission','project']
+    
+    
+    library = models.CharField(max_length=50,verbose_name='Library')
+    library_pointer=models.ForeignKey(lib,null=True,blank=True,verbose_name='Library')
+    
+    compound_pointer=models.ForeignKey(compound,null=True,blank=True)#this is the unique key to library
 
-    hidden_field=['id','library','submission','project']
+    platewell = models.CharField(max_length=50)#using plate well as unique identifier, not good for more than one libraries
 
-    library = models.CharField(max_length=50)
     plate = models.CharField(max_length=20)
     well = models.CharField(max_length=20)
-    #need to add a unqiue key here maybe onetoone to library
+    
+    ishit=models.PositiveSmallIntegerField(default=0)
+
     schoice = (
     ('E','empty'),
     ('P','positive control'),

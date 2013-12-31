@@ -184,6 +184,7 @@ def correlation(request):
                                                      'form':form,
                                                      'url_name':url_name,
                                                      'field_list':field_list,
+                                                     'defaultcolor':x,
                                                      })  
                                                      
                                                      

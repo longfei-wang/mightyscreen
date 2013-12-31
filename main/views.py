@@ -10,6 +10,8 @@ from django.core.cache import cache
 from django.contrib import messages
 from django.core import serializers
 from main.utils import get_platelist
+import main.readers as readers
+from main.tasks import queue
 import csv
 # Create your views here.
 
@@ -113,24 +115,32 @@ def datalist(request):
 
 
 def upload(request):
+
     if 'proj' in request.session: 
         form = UploadFileForm(initial={'user':request.user.pk,'project':request.session['proj_id']})
     
         if request.method == 'POST':
-            form = UploadFileForm(request.POST, request.FILES)
             
-            if form.is_valid():
-    
-                form.submit_data()
+            if request.POST.get('real_submit'): #if this is after confirmation
+                reader=cache.get('upload')
+                raise Exception(dir(reader))
+                cache.delete('upload')
+                queue(reader,'save()')#then parse_data in background
+
                 return render(request,'main/redirect.html',{'message':'Data submitted to queue!','dest':'index'})
-    
-        #a form to upload raw data
-    
-        c={'form': form}
-        c.update(csrf(request))
+            
+            else: #if this is not confirmed check the form and ask user to confirm
+                form = UploadFileForm(request.POST, request.FILES)
+            
+                if form.is_valid():
+                    reader = readers.Envision_Grid_Reader(form.cleaned_data)
+                    mapss = reader.parse()
+                    cache.set('upload',reader)
+                    return render(request,'main/upload.html', {'form':form,'map':mapss})
+
     else:
         return render(request,'main/error.html',{'error_msg':'No working project specified!'})
-    return render(request,'main/upload.html', c)
+    return render(request,'main/upload.html', {'form':form})
 
 def export(request):
 
