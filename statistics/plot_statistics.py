@@ -139,10 +139,13 @@ def plot_sigmoid_binding(file_name,x_column_number = 1,y_column_number = 2):
 
 
 
-def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1):
+def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1, sort = 'sorted'):
     xs = [n+1 for n in xrange(len(plate_well_list))]
     ys = data_list    
-
+    if sort == 'sorted':    
+        ys.sort()    
+    
+    
     color_dict = {'B':['bad well', '#bdbdbd'], 
                   'P':['positive control', '#de2d26'],
                   'N':['negative control', '#0000CC'],
@@ -157,9 +160,12 @@ def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1):
     ## Creat the canves    
     fig = pylab.figure(figsize=(12,6))   
     ax = fig.add_axes([0.1, 0.15, 0.8, 0.7])
-    pylab.title('Scatter Plot\n Plate: %s'%plate_number)
+    plate_pro = "plate" if len(plate_number.split(','))==1 else "plates" 
+    pylab.title('Scatter Plot\n %s: %s'%(plate_pro,plate_number))
     pylab.xlabel('Well Number')
-    pylab.ylabel('FP of plate: %s'%plate_number)
+    if sort =='sorted':
+        pylab.xlabel('Arbitary Number')        
+    pylab.ylabel('%s: %s'%(plate_pro,plate_number))
     pylab.xlim(min(xs)-10,max(xs)+10)       
     
 #    x = scipy.linspace(min(xs),max(xs),100)
@@ -195,7 +201,8 @@ def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1):
 def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,label_x,label_y):
     
     xs = data_a
-    ys = data_b    
+    ys = data_b
+        
 
     color_dict = {'B':['bad well', '#bdbdbd'], 
                   'P':['positive control', '#de2d26'],
@@ -211,9 +218,10 @@ def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,la
     ## Creat the canves    
     fig = pylab.figure(figsize=(12,6))   
     ax = fig.add_axes([0.1, 0.15, 0.8, 0.7])
-    pylab.title('Data replicability\n Plate: %s'%plate_number)
-    pylab.xlabel('%s of plate: %s'%(label_x,plate_number))
-    pylab.ylabel('%s of plate: %s'%(label_y,plate_number))       
+    plate_pro = "plate" if len(plate_number.split(','))==1 else "plates" 
+    pylab.title('Data replicability\n %s: %s'%(plate_pro,plate_number))
+    pylab.xlabel('%s of %s: %s'%(label_x,plate_pro, plate_number))
+    pylab.ylabel('%s of %s: %s'%(label_y,plate_pro,plate_number))       
     
     x = scipy.linspace(min(xs),max(xs),100)
     pylab.plot(x,fitfunc(x),'b', label=('fitting\n R=%f'%r_value))          
@@ -259,7 +267,7 @@ def plot_histogram(fp_list, num_bins = 100):
     return image_string
 
 
-def plot_heatmap(well, intensity,plate_well_list, plate_number = 1, cmap = pylab.cm.jet, plate_type = '384'):
+def plot_heatmap(well, intensity,plate_well_list, plate_number = 1, cmap = 'jet_r', plate_type = '384'):
     """Plot heatmap of 384 plates by default \n
     Can be expanded to other plate form using _plate_base functio \n
     inspired by codes from following pages: \n
@@ -277,7 +285,6 @@ def plot_heatmap(well, intensity,plate_well_list, plate_number = 1, cmap = pylab
 
     ## Creat the canves    
     fig = pylab.figure(figsize=(12,6))   
-    cmap = pylab.cm.jet
     
     ## Plot colorbar
     ax2 = fig.add_axes([0.1, 0.1, 0.4, 0.03])

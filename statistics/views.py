@@ -99,7 +99,7 @@ def heatmap(request):
                 plate_well_list.append(plate_number+'_'+e.well)
             
             ## Plot Heat maps        
-            c = stat.plot_heatmap(well_list, fp_list,plate_well_list,plate_number = (plate_number+' '+data_column))             
+            c = stat.plot_heatmap(well_list, fp_list,plate_well_list,cmap='jet',plate_number = (plate_number+' '+data_column))             
             img_list.append(c)        
 
     url_name = 'stat_heatmap'
@@ -119,11 +119,88 @@ def correlation(request):
     form=PlatesToUpdate()    
     img_list = []  
     
+    all_plates =True
+
+
     if len(data_columns)>1:
-        for plate_number in plates_selected:    
-    #        data_columns = ['FP_A','FP_B']
-            entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1]) 
+        if all_plates == False:
+            for plate_number in plates_selected:    
+                entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1]) 
+                correlation_list = []
+                for data_column in data_columns:
+                    well_list = []
+                    plate_well_list = []
+                    fp_list = []
+                    well_type_list = []
+                    for e in entry_list:
+                        well_list.append(e.well)
+                        fp_list.append(float(getattr(e,data_column)))
+                        plate_well_list.append(plate_number+'_'+e.well)
+                        well_type_list.append(e.welltype)
+                    correlation_list.append(fp_list)
+                ## Plot Reproductivity   
+                ## This plot might have bug if A and B doesn't have same well number
+                ## This will be addressed in the future
+                label_x = data_columns[0]
+                label_y = data_columns[1]
+                c = stat.plot_linearfit(correlation_list[0],correlation_list[1], plate_well_list, plate_number,well_type_list,label_x,label_y)
+                img_list.append(c)                                     
+            
+        elif all_plates == True:
             correlation_list = []
+            for data_column in data_columns:                                    
+                well_list = []
+                plate_well_list = []
+                fp_list = []
+                well_type_list = []
+                for plate_number in plates_selected:
+                    entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1]) 
+                    for e in entry_list:
+                        well_list.append(e.well)
+                        fp_list.append(float(getattr(e,data_column)))
+                        plate_well_list.append(plate_number+'_'+e.well)
+                        well_type_list.append(e.welltype)
+                correlation_list.append(fp_list)
+                ## Plot Reproductivity   
+                ## This plot might have bug if A and B doesn't have same well number
+                ## This will be addressed in the future
+                label_x = data_columns[0]
+                label_y = data_columns[1]
+            plate_number = (', ').join(map(str, plates_selected))
+            c = stat.plot_linearfit(correlation_list[0],correlation_list[1], plate_well_list, plate_number,well_type_list,label_x,label_y)
+            img_list.append(c) 
+    
+    
+    elif len(data_columns)==1:
+        img_list.append("Please select more than one parameters for correlation calculation")              
+            
+
+
+
+    url_name = 'stat_correlation'
+    return render(request,"statistics/plots.html",{'img_list':img_list,
+                                                     'plates':plates,
+                                                     'form':form,
+                                                     'url_name':url_name,
+                                                     'field_list':field_list,
+                                                     })  
+                                                     
+                                                     
+                                                     
+                                                     
+def scatter(request):
+    """ basic function to plot heatmaps 
+    """
+    ### This function is still in the testing phase
+    ### because one plate seems like have more than 384 wells...
+    plates, plates_selected,data,field_list,data_columns =_select_plates(request)
+    form=PlatesToUpdate()    
+    img_list = [] 
+    all_plates =True
+
+    if all_plates == False:        
+        for plate_number in plates_selected:    
+            entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])      
             for data_column in data_columns:
                 well_list = []
                 plate_well_list = []
@@ -134,52 +211,36 @@ def correlation(request):
                     fp_list.append(float(getattr(e,data_column)))
                     plate_well_list.append(plate_number+'_'+e.well)
                     well_type_list.append(e.welltype)
-                correlation_list.append(fp_list)
+    
             ## Plot Reproductivity   
             ## This plot might have bug if A and B doesn't have same well number
             ## This will be addressed in the future
-            label_x = data_columns[0]
-            label_y = data_columns[1]
-            c = stat.plot_linearfit(correlation_list[0],correlation_list[1], plate_well_list, plate_number,well_type_list,label_x,label_y)
-            img_list.append(c) 
-    else:
-        img_list.append("Please select more than one parameters for correlation calculation")              
-            
-    url_name = 'stat_correlation'
-    return render(request,"statistics/plots.html",{'img_list':img_list,
-                                                     'plates':plates,
-                                                     'form':form,
-                                                     'url_name':url_name,
-                                                     'field_list':field_list,
-                                                     })  
-                                                     
-def scatter(request):
-    """ basic function to plot heatmaps 
-    """
-    ### This function is still in the testing phase
-    ### because one plate seems like have more than 384 wells...
-    plates, plates_selected,data,field_list,data_columns =_select_plates(request)
-    form=PlatesToUpdate()    
-    img_list = [] 
-        
-    for plate_number in plates_selected:    
-        entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])      
+                c = stat.plot_scatter(fp_list, plate_well_list,well_type_list,plate_number = (plate_number+' '+data_column),)
+                img_list.append(c)        
+
+    if all_plates == True:        
         for data_column in data_columns:
             well_list = []
             plate_well_list = []
             fp_list = []
             well_type_list = []
-            for e in entry_list:
-                well_list.append(e.well)
-                fp_list.append(float(getattr(e,data_column)))
-                plate_well_list.append(plate_number+'_'+e.well)
-                well_type_list.append(e.welltype)
-
-        ## Plot Reproductivity   
-        ## This plot might have bug if A and B doesn't have same well number
-        ## This will be addressed in the future
+            for plate_number in plates_selected:    
+                entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])                 
+                for e in entry_list:
+                    well_list.append(e.well)
+                    fp_list.append(float(getattr(e,data_column)))
+                    plate_well_list.append(plate_number+'_'+e.well)
+                    well_type_list.append(e.welltype)
+    
+            ## Plot Reproductivity   
+            ## This plot might have bug if A and B doesn't have same well number
+            ## This will be addressed in the future
+            plate_number = (', ').join(map(str, plates_selected))
             c = stat.plot_scatter(fp_list, plate_well_list,well_type_list,plate_number = (plate_number+' '+data_column),)
-            img_list.append(c)        
+            img_list.append(c)  
+
+
+
     url_name = 'stat_scatter'
     return render(request,"statistics/plots.html",{'img_list':img_list,
                                                      'plates':plates,
