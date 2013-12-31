@@ -7,9 +7,10 @@
 {% block content %}
 <!-- block to add navigation buttons-->
 <ul class="nav nav-tabs nav-pills-plots" >
-    <li class ="stat_heatmap"><a href="{% url "stat_heatmap" %}">heatmap</a></li>
-    <li class ="stat_scatter"><a href="{% url "stat_scatter" %}">scatter</a></li>
-    <li class ="stat_correlation"><a href="{% url "stat_correlation" %}">correlation</a></li>
+    <li class ="stat_heatmap"><a href="{% url "stat_heatmap" %}">Heatmap</a></li>
+    <li class ="stat_scatter"><a href="{% url "stat_scatter" %}">Scatter</a></li>
+    <li class ="stat_correlation"><a href="{% url "stat_correlation" %}">Correlation</a></li>
+    <li class ="stat_histogram"><a href="{% url "stat_histogram" %}">Histogram</a></li>    
 </ul>
 <br>
 
@@ -23,6 +24,8 @@
 <hr>
 {%endif%}
 
+
+{% block plot-options %}{%endblock%}
 <div style="width:100px;">
 <select name='color' class='form-control'>
     <option value='SGBR'>1</option>
@@ -48,19 +51,19 @@
 {%elif url_name == "stat_scatter"%}
 <ul class="nav nav-pills" >
     <div class="btn-group">
-    <li class = "btn btn-default" >Plot all plates together</li>
+    <li class = "btn btn-primary" >Plot all plates together</li>
     <li class = "btn btn-default" >Plot individual plates</li>
     </div>
     
     <div class="btn-group">
+    <li class = "btn btn-primary"> Sort by value</li>
     <li class = "btn btn-default"> Sort by well</li>
-    <li class = "btn btn-default"> Sort by value</li>
     </div>
 </ul><hr>
-{%elif url_name == "stat_correlation"%}
+{%elif url_name == "stat_correlation" or url_name == "stat_histogram"%}
 <ul class="nav nav-pills" >
     <div class="btn-group">
-    <li class = "btn btn-default" >Plot all plates together</li>
+    <li class = "btn btn-primary" >Plot all plates together</li>
     <li class = "btn btn-default" >Plot individual plates</li>
     </div>
 </ul><hr>
