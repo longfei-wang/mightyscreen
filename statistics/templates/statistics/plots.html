@@ -3,27 +3,69 @@
 {% load staticfiles %}
 {% load bootstrap_tags %}
 
-
-{% block plots %} 
-    
-<div class="well">
+{%block plot-option%}
 <form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url url_name %}">
-    {% csrf_token %}
- 
-    <textarea class = "data_column_to_plot" name= "data_column_to_plot" style="display:none;"></textarea>
+{%if url_name|length > 0%}
+<!-- block to data column buttons-->
+<ul class="nav nav-pills data_column" >
+    {%for field in field_list%}
+        <li class = "btn btn-default" data_column = {{field}} >{{field}}</li>
+    {%endfor%}
+</ul>
+<textarea class = "data_column_to_plot" name= "data_column_to_plot" style="display:none;"></textarea>
+<hr>    
+{%endif%}
+
+{%if url_name == "stat_heatmap"%}
+<div style="width:200px;">
+<select name='heatmap_color' class='form-control'>
+    {%for cmap in cmap_list%}
+    <option value= {{cmap}}>{{cmap}}</option>
+    <option value= {{cmap}}_r>{{cmap}}_r</option>
+    {%endfor%}
+</select>
+</div>
+<hr>
+{%elif url_name == "stat_scatter"%}
+<div class = "" style="width:200px;">
+<select name='all_plates' class='form-control'>
+    <option value= "default">Plot all plates together</option>
+    <option value= "0">Plot individual plates</option>
+</select>
     
+    &nbsp&nbsp&nbsp&nbsp&nbsp
+<select name='sort_value' class='form-control'>
+    <option value= "default">Sort by value</option>
+    <option value= "0">Sort by well</option>
+</select>
+</div>
+<hr>
+{%elif url_name == "stat_correlation" or url_name == "stat_histogram"%}
+<div style="width:200px;">
+<select name='all_plates' class='form-control'>
+    <option value= "default">Plot all plates together</option>
+    <option value= "0">Plot individual plates</option>
+</select>
+</div>
+<hr>
+{%endif%}
+
+
+
+<div class="well">
+{% csrf_token %}   
     {{form|as_bootstrap_h}}       
-    
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
             <button type="submit" class="btn btn-success">Plot</button>
             <button type="reset" class="btn btn-default">Clear</button>
         </div>
-    </div>
-</form>    
+    </div>   
 </div> 
+</form> 
+{%endblock%}
 
-
+{% block plot-img %}
 <div class= 'img_list'>
     {%if img_list|length == 0%}
         <div class="alert alert-success"><h4> Please select plates </h4></div>
@@ -79,7 +121,6 @@
 var $patch = $("g[id^='patch_ax']");
 
 $patch.click(function(){
-alert();
     $("#heatmapContent").html('');
     
     info=$(this).attr("id").split('_');

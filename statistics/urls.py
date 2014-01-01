@@ -17,5 +17,11 @@ urlpatterns = patterns('',
     url(r'^histogram/', views.histogram, name='stat_histogram'),
     )    
 
+#==============================================================
+##testing
+
+urlpatterns +=(
+    url(r'^test/', views.fingerprint_cluster, name='stat_test'),
+)
 
 

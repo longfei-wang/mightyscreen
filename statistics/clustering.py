@@ -205,157 +205,38 @@ def test_hierarchical_cluster(fp2_list):
     return image_string
     
     
-def test_MDS(fp2_list):     
-    """ Not working yet"""
+def test_networkx(fp2_list):   
+    """doesn't work yet"""
+    import networkx as nx
+    D = _fp2_to_distancematrix(fp2_list)
+    pylab.figure()    
+    G = nx.DiGraph()
+    labels = {}
+    for n in range(len(D)):
+        for m in range(len(D)-(n+1)):
+            G.add_edge(n,n+m+1, weight = D[n][n+m+1], length =D[n][n+m+1] )
+            labels[ (n,n+m+1) ] = str(round(D[n][n+m+1],2))
+            
+    pos=nx.random_layout(G)
+    
+    nx.draw_networkx_edge_labels(G,pos,edge_labels=labels,font_size=8)
 
-    D = _fp2_to_distancematrix(fp2_list[:10])
-    points = MDS(D).points()
-    x = [point[0] for point in points]
-    y = [point[1] for point in points]
-    pylab.plot(x,y, 'ro')
+    nx.draw(G, pos)
     image_string = _fig_out()
-    return image_string
-
-
-
-
-
-
-
-class MDS():
-
-
-    """Multi-dimensional scaling:
- 
-input: distanceMatrix = n*n matrix with the distances between the points,
-diagonal elements must be zero,
-only lower triangle is required (upper triangle will be ignored).
- 
-output: list with 2D-points: [[x1,y1],[x2,y2],...,[xn,yn]]
-
-#MDS - multi dimensional scaling
-from #dries.wijns[@]gmail.com
-http://snipt.org/vJge7
-"""
-    distanceMatrix = list(list())
- 
-    def __init__(self, distanceMatrix):
-        if self.checkDistanceMatrix(distanceMatrix):
-            self.distanceMatrix = distanceMatrix
- 
-    def initPoints(self):
-        """First guess is on a straight line, spaces 1 apart"""
-        points = list()
-        for i in range(len(self.distanceMatrix)):
-            x = i
-            y = 0
-            points.append([x,y])
-        return points
- 
-    def checkDistanceMatrix(self, m):
-        for i in range(len(m)):
-            if m[i][i] != 0: #diagonal elements must be zero
-                return False
-        #loop over all elements under diagonal
-        for j in range(len(m)):
-            for k in range(j+1):
-                if m[j][k] < 0:
-                    return False #lenghts must be greater than zero
- 
-        return True
- 
-    def distance(self, p1, p2):
-        return math.sqrt((p2[0]-p1[0])**2+(p2[1]-p1[1])**2) #euclidian distance between 2 points in 2D
- 
-    def zeros(self, n):
-        return [[0 for item in range(n)] for item in range(n) ]
- 
-    def createDistanceMatrix(self, points):
-        m = self.zeros(len(points))
-        for j in range(len(points)):
-            for k in range(j+1):
-                m[j][k] = self.distance(points[j], points[k])
-        return m 
- 
-    def score(self, points):
-        """Sum of squared errors between distances between points given and the distanceMatrix """
-        s = 0
-        for j in range(len(points)):
-            for k in range(j+1):
-                s += (self.distance(points[j], points[k]) - self.distanceMatrix[j][k])**2
-        return s
- 
-    def mutate(self, points):
-        #select a random point to mutate
-        p = random.randint(0, len(points)-1)
-        #select a random angle in wich to mutate (in radians)
-        a = random.random() * math.pi
-        #select a random direction in wich to mutate
-        d = random.choice([-1, 1])
-        #select a random lenght to mutate
-        l = random.choice(self.frange(0.1, 10, 0.1))
- 
-        #apply mutation
-        points[p][0] += d*math.cos(a)*l
-        points[p][1] += d*math.sin(a)*l
- 
-        return points
- 
-    def frange(self, start, stop, inc):
-        l = list()
-        i = start
-        while i<=stop:
-            l.append(i)
-            i+=inc
-        return l
- 
-    def points(self):
-        numberOfRounds = 9999
- 
-        topFive = [self.initPoints()]
- 
-        for i in range(numberOfRounds):
-            topFiveCopy = copy.deepcopy(topFive)
-            for item in topFive:
-                topFiveCopy.append(self.mutate(item))
-            topFive = self.selectTopFive(topFiveCopy)
- 
-        return topFive[0]
- 
-    def selectTopFive(self, l):
-        sortedl = sorted(l, key=self.score)
-        return sortedl[0:5]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#def _test_run():
-#    ## test plot_sigmoid_binding 
-#    f1 = 'test_plot_sigmoid_binding.tab'
-#    plot_sigmoid_binding(f1)
     
-#    ##test plot_scatter
-#    f2 = 'test_plot_scatter.tab'
-#    plot_scatter(f2)
+    return image_string   
+
+
+def test_bin(fp2_list):   
+    """  """
+    import scipy
+    import pylab
+    import scipy.cluster.hierarchy as sch
+    import fastcluster as fch
     
-#    ##test plot_linearfit
-#    f2 = 'test_plot_scatter.tab'
-#    plot_linearfit(f2)
-
-#    ##test plot_linearfit
-#    f2 = 'test_plot_scatter.tab'
-#    plot_histogram(f2)
-
-#    ##test plot_linearfit
-#    f5 = 'test_plot_plate.tab'
-#    plot_plate(f5)
+    D = _fp2_to_distancematrix(fp2_list)
+    L = sch.linkage(D, method='single')
+    ind = sch.fcluster(L, 1.1, criterion="distance")
+    bins = len(set(ind))
+    
+    return bins

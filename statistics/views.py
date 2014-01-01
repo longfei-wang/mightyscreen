@@ -40,13 +40,33 @@ def _select_plates(request):
 
     field_list = []
     for i in data._meta.fields:
-        if i.name not in "id library plate well welltype project submission create_date create_by":
+        if i.name not in "id library library_pointer_id compound_pointer_id plate well platewell ishit welltype project submission create_date create_by":
             field_list.append(i.name)    
 
     return [plates,plates_selected,data,field_list,data_columns]
 
 
-
+def _cmap_list():
+    cmaps = [('Sequential',     ['binary', 'Blues', 'BuGn', 'BuPu', 'gist_yarg',
+                             'GnBu', 'Greens', 'Greys', 'Oranges', 'OrRd',
+                             'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu',
+                             'Reds', 'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd']),
+         ('Sequential (2)', ['afmhot', 'autumn', 'bone', 'cool', 'copper',
+                             'gist_gray', 'gist_heat', 'gray', 'hot', 'pink',
+                             'spring', 'summer', 'winter']),
+         ('Diverging',      ['BrBG', 'bwr', 'coolwarm', 'PiYG', 'PRGn', 'PuOr',
+                             'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'seismic']),
+         ('Qualitative',    ['Accent', 'Dark2', 'hsv', 'Paired', 'Pastel1',
+                             'Pastel2', 'Set1', 'Set2', 'Set3', 'spectral']),
+         ('Miscellaneous',  ['gist_earth', 'gist_ncar', 'gist_rainbow',
+                             'gist_stern', 'jet', 'brg', 'CMRmap', 'cubehelix',
+                             'gnuplot', 'gnuplot2', 'ocean', 'rainbow',
+                             'terrain', 'flag', 'prism'])]
+    cmap_list = ['jet', 'brg', 'CMRmap', 'cubehelix',
+                             'gnuplot', 'gnuplot2', 'ocean', 'rainbow',
+                             'terrain', 'flag', 'prism','BrBG', 'bwr', 'coolwarm', 'PiYG', 'PRGn', 'PuOr',
+                             'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'seismic' ]
+    return cmap_list
 #=============================================================================
 ## stable views
 
@@ -84,7 +104,13 @@ def heatmap(request):
     plates,plates_selected,data,field_list,data_columns =_select_plates(request)
     form=PlatesToUpdate()    
     img_list = []  
+    cmap_list = _cmap_list()
 
+    if request.POST.get('heatmap_color'):
+        cmap=request.POST.get('heatmap_color')
+    else:
+        cmap = 'jet'
+    
    
     for plate_number in plates_selected:    
         entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])
@@ -99,7 +125,7 @@ def heatmap(request):
                 plate_well_list.append(plate_number+'_'+e.well)
             
             ## Plot Heat maps        
-            c = stat.plot_heatmap(well_list, fp_list,plate_well_list,cmap='BrBG_r',plate_number = (plate_number+' '+data_column))             
+            c = stat.plot_heatmap(well_list, fp_list,plate_well_list,cmap=cmap,plate_number = (plate_number+' '+data_column))             
             img_list.append(c)        
 
     url_name = 'stat_heatmap'
@@ -108,6 +134,7 @@ def heatmap(request):
                                                      'form':form,
                                                      'url_name':url_name,
                                                      'field_list':field_list,
+                                                     'cmap_list':cmap_list
                                                      })  
 
 def correlation(request):
@@ -118,8 +145,13 @@ def correlation(request):
     plates, plates_selected,data,field_list,data_columns =_select_plates(request)
     form=PlatesToUpdate()    
     img_list = []  
+
+    if request.POST.get('all_plates'):
+        value=request.POST.get('all_plates')
+        all_plates =True if value =="default" else False
+    else:
+        all_plates =True
     
-    all_plates =True
 
 
     if len(data_columns)>1:
@@ -177,19 +209,16 @@ def correlation(request):
             
 
 
-
     url_name = 'stat_correlation'
     return render(request,"statistics/plots.html",{'img_list':img_list,
                                                      'plates':plates,
                                                      'form':form,
                                                      'url_name':url_name,
                                                      'field_list':field_list,
-                                                     'defaultcolor':x,
                                                      })  
                                                      
                                                      
-                                                     
-                                                     
+                                                                                                         
 def scatter(request):
     """ basic function to plot heatmaps 
     """
@@ -198,8 +227,19 @@ def scatter(request):
     plates, plates_selected,data,field_list,data_columns =_select_plates(request)
     form=PlatesToUpdate()    
     img_list = [] 
-    all_plates =True
+    
+    if request.POST.get('all_plates'):
+        value=request.POST.get('all_plates')
+        all_plates =True if value =="default" else False
+    else:
+        all_plates =True
 
+    if request.POST.get('sort_value'):
+        sort=request.POST.get('sort_value')
+    else:
+        sort = "default"    
+    
+    
     if all_plates == False:        
         for plate_number in plates_selected:    
             entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])     
@@ -217,7 +257,7 @@ def scatter(request):
             ## Plot Reproductivity   
             ## This plot might have bug if A and B doesn't have same well number
             ## This will be addressed in the future
-                c = stat.plot_scatter(fp_list, plate_well_list,well_type_list,plate_number = (plate_number+' '+data_column),)
+                c = stat.plot_scatter(fp_list, plate_well_list,well_type_list,plate_number = (plate_number+' '+data_column), sort = sort)
                 img_list.append(c)        
 
     if all_plates == True:        
@@ -238,10 +278,8 @@ def scatter(request):
             ## This plot might have bug if A and B doesn't have same well number
             ## This will be addressed in the future
             plate_number = (', ').join(map(str, plates_selected))
-            c = stat.plot_scatter(fp_list, plate_well_list,well_type_list,plate_number = (plate_number+' '+data_column),)
+            c = stat.plot_scatter(fp_list, plate_well_list,well_type_list,plate_number = (plate_number+' '+data_column),sort = sort)
             img_list.append(c)  
-
-
 
     url_name = 'stat_scatter'
     return render(request,"statistics/plots.html",{'img_list':img_list,
@@ -324,11 +362,11 @@ def fingerprint_cluster(request):
 
     entry_list = compound.objects.filter(plate = '3266')#.filter(well = 'A05')
     fp2_list = []
-    for entry in entry_list:
+    for entry in entry_list[:8]:
         fp2_list.append(entry.fp2)
     
-    c = cluster.test_hierarchical_cluster(fp2_list)
-#    c = cluster.test_MDS(fp2_list)
+#    c = cluster.test_hierarchical_cluster(fp2_list)
+    c = cluster.test_networkx(fp2_list)
     
     return HttpResponse(c)     
     

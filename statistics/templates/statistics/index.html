@@ -13,68 +13,10 @@
     <li class ="stat_histogram"><a href="{% url "stat_histogram" %}">Histogram</a></li>    
 </ul>
 <br>
-
-{%if url_name|length > 0%}
-<!-- block to data column buttons-->
-<ul class="nav nav-pills data_column" >
-    {%for field in field_list%}
-        <li class = "btn btn-default" data_column = {{field}} >{{field}}</li>
-    {%endfor%}
-</ul>
-<hr>
-{%endif%}
-
-
-{% block plot-options %}{%endblock%}
-<div style="width:100px;">
-<select name='color' class='form-control'>
-    <option value='SGBR'>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6</option>
-</select>
-</div>
-<!-- block to option buttons-->
-{%if url_name == "stat_heatmap"%}
-<ul class="nav nav-pills" >
-    <div class="btn-group">
-    <li class = "btn btn-default" >color choice 1</li>
-    <li class = "btn btn-default" >color choice 2</li>
-    <li class = "btn btn-default" >color choice 3</li>
-    </div>
-    <div class="btn-group">
-    <li class = "btn btn-default" >Reverse color</li>
-    </div>
-</ul><hr>
-{%elif url_name == "stat_scatter"%}
-<ul class="nav nav-pills" >
-    <div class="btn-group">
-    <li class = "btn btn-primary" >Plot all plates together</li>
-    <li class = "btn btn-default" >Plot individual plates</li>
-    </div>
     
-    <div class="btn-group">
-    <li class = "btn btn-primary"> Sort by value</li>
-    <li class = "btn btn-default"> Sort by well</li>
-    </div>
-</ul><hr>
-{%elif url_name == "stat_correlation" or url_name == "stat_histogram"%}
-<ul class="nav nav-pills" >
-    <div class="btn-group">
-    <li class = "btn btn-primary" >Plot all plates together</li>
-    <li class = "btn btn-default" >Plot individual plates</li>
-    </div>
-</ul><hr>
+{%block plot-option%}{% endblock %}
 
-{%endif%}
-
-
-
-
-
-{% block plots %}{% endblock %}
+{% block plot-img %}{% endblock %}
 
 {% endblock %}
 
@@ -85,6 +27,7 @@
 <script>
 $('ul.nav-pills-plots > li[class*={{url_name}}]').addClass("active")
 
+// to select for data columns
 data_column_to_plot = []
 $('ul.data_column > li').click(function(){
     x=$(this).attr("data_column");
@@ -102,9 +45,11 @@ $('ul.data_column > li').click(function(){
     }
     $("textarea.data_column_to_plot").val(data_column_to_plot.join(','));
 })
+
 </script>
 
 
 {% block script-tooltip %}{% endblock %}
 {% block script-zoom %}{% endblock %}
+
 {% endblock %}
