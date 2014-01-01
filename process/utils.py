@@ -41,16 +41,17 @@ class ScoreReader():
 	def flush(self):#flush all cache, should do this when changing plate
 		cache.set('ScoreReader',None)
 
-	def parse(self,curRow,formular='{FP_A}',mysql=True):#parse user's formular 
+	def parse(self,curRow,formular='{FP_A}',mysql=False):#parse user's formular 
 		curPlate=curRow.plate
 		curWell=curRow.well
 		var=re.findall('{[^}]+}',formular)
 		cursor = connection.cursor()
 		col_quote= '' if mysql == True else '"'		
+		row=[0]
 
 		for i in var:
 
-			j=i.strip('{}').split('_')
+			j=i.strip('{}').split('.')
 			if len(j) > 2:
 				if j[2] in 'pos neg com':#constants related to controls and all compounds on one plate
 
@@ -106,12 +107,14 @@ class ScoreReader():
 						cursor.execute("""SELECT %(f)s(VAL) FROM (%(query)s) as subquery"""%{'f':self.dict[j[2]],'query':query})
 						row = cursor.fetchone()
 			else:#just refer to row
-				row=[getattr(curRow,i.strip('{}'))]
+				if hasattr(curRow,i.strip('{}')):
+					row=[getattr(curRow,i.strip('{}'))]
 			
-
-			exec(i.strip('{}')+'='+str(row[0]))#this need to be float
+			formular=formular.replace(i,str(row[0])) if row[0] else formular#this need to be float
 			
+		if re.findall('{[^}]+}',formular):
+			raise Exception('Unsupported Variables:%s'%', '.join(re.findall('{[^}]+}',formular)))
 
-		val=eval(formular.replace('{','').replace('}',''))
+		val=eval(formular)
 
 		return val

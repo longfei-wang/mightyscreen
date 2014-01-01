@@ -120,24 +120,14 @@ def upload(request):
         form = UploadFileForm(initial={'user':request.user.pk,'project':request.session['proj_id']})
     
         if request.method == 'POST':
-            
-            if request.POST.get('real_submit'): #if this is after confirmation
-                reader=cache.get('upload')
-                raise Exception(dir(reader))
-                cache.delete('upload')
+            form = UploadFileForm(request.POST, request.FILES)
+            if form.is_valid():
+                reader = readers.Envision_Grid_Reader(form.cleaned_data)#if fileformat is other than Envision need to call other reader
+                reader.parse()
                 queue(reader,'save()')#then parse_data in background
-
+                    
                 return render(request,'main/redirect.html',{'message':'Data submitted to queue!','dest':'index'})
-            
-            else: #if this is not confirmed check the form and ask user to confirm
-                form = UploadFileForm(request.POST, request.FILES)
-            
-                if form.is_valid():
-                    reader = readers.Envision_Grid_Reader(form.cleaned_data)
-                    mapss = reader.parse()
-                    cache.set('upload',reader)
-                    return render(request,'main/upload.html', {'form':form,'map':mapss})
-
+                
     else:
         return render(request,'main/error.html',{'error_msg':'No working project specified!'})
     return render(request,'main/upload.html', {'form':form})

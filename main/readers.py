@@ -32,6 +32,7 @@ class rawdatafile():#a base class for all file format
         self.col=self.p.plate.col()
         self.read_file()
         self.wells=self.p.plate.numofwells
+        self.table_reg=dict()
 
 
     def read_file(self):
@@ -101,7 +102,6 @@ class Envision_Grid_Reader(rawdatafile):
 # a.experiment.readout.all(), a.experiment.readout.count(), a.experiment.readout.get(name='FP').keywords
     def parse(self):
         n=0
-        table_reg=dict()
         self.table_count=0
         for row in self.rawdata:#read through whole file and find out all the tables
             n+=1
@@ -110,14 +110,12 @@ class Envision_Grid_Reader(rawdatafile):
                     result=self.is_table(n)
                     if result:
                         if result['x']>=len(self.col) and result['y']>=len(self.row):
-                            table_reg[result['start']]=m.name
+                            self.table_reg[result['start']]=m.name
                             self.table_count+=1
 
-        self.map_table(table_reg)
-
-        return table_reg
+        return self.table_reg
         
-    def map_table(self,table_reg):
+    def map_table(self):
         #creat pointers that point at each table
 
         replicate_count=0
@@ -129,12 +127,12 @@ class Envision_Grid_Reader(rawdatafile):
             if self.table_count < self.replicate_num*self.plates_num*self.readout_num:
                 return False#raise exception might be good
             
-            for i in sorted(table_reg):#go over each replicate and plate
-                if table_reg[i] not in readout_list:
-                    readout_list.append(table_reg[i]) 
+            for i in sorted(self.table_reg):#go over each replicate and plate
+                if self.table_reg[i] not in readout_list:
+                    readout_list.append(self.table_reg[i]) 
                 else:
                     readout_list=list()
-                    readout_list.append(table_reg[i]) 
+                    readout_list.append(self.table_reg[i]) 
                     replicate_count+=1
                     if replicate_count==self.replicate_num:
                         replicate_count=0
@@ -142,19 +140,19 @@ class Envision_Grid_Reader(rawdatafile):
                         if plate_count==self.plates_num:
                             break
 
-                self.map[plate_count][replicate_count][table_reg[i]]=[i,1]
+                self.map[plate_count][replicate_count][self.table_reg[i]]=[i,1]
         
         elif self.wells==1536:
 
             if self.table_count*4 < self.replicate_num*self.plates_num*self.readout_num:
                 return False#raise exception might be good
 
-            for i in sorted(table_reg):#go over each replicate and plate
-                if table_reg[i] not in readout_list:
-                    readout_list.append(table_reg[i]) 
+            for i in sorted(self.table_reg):#go over each replicate and plate
+                if self.table_reg[i] not in readout_list:
+                    readout_list.append(self.table_reg[i]) 
                 else:
                     readout_list=list()
-                    readout_list.append(table_reg[i]) 
+                    readout_list.append(self.table_reg[i]) 
                     replicate_count+=1
                     if replicate_count==self.replicate_num:
                         replicate_count=0
@@ -162,14 +160,16 @@ class Envision_Grid_Reader(rawdatafile):
                         if plate_count>=self.plates_num:
                             break
 
-                self.map[plate_count][replicate_count][table_reg[i]]=[i,1]
-                self.map[plate_count+1][replicate_count][table_reg[i]]=[i,2]
-                self.map[plate_count+2][replicate_count][table_reg[i]]=[i+1,1]
-                self.map[plate_count+3][replicate_count][table_reg[i]]=[i+1,2]
+                self.map[plate_count][replicate_count][self.table_reg[i]]=[i,1]
+                self.map[plate_count+1][replicate_count][self.table_reg[i]]=[i,2]
+                self.map[plate_count+2][replicate_count][self.table_reg[i]]=[i+1,1]
+                self.map[plate_count+3][replicate_count][self.table_reg[i]]=[i+1,2]
         return self.map
 
-#save tables into database row by row, might take some time.
+    #save tables into database row by row, might take some time.
     def save(self):
+
+        self.map_table()
 
         self.open_job_entry()
         

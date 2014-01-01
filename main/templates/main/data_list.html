@@ -141,7 +141,7 @@
     {% for j in entry_list %}
         <tr>
             <td><input type="checkbox"></td>
-            <td>{% if j.welltype == "X" %}
+            <td>{% if j.compound_pointer %}
                 <button class="btn btn-default btn-xs cmpdTrigger" plate="{{j.plate}}" well="{{j.well}}"><span class="glyphicon glyphicon-eye-open"></span></button>
                 {% endif %}
             </td>

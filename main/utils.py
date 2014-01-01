@@ -1,6 +1,8 @@
 #utilities python module
 from django.db.models import Count
 from django.db import transaction
+from main.models import submission
+import datetime as dt
 
 def get_platelist(**kwargs):
 	
@@ -35,3 +37,36 @@ def flush_transaction():
     """
     transaction.commit()
 
+
+
+
+class jobs():
+
+    def __init__(self,request,**kwargs):
+        """if everything is ready, create a pending job entry."""
+        self.sub=submission(
+        jobtype='upload',
+        project=project.objects.get(pk=request.session.get('proj_id')),
+        submit_by=request.session.user,
+        submit_time=dt.datetime.now(),
+        status='p')
+        self.sub.save()
+        self.id=self.sub.pk
+
+    def update(self,log='',progress=0):
+        """update logs and progress"""
+        self.sub.log+=log#';plate: %s uploaded'%self.plates[pla]
+        self.sub.progress=progress
+        self.sub.save()
+
+
+    def complete(self):
+        self.sub.status='c'
+        self.sub.save()
+
+    def fail(self):
+        self.sub.status='f'
+        self.sub.save()
+
+    def result(self,result):
+        self.sub.result=result

@@ -6,10 +6,11 @@ from main.models import data_base,project
 #figured that the table would be too big to store all the data. 
 #A HTS project can easily have millions of entries. Better handle project seperately
 
-try:#preventing syncdb crash when creating new tables
-	proj=project.objects.all()
+try:#preventing syncdb crash when project don't exist
+    proj=project.objects.all()
+    num=proj.count()
 except:
-	proj=None
+    proj=None
 
 if proj:
     for i in proj:

@@ -126,7 +126,7 @@
                 <div class="form-group">
                 <label class="col-sm-3 control-label">Plates</label>
                     <div class="col-sm-9">
-                        <select multiple id="plate-selector" class="form-control">
+                        <select multiple id="plate-selector" class="form-control" size=12>
                         {% for i in plates %}
 
                             <option {% if i in plates_selected %}selected="selected"{% endif %} value="{{i}}">{{i}}</option>    

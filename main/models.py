@@ -17,9 +17,9 @@ class project(models.Model):
     def rep(self):
         return 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split()[:self.replicate]
     def readouts(self):
-        return [ i for i in self.experiment.readout.all()]
+        return self.experiment.readout.all()
     def scores(self):
-        return [ i for i in self.score.all()]
+        return self.score.all()
 
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
