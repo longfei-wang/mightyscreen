@@ -14,22 +14,42 @@ from main.utils import get_platelist
 def mark(request):
     form=PlatesToUpdate()
     if not 'proj' in request.session:
-            return render(request,"main/error.html",{'error_msg':"No project specified!"})
+        return render(request,"main/error.html",{'error_msg':"No project specified!"})
     
     exec ('from data.models import proj_'+request.session['proj_id']+' as data')
-    welltypes=od(sorted(dict(data_base.schoice).items()))
+    
+    welltypes=dict(data_base.schoice)
+
     proj=project.objects.get(pk=request.session['proj_id'])
 
     plates=get_platelist(model=data)#get list of plates
 
     if request.method=='POST':
-            form=PlatesToUpdate(request.POST)
-            if form.is_valid():
-                    for j in welltypes.keys():
-                            if request.POST.get(j):
-                                    x=request.POST.get(j)
-                                    data.objects.filter(plate__in=form.cleaned_data['plates'].split(','),well__in=x.split(',')).update(welltype=j)
-                    messages.success(request,'WellType Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
+        
+        form=PlatesToUpdate(request.POST)
+
+        if form.is_valid():
+        
+            platelist=form.cleaned_data['plates'].split(',')
+            querybase=data.objects.filter(plate__in=platelist)
+
+            for j in ['X','E','P','N','B']:#this sequence is priority low to high
+                    
+                x=request.POST.get(j).split(',')
+
+                querybase.filter(library_pointer__isnull=True,well__in=x).update(welltype=j) 
+
+                if j == 'X':#if already mapped to a library, then use different approach to mark wells
+                    querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=False,welltype__in=['E','P','N']).update(welltype=j)
+                elif j=='E':
+                    querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=True,welltype__in=['X']).update(welltype=j)
+                elif j in ['P','N']:#controls can only in empty
+                    querybase.filter(library_pointer__isnull=False,well__in=x,compound_pointer__isnull=True).update(welltype=j)
+                elif j in 'B':#bad well can anywhere
+                    querybase.filter(library_pointer__isnull=False,well__in=x).update(welltype=j)
+
+
+            messages.success(request,'WellType Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
     
     return render(request,'process/markwell.html',{'proj':proj,'welltypes':welltypes,'plates':plates,'form':form})
 
@@ -37,7 +57,7 @@ def score(request):
     form=PlatesToUpdate()
 
     if not 'proj' in request.session:
-            return render(request,"main/error.html",{'error_msg':"No project specified!"})
+        return render(request,"main/error.html",{'error_msg':"No project specified!"})
     exec ('from data.models import proj_'+request.session['proj_id']+' as data')        
     proj=project.objects.get(pk=request.session['proj_id'])
 
@@ -53,12 +73,12 @@ def score(request):
 
 
     if request.method=='POST':
-            form=PlatesToUpdate(request.POST)
-            if form.is_valid():
-                    if process_score(data.objects.all(),proj,form.cleaned_data['plates'].split(',')):
-                            messages.success(request,'Job has been sent. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
+        form=PlatesToUpdate(request.POST)
+        if form.is_valid():
+            if process_score(data.objects.all(),proj,form.cleaned_data['plates'].split(',')):
+                messages.success(request,'Job has been sent. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
     return render(request,'process/score.html',{'plates':plates,
-            'entry_list':entry_list,
-            'field_list':field_list,
-            'form':form,
-            'table_success_list':table_success_list})
+                        'entry_list':entry_list,
+                        'field_list':field_list,
+                        'form':form,
+                        'table_success_list':table_success_list})

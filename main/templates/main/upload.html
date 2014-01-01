@@ -2,6 +2,14 @@
 {% load bootstrap_tags %}
 
 {% block content %}
+
+<ul class="nav nav-tabs">
+  <li class="active"><a href="{% url 'upload' %}">Upload</a></li>
+  <li><a href="{% url 'mark' %}" >MarkWell</a></li>
+</ul>
+
+<br>
+
 <div class="well">
 <h3>Note:</h3> 
 <ul>
@@ -12,7 +20,7 @@
 
 
 <div class="well">
-	<form class="form-horizontal" role="form" enctype="multipart/form-data" method="post" action="/main/upload/">
+	<form class="form-horizontal" role="form" enctype="multipart/form-data" method="post" action="{% url 'upload' %}">
 	   {% csrf_token %}      
 	       {{form|as_bootstrap_h}}
 

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import HttpResponse
 from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
@@ -76,9 +76,11 @@ def datalist(request):
 
 
     field_list = list()
+
     for i in data._meta.fields:
         if i.name not in data.hidden_field:
-            field_list.append(i.name)
+            field_list.append(i)
+
     current_page = (request.GET.get('page'))
 
     if not current_page:
@@ -132,8 +134,38 @@ def upload(request):
         return render(request,'main/error.html',{'error_msg':'No working project specified!'})
     return render(request,'main/upload.html', {'form':form})
 
-def export(request):
 
+def addtohitlist(request):
+
+    if cache.get('dataview'+request.session['proj_id']):
+        
+        obj=cache.get('dataview'+request.session['proj_id'])
+
+        if request.method=='POST':
+
+            hitlist= request.POST.get('hitlist').split(',')
+
+            obj.filter(platewell__in=hitlist).update(ishit=1)
+        
+        elif request.method=='GET':
+
+            if request.GET.get('reset'):
+
+                obj.update(ishit=0)
+
+            elif request.GET.get('platewell'):
+
+                obj.filter(platewell=request.GET.get('platewell')).update(ishit=1)
+        else:
+
+            obj.update(ishit=1)
+
+        messages.success(request,'Hit List Updated')
+    
+    return redirect('view')
+
+
+def export(request):
 
     if cache.get('dataview'+request.session['proj_id']):
         

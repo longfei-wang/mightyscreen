@@ -27,7 +27,7 @@
     <div class="form-group">
         <select name="field" class="form-control">
             {% for i in field_list %}
-                <option value="{{i}}">{{ i }}</option>
+                <option value="{{i.name}}">{{ i.verbose_name }}</option>
             {% endfor %}
         </select>
 
@@ -60,7 +60,7 @@
 
         <select name="field2" class="form-control">
             {% for i in field_list %}
-                <option value="{{i}}">{{ i }}</option>
+                <option value="{{i.name}}">{{ i.verbose_name }}</option>
             {% endfor %}
         </select>
 
@@ -106,11 +106,12 @@
     Add to HitList <span class="caret"></span>
   </button>
   <ul class="dropdown-menu pull-right" role="menu">
-    <li><a href="{% url 'export' %}?format=csv" target="_blank">Add Checked</a></li>
-    <li><a href="{% url 'export' %}?format=xml" target="_blank">Add All Results</a></li>
+    <li><a id="hitlistsubmit" href="javascript:;">Add Checked</a></li>
+    <li><a  href="{% url "addtohitlist" %}">Add All Results</a></li>
+    <li class="divider"></li>
+    <li><a  href="{% url "addtohitlist" %}?reset=1">Reset HitList</a></li>
   </ul>
 </div>
-
 
 <div class="btn-group">
   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -130,24 +131,24 @@
 <table class="table table-striped table-hover table-condensed table-responsive" id="list">
 
     <tr>
-        <td><input type="checkbox"></td><td></td>
+        <td><input type="checkbox" id="checkall"></td><td></td>
         {% for i in field_list %}
             <td>
-                <strong><a href='?order={% if i == pre_order %}-{% endif %}{{i}}'>{{ i|title }}</a></strong>
+                <strong><a href='?order={% if i.name == pre_order %}-{% endif %}{{i.name}}'>{{ i.verbose_name }}</a></strong>
             </td>
         {% endfor %}
     </tr>
     
     {% for j in entry_list %}
         <tr>
-            <td><input type="checkbox"></td>
+            <td><input type="checkbox" platewell="{{j.platewell}}" class="hitlistcheckbox"></td>
             <td>{% if j.compound_pointer %}
-                <button class="btn btn-default btn-xs cmpdTrigger" plate="{{j.plate}}" well="{{j.well}}"><span class="glyphicon glyphicon-eye-open"></span></button>
+                <button class="btn btn-default btn-xs cmpdTrigger" platewell="{{j.platewell}}" plate="{{j.plate}}" well="{{j.well}}"><span class="glyphicon glyphicon-eye-open"></span></button>
                 {% endif %}
             </td>
             {% for i in field_list %}
                 <td>
-                    {{ j|getattr:i|tabler }}
+                    {{ j|getattr:i.name|tabler }}
 
                 </td>
             {% endfor %}
@@ -179,7 +180,7 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Add to HitList</button>
+            <a id="hitlistadd" href=""><button type="button" class="btn btn-primary">Add to HitList</button></a>
         </div>
     </div><!-- /.modal-content-->
 </div><!-- /.modal-dialog -->
@@ -188,30 +189,54 @@
 
 {% endif %}
 
+
+<form id="hitlistform" enctype="multipart/form-data" method="post" action="{% url 'addtohitlist' %}">
+    {% csrf_token %}
+    <input type="hidden" name="hitlist" id="hitlistinput">
+</form>
+
 {% endblock %}
 
 {% block script %}
 <script>
 
+
 //$("#cmpdDetail").modal('show');
-$(".cmpdTrigger").each(function(){
+$(".cmpdTrigger").each(function(){//Compound Detail View
 
 
     $(this).click(function(){
         $("#cmpdContent").html('');
         plate=$(this).attr('plate');
         well=$(this).attr('well');
-        
+        platewell=$(this).attr('platewell');
+
         $.get("/statistics/details/",
             {plate:plate,well:well,t:1},
             function(data){
                 $("#cmpdContent").html(data);
             });
-
+        $("#hitlistadd").attr("href","{% url 'addtohitlist' %}?platewell="+platewell);
         $("#cmpdDetail").modal('show');
         //alert(plate+well);
     });
 
+});
+
+
+//Add to HitList
+$("#checkall").change(function(){
+    $(".hitlistcheckbox").prop("checked",true);
+});
+
+
+$("#hitlistsubmit").click(function(){
+    value=[]
+    $(".hitlistcheckbox:checked").each(function(){
+        value.push($(this).attr("platewell"));
+    });
+    $("#hitlistinput").val(value.join(','));
+    $("#hitlistform").submit();
 });
 
 </script>

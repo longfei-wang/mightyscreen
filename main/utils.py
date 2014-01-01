@@ -40,20 +40,29 @@ def flush_transaction():
 
 
 
-class jobs():
+class job():
 
-    def __init__(self,request,**kwargs):
+    """the job class, need test"""
+    
+    sub=None
+
+    def create(self,request,jobtype,log='',comments=''):
+        
         """if everything is ready, create a pending job entry."""
         self.sub=submission(
-        jobtype='upload',
-        project=project.objects.get(pk=request.session.get('proj_id')),
+        jobtype=jobtype,
+        project=project.objects.get(pk=(request.session.get('proj_id') if request.session.get('proj_id') else 1)), #proj 1 is the demo project
         submit_by=request.session.user,
         submit_time=dt.datetime.now(),
         status='p')
         self.sub.save()
-        self.id=self.sub.pk
+        
+        self.sub.log=log
+        self.sub.comments=comments
 
-    def update(self,log='',progress=0):
+        return self.sub.pk
+
+    def update(self,progress,log=''):
         """update logs and progress"""
         self.sub.log+=log#';plate: %s uploaded'%self.plates[pla]
         self.sub.progress=progress
@@ -61,6 +70,7 @@ class jobs():
 
 
     def complete(self):
+        self.sub.log+='Job completed at %s'%dt.datetime.now()
         self.sub.status='c'
         self.sub.save()
 
@@ -68,5 +78,9 @@ class jobs():
         self.sub.status='f'
         self.sub.save()
 
-    def result(self,result):
+    def save_result(self,result):
         self.sub.result=result
+
+    def get_result(self,submission_id):
+        sub=submission.objects.get(pk=submission_id)
+        return sub.result

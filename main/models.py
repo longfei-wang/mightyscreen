@@ -125,7 +125,7 @@ class data_base(models.Model):
     class Meta:
         abstract=True
     
-    hidden_field=['id','library','library_pointer','create_by','compound_pointer','platewell','ishit','submission','project']
+    hidden_field=['id','library','library_pointer','create_by','compound_pointer','platewell','submission','project']
     
     
     library = models.CharField(max_length=50,verbose_name='Library')
@@ -138,7 +138,7 @@ class data_base(models.Model):
     plate = models.CharField(max_length=20)
     well = models.CharField(max_length=20)
     
-    ishit=models.PositiveSmallIntegerField(default=0)
+    ishit=models.PositiveSmallIntegerField(default=0,verbose_name='hit')
 
     schoice = (
     ('E','empty'),

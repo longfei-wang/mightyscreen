@@ -58,7 +58,7 @@
                     {% endif %}
 
                     <li><a>Documents</a></li>
-                    <li><a>Contact Us</a></li>
+                    <li><a href="https://github.com/longfei-wang/mightyscreen/issues">Contact Us</a></li>
 
                 </ul>
 
@@ -112,9 +112,8 @@
                     <ul class="nav nav-pills nav-stacked">
 
                         <li><a href="{% url "view" %}">View</a></li>
-                        <li><a href="{% url "upload" %}">Upload</a></li>
-                        <li><a href="{% url "mark" %}">MarkWell</a></li>
-                        <li><a href="{% url "score" %}">Score</a></li>
+                        <li><a href="{% url "upload" %}">Process</a></li>
+                        <li><a href="{% url "score" %}">Evaluate</a></li>
                         <li><a href="{% url "stat_index" %}">Plots</a> </li>
                     </ul>
 
@@ -126,7 +125,7 @@
                 <div class="form-group">
                 <label class="col-sm-3 control-label">Plates</label>
                     <div class="col-sm-9">
-                        <select multiple id="plate-selector" class="form-control" size=12>
+                        <select multiple id="plate-selector" class="form-control" size={{plates|length}}>
                         {% for i in plates %}
 
                             <option {% if i in plates_selected %}selected="selected"{% endif %} value="{{i}}">{{i}}</option>    
