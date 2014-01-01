@@ -89,6 +89,9 @@ def _fig_out(format_out ='svg'):
         image_string = (sio.buf + '<br>' )   
     return image_string
 
+
+    
+
 ##==============================================================================
 
 
@@ -148,10 +151,10 @@ def plot_sigmoid_binding(file_name,x_column_number = 1,y_column_number = 2):
 
 
 
-def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1, sort = 'sorted'):
+def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1, sort = 'default'):
     xs = [n+1 for n in xrange(len(plate_well_list))]
     ys = data_list    
-    if sort == 'sorted':    
+    if sort == 'default':    
         ys.sort()    
     
     
@@ -263,31 +266,37 @@ def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,la
 def plot_histogram(data_list, plate_number = 1,bins = 100):
     """plot histogram, with gauss fitting \n
     Code modified from http://stackoverflow.com/questions/17779316
+        
+    If Guassin fit doesn't work then curve fit won't show anything.
+    
+    Need to improve to find a best fit function
     """
-    y = data_list
-    y = numpy.random.standard_normal(10000)
+    ys = numpy.array(data_list)
+#    ys = numpy.random.standard_normal(10000)
         
     fig = pylab.figure(figsize=_figsize())   
     ax = fig.add_axes([0.1, 0.15, 0.8, 0.7])
     
     ## Plot the histogram    
-    data = pylab.hist(y, bins = bins,facecolor='green', alpha=0.5)
+    data = pylab.hist(ys, bins = bins,facecolor='green', alpha=0.5)
 
-    # Generate data from bins as a set of points 
-    x = [0.5 * (data[1][i] + data[1][i+1]) for i in xrange(len(data[1])-1)]
-    y = data[0]    
-    popt, pcov = scipy.optimize.curve_fit(_gauss, x, y)
-
-    # Plot the fitting data    
-    x_fit = pylab.linspace(x[0], x[-1], 100)
-    y_fit = _gauss(x_fit, *popt)    
-    pylab.plot(x_fit, y_fit, "r--",lw=1, label = "Gaussian Fit")
+#    # Generate data from bins as a set of points 
+#    x = [0.5 * (data[1][i] + data[1][i+1]) for i in xrange(len(data[1])-1)]
+#    y = data[0]    
+#    popt, pcov = scipy.optimize.curve_fit(_gauss, x, y)
+#
+#    # Plot the fitting data    
+#    x_fit = pylab.linspace(x[0], x[-1], 100)
+#    y_fit = _gauss(x_fit, *popt) 
+#
+#    pylab.plot(x_fit, y_fit, "r--",lw=1, label = "Gaussian Fit")
     
     ## legands and labels
     plate_pro = "plate" if len(plate_number.split(','))==1 else "plates" 
     pylab.title('Histogram\n %s: %s'%(plate_pro,plate_number))
     pylab.xlabel('%s: %s'%(plate_pro,plate_number))
     pylab.legend(loc='best') 
+    pylab.xlim(min(ys)-10,max(ys)+10)    
     
     image_string = _fig_out()
     return image_string
@@ -317,7 +326,7 @@ def plot_heatmap(well, intensity,plate_well_list, plate_number = 1, cmap = 'jet_
     norm = pylab.mpl.colors.Normalize(vmin=min(intensity), vmax=max(intensity))
     cb2 = pylab.mpl.colorbar.ColorbarBase(ax2, cmap=cmap,norm = norm,
                                           orientation='horizontal')       
-    cb2.set_label(plate_number.split()[-1])
+    cb2.set_label("%s (color: %s)"%(plate_number.split()[-1], cmap))
     
     ## Plot the title section
     ax3 = fig.add_axes([0.05,0.93,0.85,0.02])
