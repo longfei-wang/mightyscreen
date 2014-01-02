@@ -6,9 +6,14 @@ from django.contrib.auth.models import User
 from library.models import library as lib, compound
 # Create your models here.
 
-#define a screening, basically list of projects with their relations. like primary screen, secondary screen.
-class screen(models.Model):
-    pass
+#define a screening flow chart, basically list of projects with their relations. like primary screen, secondary screen.
+class project_relation(models.Model):
+    project = models.ForeignKey('project')
+    project_related = models.ForeignKey('project',related_name='prelated')
+    schoice = (
+            ('c','child'),
+            ('s','sibling'))#no need to put parent here, will be duplicate?
+    relation = models.CharField(max_length=2,choices=schoice)
 
 #define a screening sub project
 class project(models.Model):

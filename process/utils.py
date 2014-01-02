@@ -1,5 +1,6 @@
 from django.db import connection
 from django.core.cache import cache
+from math import *
 import re
 
 class ScoreReader():
@@ -20,6 +21,7 @@ class ScoreReader():
 		'sum':'SUM',
 		'var':'VAR_SAMP'
 		}
+		self.whitelist=['acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh', 'ceil', 'copysign', 'cos', 'cosh', 'degrees', 'e', 'erf', 'erfc', 'exp', 'expm1', 'fabs', 'factorial', 'floor', 'fmod', 'frexp', 'fsum', 'gamma', 'hypot', 'isinf', 'isnan', 'ldexp', 'lgamma', 'log', 'log10', 'log1p', 'modf', 'pi', 'pow', 'radians', 'sin', 'sinh', 'sqrt', 'tan', 'tanh', 'trunc','abs','if','else','in']
 
 	def save(self,key,value):#cache result
 		c=dict()  
@@ -114,6 +116,10 @@ class ScoreReader():
 			
 		if re.findall('{[^}]+}',formular):
 			raise Exception('Unsupported Variables:%s'%', '.join(re.findall('{[^}]+}',formular)))
+
+
+		if [i for i in re.findall("\w(?<!\d)[\w'-]*",formular) if i not in self.whitelist and len(i)>1 ]:#if words not in whitelist then rasise error and stop, secure enough?
+			raise Exception('Unsupported Function')
 
 		val=eval(formular)
 
