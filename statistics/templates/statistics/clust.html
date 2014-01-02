@@ -1,0 +1,152 @@
+{% extends 'statistics/index.html' %}
+{% load filters %}
+{% load staticfiles %}
+{% load bootstrap_tags %}
+
+{%block plot-option%}
+<form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url url_name %}">
+{%if url_name|length > 0%}
+<!-- block to data column buttons-->
+<ul class="nav nav-pills data_column" >
+    {%for field in field_list%}
+        <li class = "btn btn-default" data_column = {{field}} >{{field}}</li>
+    {%endfor%}
+</ul>
+<textarea class = "data_column_to_plot" name= "data_column_to_plot" style="display:none;"></textarea>
+<hr>
+    
+<div style="width:150px;">
+<select name='dendro_color_by' class='form-control'>
+    <option value= 'similarity'>Similarity Cutoff</option>
+    <option value= 'bin'>Bins</option>
+</select>
+</div>
+<div style="width:150px;">
+<select name='dendro_color_value' class='form-control'>
+    <option value= "0.1">0.9</option>
+</select>
+</div>
+<hr>
+    
+{%endif%}
+
+{%if url_name == "stat_2ddendrogram"%}
+<div style="width:200px;">
+<select name='heatmap_color' class='form-control'>
+    {%for cmap in cmap_list%}
+    <option value= {{cmap}}>{{cmap}}</option>
+    <option value= {{cmap}}_r>{{cmap}}_r</option>
+    {%endfor%}
+</select>
+</div>
+<hr>
+
+
+
+
+<div class="well">
+{% csrf_token %}   
+    {{form|as_bootstrap_h}}       
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-success">Plot</button>
+            <button type="reset" class="btn btn-default">Clear</button>
+        </div>
+    </div>   
+</div>
+{%endif%}
+</form> 
+{%endblock%}
+
+
+
+
+
+{% block plot-img %}
+<div class= 'img_list'>
+    {%if img_list|length == 0%}
+        <div class="alert alert-success"><h4> Please select plates </h4></div>
+    {%else%}
+    {%for img in img_list%}
+        <hr>
+        <section class= 'img'>
+            <div class= "parent">
+            <div class= "panzoom">
+            {{img|safe}}
+            </div>
+            </div><br>          
+            <div class="buttons">
+                <button class="btn btn-info panzoom-zoom-in">Zoom In</button>
+                <button class="btn btn-info panzoom-zoom-out">Zoom Out</button>
+                <input type="range" class="panzoom-zoom-range">
+                <button class="btn btn-info panzoom-reset">Reset</button>
+            </div>
+        </section>
+    {% endfor %}
+    {%endif%}
+</div>
+
+
+<div class="modal fade" id="cmpdDetail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Compound Detail</h4>
+        </div>
+        <div class="modal-body" id="heatmapContent">
+
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Add to HitList</button>
+        </div>
+    </div><!-- /.modal-content-->
+</div><!-- /.modal-dialog -->
+</div>
+
+{% endblock %}
+
+
+
+
+{% block script-tooltip %}
+<script>
+//$("#cmpdDetail").modal('show');
+
+var $patch = $("g[id^='patch_ax']");
+
+$patch.click(function(){
+    $("#heatmapContent").html('');
+    
+    info=$(this).attr("id").split('_');
+    plate = info[info.length-2]
+    well = info[info.length-1]
+    
+    $.get("/statistics/details/",
+        {plate:plate, well:well,t:1},
+        function(data){
+            $("#heatmapContent").html(data);
+        });
+    $("#cmpdDetail").modal('show');
+    //alert(plate+well);
+});
+</script>
+{% endblock %}
+
+{% block script-zoom %}
+<script src="{% static "main/js/jquery.panzoom.js" %}"></script>
+<script>
+var $section = $('section.img');
+$section.mouseover(function() {
+    a = $(this)
+    a.find('.panzoom').panzoom({
+    $zoomIn: a.find(".panzoom-zoom-in"),
+    $zoomOut: a.find(".panzoom-zoom-out"),
+    $zoomRange: a.find(".panzoom-zoom-range"),
+    $reset: a.find(".panzoom-reset")
+  });
+})();
+</script>
+{% endblock %}

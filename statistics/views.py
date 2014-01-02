@@ -10,6 +10,7 @@ from django.db.models import Count
 from library.models import compound
 
 import statistics.plot_statistics as stat
+import statistics.plot_cluster as clust
 from process.forms import PlatesToUpdate
 
 #=============================================================================
@@ -63,12 +64,12 @@ def _cmap_list():
                              'gnuplot', 'gnuplot2', 'ocean', 'rainbow',
                              'terrain', 'flag', 'prism'])]
     cmap_list = ['jet', 'brg', 'CMRmap', 'cubehelix',
-                             'gnuplot', 'gnuplot2', 'ocean', 'rainbow',
-                             'terrain', 'flag', 'prism','BrBG', 'bwr', 'coolwarm', 'PiYG', 'PRGn', 'PuOr',
-                             'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'seismic' ]
+                 'gnuplot', 'gnuplot2', 'ocean', 'rainbow',
+                 'terrain', 'flag', 'prism','BrBG', 'bwr', 'coolwarm', 'PiYG', 'PRGn', 'PuOr',
+                 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'seismic' ]
     return cmap_list
 #=============================================================================
-## stable views
+## stable views for plate analysis
 
 
 def index(request):
@@ -288,8 +289,7 @@ def scatter(request):
                                                      'url_name':url_name,
                                                      'field_list':field_list,
                                                      })  
-                                                     
-
+                                                    
 
 def histogram(request):
     """ basic function to plot histogram 
@@ -354,19 +354,67 @@ def histogram(request):
 
 
 #=============================================================================
-## Testing views
+## stable views for compound analysis
+def dendrogram(request):
+    img_list = []    
+    
+    entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
+    fp2_list = []
+    plate_well_list = []
+    for e in entry_list[:50]:
+        fp2_list.append(e.fp2)
+        plate_well_list.append(str(e.plate)+'_'+e.well)  
+    
+    c = clust.plot_dendro(fp2_list,plate_well_list )
+    img_list.append(c)
+    
+#    return HttpResponse(c)
+    url_name = 'stat_dendrogram'
+    return render(request,"statistics/clust.html",{'img_list':img_list,
+                                                     'url_name':url_name,
+                                                     })
 
-import statistics.clustering as cluster
+def dendrogram2d(request):
+    cmap_list = _cmap_list()
+
+    if request.POST.get('heatmap_color'):
+        cmap=request.POST.get('heatmap_color')
+    else:
+        cmap = 'YlGnBu'
+        
+    img_list = []    
+    
+    entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
+    fp2_list = []
+    plate_well_list = []
+    for e in entry_list[:50]:
+        fp2_list.append(e.fp2)
+        plate_well_list.append(str(e.plate)+'_'+e.well)  
+    
+    c = clust.plot_dendro2d(fp2_list,plate_well_list,cmap=cmap )
+    img_list.append(c)
+    
+#    return HttpResponse(c)
+    url_name = 'stat_2ddendrogram'
+    return render(request,"statistics/clust.html",{'img_list':img_list,
+                                                     'url_name':url_name,
+                                                     'cmap_list':cmap_list
+                                                     })
+
+
+
+#=============================================================================
+## Testing views
 
 def fingerprint_cluster(request):
 
     entry_list = compound.objects.filter(plate = '3266')#.filter(well = 'A05')
     fp2_list = []
-    for entry in entry_list[:8]:
+    for entry in entry_list[:6]:
         fp2_list.append(entry.fp2)
     
 #    c = cluster.test_hierarchical_cluster(fp2_list)
-    c = cluster.test_networkx(fp2_list)
+    c = clust.test_tanimoto(fp2_list)
     
     return HttpResponse(c)     
     
