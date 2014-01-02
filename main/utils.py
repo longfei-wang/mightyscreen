@@ -47,11 +47,14 @@ class job():
     
     sub=None
 
-    def create(self,request,log='',comments=''):
+    def create(self,request,jobtype=None,log='',comments=''):
         
-        jobtype=resolve(request.path_info).url_name
+        if not jobtype:
+
+            jobtype=resolve(request.path_info).url_name #default jobtype name is the view name (defined in url.py)
 
         """if everything is ready, create a pending job entry."""
+
         self.sub=submission(
         jobtype=jobtype,
         project=project.objects.get(pk=(request.session.get('proj_id') if request.session.get('proj_id') else 1)), #proj 1 is the demo project
@@ -64,23 +67,26 @@ class job():
 
         return self.sub.pk
 
-    def update(self,progress,log=''):
+    def update(self,progress='',log=''):
         """update logs and progress"""
         self.sub.log+=log#';plate: %s uploaded'%self.plates[pla]
-        self.sub.progress=progress
+        if progress:
+            self.sub.progress=progress
         self.sub.save()
 
 
-    def complete(self):
-        self.sub.log+='Job completed at %s'%dt.datetime.now()
+    def complete(self,log=''):
+        self.sub.log+='Job completed at %s. '%dt.datetime.now().strftime("%x,%H:%M")+log
         self.sub.status='c'
         self.sub.save()
 
-    def fail(self):
+    def fail(self,log=''):
+        self.sub.log+=log
         self.sub.status='f'
         self.sub.save()
 
     def save_result(self,result):
+        """Save result page/image for view later on. Note: result is a FileField objects"""
         self.sub.result=result
 
     def get_result(self,submission_id):

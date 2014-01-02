@@ -139,9 +139,10 @@ def filternedit(request):
 
     formsetobject=modelformset_factory(obj,max_num=1)
 
-
     if request.POST.get('ispost'):
+
         formset=formsetobject(request.POST)
+
         if formset.is_valid():
                 #check if creater of this entry, otherwise no permission!
             formset.save()
@@ -150,6 +151,7 @@ def filternedit(request):
         formset=formsetobject(queryset=obj.objects.filter(
                     pk__in=map(int,request.POST.getlist('selection'))
                     ))
+
 
     return render(request,'account/filternedit.html',{'formset':formset,
                                                     'entry_list':entry_list,

@@ -162,7 +162,8 @@ def addtohitlist(request):
         else:
 
             obj.update(ishit=1)
-
+    else:
+        myjob.fail()
 
         messages.success(request,'Hit List Updated')
         myjob.complete()
