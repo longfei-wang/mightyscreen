@@ -1,7 +1,8 @@
 #utilities python module
 from django.db.models import Count
 from django.db import transaction
-from main.models import submission
+from main.models import submission,project
+from django.core.urlresolvers import resolve
 import datetime as dt
 
 def get_platelist(**kwargs):
@@ -46,19 +47,20 @@ class job():
     
     sub=None
 
-    def create(self,request,jobtype,log='',comments=''):
+    def create(self,request,log='',comments=''):
         
+        jobtype=resolve(request.path_info).url_name
+
         """if everything is ready, create a pending job entry."""
         self.sub=submission(
         jobtype=jobtype,
         project=project.objects.get(pk=(request.session.get('proj_id') if request.session.get('proj_id') else 1)), #proj 1 is the demo project
-        submit_by=request.session.user,
+        submit_by=request.user,
         submit_time=dt.datetime.now(),
+        log=log,
+        comments=comments,
         status='p')
         self.sub.save()
-        
-        self.sub.log=log
-        self.sub.comments=comments
 
         return self.sub.pk
 

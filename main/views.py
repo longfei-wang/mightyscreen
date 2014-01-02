@@ -9,7 +9,7 @@ from main.forms import UploadFileForm
 from django.core.cache import cache
 from django.contrib import messages
 from django.core import serializers
-from main.utils import get_platelist
+from main.utils import get_platelist, job
 import main.readers as readers
 from main.tasks import queue
 import csv
@@ -72,7 +72,7 @@ def datalist(request):
             entry_list = querybase
 
 
-    cache.set('dataview'+request.session['proj_id'],entry_list)
+    cache.set('dataview'+request.session['proj_id'],entry_list,3600)
 
 
     field_list = list()
@@ -137,6 +137,10 @@ def upload(request):
 
 def addtohitlist(request):
 
+    myjob=job()
+
+    myjob.create(request)
+
     if cache.get('dataview'+request.session['proj_id']):
         
         obj=cache.get('dataview'+request.session['proj_id'])
@@ -147,21 +151,22 @@ def addtohitlist(request):
 
             obj.filter(platewell__in=hitlist).update(ishit=1)
         
-        elif request.method=='GET':
+        elif request.GET.get('reset'):
 
-            if request.GET.get('reset'):
+            obj.update(ishit=0)
 
-                obj.update(ishit=0)
+        elif request.GET.get('platewell'):
 
-            elif request.GET.get('platewell'):
-
-                obj.filter(platewell=request.GET.get('platewell')).update(ishit=1)
+            obj.filter(platewell=request.GET.get('platewell')).update(ishit=1)
+        
         else:
 
             obj.update(ishit=1)
 
+
         messages.success(request,'Hit List Updated')
-    
+        myjob.complete()
+        
     return redirect('view')
 
 
