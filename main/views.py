@@ -12,13 +12,21 @@ from django.core import serializers
 from main.utils import get_platelist, job
 import main.readers as readers
 from main.tasks import queue
+from library.models import compound
 import csv
+from itertools import chain
 # Create your views here.
 
 #def handle_uploaded_file(f):
 #    with open('some/file/name.txt', 'wb+') as destination:
 #        for chunk in f.chunks():
 #            destination.write(chunk)
+
+class divider():
+    def __init__(self,value):
+        self.name='divider'
+        self.value=value
+
 
 def index(request):
     return render(request, "main/index.html")
@@ -75,19 +83,37 @@ def datalist(request):
     cache.set('dataview'+request.session['proj_id'],entry_list,3600)
 
 
-    field_list = list()
+    curprojfield_list = [i for i in data._meta.fields if i.name not in data.hidden_fields]#get all field we can display
 
-    for i in data._meta.fields:
-        if i.name not in data.hidden_field:
-            field_list.append(i)
+    compoundfield_list=list()
+
+    for i in compound._meta.fields:
+        if i.name not in compound.hidden_fields:
+            i.name='compound_'+i.name if 'compound_' not in i.name else i.name#have to prefix the name to make all names unique, later on we will add all related project this way
+            i.verbose_name='c_'+i.verbose_name if 'c_' not in i.verbose_name else i.verbose_name
+            compoundfield_list.append(i)
+
+
+
+    d=divider('Current Project')
+
+    allfield_list=compoundfield_list+[d]+curprojfield_list
+
+    if request.POST.get('fieldlist'):
+
+        field_list=[i for i in allfield_list if i.name in request.POST.get('fieldlist').split(',')]
+    else:
+        field_list=curprojfield_list
+
+    
 
     current_page = (request.GET.get('page'))
 
-    if not current_page:
+    if not current_page:#current page is the pointer of page
         current_page=1
         
 
-    p = Paginator(entry_list,100)    
+    p = Paginator(entry_list,100) #pages
 
     page_range = range(int(current_page)-5,int(current_page)+5)
     
@@ -111,6 +137,7 @@ def datalist(request):
                                                   'pre_order':pre_order,
                                                   'plates':plates,
                                                   'plates_selected':plates_selected,
+                                                  'allfield_list':allfield_list,
                                                 })
 
 

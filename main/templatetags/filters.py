@@ -16,6 +16,9 @@ def getattr (obj, args):
     """From djangosnippets: 
     {% if block|getattr:"editable," %}
     """
+    if not obj:
+      return ''
+
     splitargs = args.split(',')
     try:
       (attribute, default) = splitargs
@@ -59,3 +62,12 @@ def paragraphs(value):
   paras = ['<p>%s</p>' % p.strip() for p in paras]
   return '\n'.join(paras)
   paragraphs = stringfilter(paragraphs)
+
+
+@register.filter
+def lookup(value,arg):
+  """filter for dictionary and list"""
+  if isinstance(value,dict):
+    return value[arg]
+  elif isinstance(value,list):
+    return value[arg]

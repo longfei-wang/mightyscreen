@@ -130,7 +130,7 @@ class data_base(models.Model):
     class Meta:
         abstract=True
     
-    hidden_field=['id','library','library_pointer','create_by','compound_pointer','platewell','submission','project']
+    hidden_fields=['id','library','library_pointer','create_by','compound_pointer','platewell','submission','project']
     
     
     library = models.CharField(max_length=50,verbose_name='Library')

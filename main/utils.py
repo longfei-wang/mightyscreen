@@ -92,3 +92,6 @@ class job():
     def get_result(self,submission_id):
         sub=submission.objects.get(pk=submission_id)
         return sub.result
+
+def get_related(plate):
+    """a function that get all related project of a given project"""

@@ -15,7 +15,10 @@ from django.db import models
 
 class compound(models.Model):
     def __unicode__(self):
-        return (self.plate_well)      
+        return (self.plate_well)
+
+    hidden_fields=['plate_well','sdf','id','fp2','fp3','fp4','plate','well']
+
     library_name = models.ForeignKey('library')
     sub_library_name = models.ForeignKey('sub_library')
     facility_reagent_id = models.CharField(max_length = 30)
