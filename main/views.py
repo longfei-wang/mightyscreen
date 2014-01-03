@@ -9,10 +9,12 @@ from main.forms import UploadFileForm
 from django.core.cache import cache
 from django.contrib import messages
 from django.core import serializers
-from main.utils import get_platelist
+from main.utils import get_platelist, job
 import main.readers as readers
 from main.tasks import queue
+from library.models import compound
 import csv
+from itertools import chain
 # Create your views here.
 
 #def handle_uploaded_file(f):
@@ -20,7 +22,18 @@ import csv
 #        for chunk in f.chunks():
 #            destination.write(chunk)
 
+class field_list_class():#template variable containter for field_list
+    def __init__(self,name,verbose_name):
+        self.name=name
+        self.verbose_name=verbose_name
+    def __eq__(self,other):
+        return self.name==other.name
+    def __ne__(self,other):
+        return not self.__eq__(other)
+
+
 def index(request):
+
     return render(request, "main/index.html")
 
 
@@ -37,6 +50,11 @@ def datalist(request):
     
     plates=get_platelist(model=data)#get array of plates
 
+
+
+    #
+    #Perform all the Query
+    #
     if request.POST.get('plates'):
         plates_selected=request.POST.get('plates').split(',')
         querybase=data.objects.filter(plate__in=plates_selected).order_by('pk')
@@ -44,6 +62,9 @@ def datalist(request):
     else:
         querybase=data.objects.order_by('pk')
 
+
+    # a=querybase.order_by("compound_pointer__logp")
+    # raise Exception(len(a))
 
     if request.POST.get('querytext'):#first query box
 
@@ -65,29 +86,59 @@ def datalist(request):
                 #intense query sting cause we need to put null entries last..
                 query='entry_list.order_by("%s")'%pre_order
 
-                #raise Exception(query)
-                exec("entry_list = "+query)
                 
+                exec("entry_list = "+query)
+
         else:
             entry_list = querybase
 
 
-    cache.set('dataview'+request.session['proj_id'],entry_list)
+    cache.set('dataview'+request.session['proj_id'],entry_list,3600)
 
 
-    field_list = list()
+    #
+    #Decide fields to display
+    #
+    curprojfield_list = [field_list_class(i.name,i.verbose_name) for i in data._meta.fields if i.name not in data.hidden_fields]#get all field we can display
 
-    for i in data._meta.fields:
-        if i.name not in data.hidden_field:
-            field_list.append(i)
+    compoundfield_list=list()
 
+    for i in compound._meta.fields:
+        if i.name not in compound.hidden_fields:
+            i.name='compound_pointer__'+i.name if 'compound_pointer__' not in i.name else i.name#have to prefix the name to make query possible. related field name
+            compoundfield_list.append(field_list_class(i.name,i.verbose_name))
+
+
+    d=field_list_class('divider','Current Project')
+
+    allfield_list=compoundfield_list+[d]+curprojfield_list
+
+    if request.POST.get('fieldlist'):#for post
+
+        field_list=[field_list_class(i.name,i.verbose_name) for i in allfield_list if i.name in request.POST.get('fieldlist').split(',')]
+
+    elif cache.get('dataview_field_list'+request.session['proj_id']) and not request.GET.get('fieldreset'):#for get view, like page, order
+    
+        field_list=cache.get('dataview_field_list'+request.session['proj_id'])
+        #raise Exception(field_list)
+    else:#if nothing
+        field_list=curprojfield_list
+
+
+    cache.set('dataview_field_list'+request.session['proj_id'],field_list,3600)    
+
+
+    #
+    #Paginator
+    #
+    
     current_page = (request.GET.get('page'))
 
-    if not current_page:
+    if not current_page:#current page is the pointer of page
         current_page=1
         
 
-    p = Paginator(entry_list,100)    
+    p = Paginator(entry_list,100) #pages
 
     page_range = range(int(current_page)-5,int(current_page)+5)
     
@@ -98,6 +149,8 @@ def datalist(request):
             page_range = range(max(int(current_page)-10,1),p.num_pages+1)
         
     pb_attr='disabled' if len(page_range) < 2 else ''
+
+
 
     return render(request, "main/data_list.html",{'entry_list': p.page(current_page),
                                                   'num_entries':entry_list.count(),
@@ -111,6 +164,7 @@ def datalist(request):
                                                   'pre_order':pre_order,
                                                   'plates':plates,
                                                   'plates_selected':plates_selected,
+                                                  'allfield_list':allfield_list,
                                                 })
 
 
@@ -137,6 +191,10 @@ def upload(request):
 
 def addtohitlist(request):
 
+    myjob=job()
+
+    myjob.create(request)
+
     if cache.get('dataview'+request.session['proj_id']):
         
         obj=cache.get('dataview'+request.session['proj_id'])
@@ -147,21 +205,23 @@ def addtohitlist(request):
 
             obj.filter(platewell__in=hitlist).update(ishit=1)
         
-        elif request.method=='GET':
+        elif request.GET.get('reset'):
 
-            if request.GET.get('reset'):
+            obj.update(ishit=0)
 
-                obj.update(ishit=0)
+        elif request.GET.get('platewell'):
 
-            elif request.GET.get('platewell'):
-
-                obj.filter(platewell=request.GET.get('platewell')).update(ishit=1)
+            obj.filter(platewell=request.GET.get('platewell')).update(ishit=1)
+        
         else:
 
             obj.update(ishit=1)
+    else:
+        myjob.fail()
 
         messages.success(request,'Hit List Updated')
-    
+        myjob.complete()
+        
     return redirect('view')
 
 

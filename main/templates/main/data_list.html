@@ -12,7 +12,6 @@
 </div>
 {% endif %}
 
-<div class="well">
 
 
 
@@ -20,6 +19,9 @@
 
 <form enctype="multipart/form-data" method="post" class="form-inline" role="form" action="{% url "view" %}">
 {% csrf_token %}
+
+<div class="well">
+
     <input type="hidden" name="plates" id="selector-target">
     <div class="form-group">
         <input type="submit" value="Update" class="btn btn-primary">
@@ -80,9 +82,39 @@
     </div>
     )
 
+</div>
+
+    <div class="panel" id="accordion"><!-- The field selector -->
+
+        <div>
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse">
+        <h4 class="panel-title">Customize Display</h4>
+        </a>
+
+
+        </div>
+        <div id="collapse" class="collapse">
+            <input type="hidden" name="fieldlist" id="fieldlist_id" value="{% for i in field_list %}{{i.name}},{% endfor %}">
+        <div class="well">
+        
+        <dl>
+            <dt>Compound Info</dt>
+            {% for i in allfield_list %}
+            {% if i.name != 'divider' %}
+            <dd><input class="fieldcheckbox" type="checkbox" {% if i in field_list %}checked{% endif %} field="{{i.name}}">&nbsp;&nbsp;{{i.verbose_name}}</dd>
+            {% else %}
+            </dl><dl><dt>{{i.verbose_name}}</dt>
+            {% endif %}
+            {% endfor %}
+        </dl>
+        <a href="?fieldreset=1">Reset</a>
+        </div>
+        </div>
+    </div>
+
 </form>
 
-</div>
+
 
 {% if entry_list %}
 
@@ -147,10 +179,15 @@
                 {% endif %}
             </td>
             {% for i in field_list %}
+                {% if 'compound_pointer__' in i.name %}
                 <td>
-                    {{ j|getattr:i.name|tabler }}
-
+                {% with i.name|cut:'compound_pointer__' as realname %}
+                {{j.compound_pointer|getattr:realname|safe}}
+                {% endwith %}
                 </td>
+                {% else %}
+                <td>{{ j|getattr:i.name|tabler}}</td>
+                {% endif %}
             {% endfor %}
         </tr>
     {% endfor %}
@@ -224,12 +261,17 @@ $(".cmpdTrigger").each(function(){//Compound Detail View
 });
 
 
-//Add to HitList
+//check/uncheck all
 $("#checkall").change(function(){
+    if ($(".hitlistcheckbox").prop("checked"))
+    {
+    $(".hitlistcheckbox").prop("checked",false);
+    }else{
     $(".hitlistcheckbox").prop("checked",true);
+    }
 });
 
-
+//sumit all checked
 $("#hitlistsubmit").click(function(){
     value=[]
     $(".hitlistcheckbox:checked").each(function(){
@@ -239,5 +281,12 @@ $("#hitlistsubmit").click(function(){
     $("#hitlistform").submit();
 });
 
+$(".fieldcheckbox").change(function(){
+    fields=[]
+    $(".fieldcheckbox:checked").each(function(){
+        fields.push($(this).attr("field"));
+    });
+    $("#fieldlist_id").val(fields.join(','));
+});
 </script>
 {% endblock %}

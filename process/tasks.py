@@ -5,10 +5,12 @@ from django.contrib.auth.models import User
 from celery.decorators import task
 from django.contrib import messages
 from process.utils import ScoreReader
+
+
 @task()
 def process_score(data,proj,plates):
 	"""A function that read user's equation and store the score into database
-	currently very low speed, need code optimization"""
+	currently very low speed, need code optimization. A celery wrapper for readerscore class"""
 	x=ScoreReader(proj)
 
 	for i in plates:
@@ -19,10 +21,9 @@ def process_score(data,proj,plates):
 			
 			#calculate score based on user's equation for each well.	
 			for h in proj.score.all():
-				try:
-					score=x.parse(l,h.formular)
-				except SyntaxError:
-					return False
+
+				score=x.parse(l,h.formular)
+
 				
 				exec ('l.%(name)s=%(value)s'%{'name':h.name,'value':score})
 			l.save()
