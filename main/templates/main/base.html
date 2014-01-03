@@ -176,6 +176,8 @@ $("#plate-selector").change(function(){
     $("#selector-target").val($(this).val());
 });
 
+//to disable readonly select box. 
+$("select[readonly] > option:not([selected])").prop('disabled',true)
 
 </script>
 {% block script %}

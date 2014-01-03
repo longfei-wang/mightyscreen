@@ -82,6 +82,7 @@ def projselect(request):
     return render(request,'main/error.html',{})
 
 def projedit(request):
+
     warning_fields=''
     form=ProjectForm()
     proj_id=''
@@ -144,7 +145,7 @@ def filternedit(request):
     entry_list=obj.objects.all()
     jsonstring = json.dumps(list(entry_list.values('id','name')))
 
-    formsetobject=modelformset_factory(obj,max_num=1,widgets={'create_by':Select(attrs={'readonly':True,'disabled':True})})
+    formsetobject=modelformset_factory(obj,max_num=1,widgets={'create_by':Select(attrs={'readonly':True})})
 
     if request.POST.get('ispost'):#submitting the form
 

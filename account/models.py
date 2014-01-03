@@ -46,8 +46,7 @@ class ProjectForm(forms.ModelForm):#a model form for project
                     #     self.fields[i].widget.attrs['disabled'] = 'disabled'
             else:
                 self.fields['leader'].widget.attrs['readonly'] = True
-                self.fields['leader'].widget.attrs['disabled'] = True
-
+                
     class Meta:
         model=project
         fields='name description agreement experiment plate replicate score leader user'.split()

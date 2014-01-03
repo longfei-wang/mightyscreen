@@ -33,7 +33,6 @@ class field_list_class():#template variable containter for field_list
 
 
 def index(request):
-
     return render(request, "main/index.html")
 
 
@@ -100,6 +99,9 @@ def datalist(request):
             
             exec("entry_list = "+query)
 
+        elif request.GET.get('filter'):
+
+            exec('entry_list=entry_list.filter(%s__gt=0)'%request.GET.get('filter'))
 
     cache.set('dataview'+request.session['proj_id'],entry_list,30)
 
@@ -207,11 +209,18 @@ def addtohitlist(request):
         obj=cache.get('dataview'+request.session['proj_id'])
 
         if request.method=='POST':
+            if request.POST.get('hitlist'):
+                
+                hitlist= request.POST.get('hitlist').split(',')
 
-            hitlist= request.POST.get('hitlist').split(',')
+                obj.filter(platewell__in=hitlist).update(ishit=1)
+            
+            elif request.POST.get('hitlistrm'):
+                
+                hitlistrm= request.POST.get('hitlistrm').split(',')
 
-            obj.filter(platewell__in=hitlist).update(ishit=1)
-        
+                obj.filter(platewell__in=hitlistrm).update(ishit=0)
+
         elif request.GET.get('reset'):
 
             obj.update(ishit=0)
