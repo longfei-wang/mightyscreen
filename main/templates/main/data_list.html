@@ -101,12 +101,13 @@
             <dt>Compound Info</dt>
             {% for i in allfield_list %}
             {% if i.name != 'divider' %}
-            <dd><input class="fieldcheckbox" type="checkbox" {% if i in field_list%}checked{% endif %} field="{{i.name}}">&nbsp;&nbsp;{{i.verbose_name}}</dd>
+            <dd><input class="fieldcheckbox" type="checkbox" {% if i in field_list %}checked{% endif %} field="{{i.name}}">&nbsp;&nbsp;{{i.verbose_name}}</dd>
             {% else %}
-            </dl><dl><dt>{{i.value}}</dt>
+            </dl><dl><dt>{{i.verbose_name}}</dt>
             {% endif %}
             {% endfor %}
         </dl>
+        <a href="?fieldreset=1">Reset</a>
         </div>
         </div>
     </div>
@@ -178,9 +179,9 @@
                 {% endif %}
             </td>
             {% for i in field_list %}
-                {% if 'compound_' in i.name %}
+                {% if 'compound_pointer__' in i.name %}
                 <td>
-                {% with i.name|cut:'compound_' as realname %}
+                {% with i.name|cut:'compound_pointer__' as realname %}
                 {{j.compound_pointer|getattr:realname|safe}}
                 {% endwith %}
                 </td>

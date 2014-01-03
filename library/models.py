@@ -37,7 +37,7 @@ class compound(models.Model):
     fp2 = models.TextField()
     fp3 = models.CharField(max_length = 50)
     fp4 = models.TextField()
-    svg = models.TextField()
+    svg = models.TextField(verbose_name='Structure')
     sdf = models.TextField()
 
 

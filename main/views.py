@@ -22,13 +22,18 @@ from itertools import chain
 #        for chunk in f.chunks():
 #            destination.write(chunk)
 
-class divider():
-    def __init__(self,value):
-        self.name='divider'
-        self.value=value
+class field_list_class():#template variable containter for field_list
+    def __init__(self,name,verbose_name):
+        self.name=name
+        self.verbose_name=verbose_name
+    def __eq__(self,other):
+        return self.name==other.name
+    def __ne__(self,other):
+        return not self.__eq__(other)
 
 
 def index(request):
+
     return render(request, "main/index.html")
 
 
@@ -45,6 +50,11 @@ def datalist(request):
     
     plates=get_platelist(model=data)#get array of plates
 
+
+
+    #
+    #Perform all the Query
+    #
     if request.POST.get('plates'):
         plates_selected=request.POST.get('plates').split(',')
         querybase=data.objects.filter(plate__in=plates_selected).order_by('pk')
@@ -52,6 +62,9 @@ def datalist(request):
     else:
         querybase=data.objects.order_by('pk')
 
+
+    # a=querybase.order_by("compound_pointer__logp")
+    # raise Exception(len(a))
 
     if request.POST.get('querytext'):#first query box
 
@@ -73,9 +86,9 @@ def datalist(request):
                 #intense query sting cause we need to put null entries last..
                 query='entry_list.order_by("%s")'%pre_order
 
-                #raise Exception(query)
-                exec("entry_list = "+query)
                 
+                exec("entry_list = "+query)
+
         else:
             entry_list = querybase
 
@@ -83,30 +96,42 @@ def datalist(request):
     cache.set('dataview'+request.session['proj_id'],entry_list,3600)
 
 
-    curprojfield_list = [i for i in data._meta.fields if i.name not in data.hidden_fields]#get all field we can display
+    #
+    #Decide fields to display
+    #
+    curprojfield_list = [field_list_class(i.name,i.verbose_name) for i in data._meta.fields if i.name not in data.hidden_fields]#get all field we can display
 
     compoundfield_list=list()
 
     for i in compound._meta.fields:
         if i.name not in compound.hidden_fields:
-            i.name='compound_'+i.name if 'compound_' not in i.name else i.name#have to prefix the name to make all names unique, later on we will add all related project this way
-            i.verbose_name='c_'+i.verbose_name if 'c_' not in i.verbose_name else i.verbose_name
-            compoundfield_list.append(i)
+            i.name='compound_pointer__'+i.name if 'compound_pointer__' not in i.name else i.name#have to prefix the name to make query possible. related field name
+            compoundfield_list.append(field_list_class(i.name,i.verbose_name))
 
 
-
-    d=divider('Current Project')
+    d=field_list_class('divider','Current Project')
 
     allfield_list=compoundfield_list+[d]+curprojfield_list
 
-    if request.POST.get('fieldlist'):
+    if request.POST.get('fieldlist'):#for post
 
-        field_list=[i for i in allfield_list if i.name in request.POST.get('fieldlist').split(',')]
-    else:
+        field_list=[field_list_class(i.name,i.verbose_name) for i in allfield_list if i.name in request.POST.get('fieldlist').split(',')]
+
+    elif cache.get('dataview_field_list'+request.session['proj_id']) and not request.GET.get('fieldreset'):#for get view, like page, order
+    
+        field_list=cache.get('dataview_field_list'+request.session['proj_id'])
+        #raise Exception(field_list)
+    else:#if nothing
         field_list=curprojfield_list
 
-    
 
+    cache.set('dataview_field_list'+request.session['proj_id'],field_list,3600)    
+
+
+    #
+    #Paginator
+    #
+    
     current_page = (request.GET.get('page'))
 
     if not current_page:#current page is the pointer of page
@@ -124,6 +149,8 @@ def datalist(request):
             page_range = range(max(int(current_page)-10,1),p.num_pages+1)
         
     pb_attr='disabled' if len(page_range) < 2 else ''
+
+
 
     return render(request, "main/data_list.html",{'entry_list': p.page(current_page),
                                                   'num_entries':entry_list.count(),
