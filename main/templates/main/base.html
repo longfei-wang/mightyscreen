@@ -171,9 +171,11 @@
 <script src="{% static "main/js/bootstrap.min.js" %}"></script>
 <script>
 
+//for plate selector module under menu
 $("#plate-selector").change(function(){
     $("#selector-target").val($(this).val());
 });
+
 
 </script>
 {% block script %}

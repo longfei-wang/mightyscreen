@@ -55,50 +55,59 @@ def datalist(request):
     #
     #Perform all the Query
     #
+
+    querybase=data.objects.all()
+
     if request.POST.get('plates'):
-        plates_selected=request.POST.get('plates').split(',')
-        querybase=data.objects.filter(plate__in=plates_selected).order_by('pk')
+        plates_selected=request.POST.get('plates').split(',')#plates_selected is a pass-through variable
+        querybase=querybase.filter(plate__in=plates_selected)
+    
+    querybase.order_by('pk')        
+    
+    if request.method=='POST':
 
-    else:
-        querybase=data.objects.order_by('pk')
+        if request.POST.get('querytext'):#first query box
 
+            query='Q('+request.POST.get('field')+'__'+request.POST.get('sign')+' = "'+request.POST.get('querytext')+'")'
 
-    # a=querybase.order_by("compound_pointer__logp")
-    # raise Exception(len(a))
+            if request.POST.get('querytext2') and request.POST.get('joint'):#second querybox
 
-    if request.POST.get('querytext'):#first query box
+                query+=request.POST.get('joint')+'Q('+request.POST.get('field2')+'__'+request.POST.get('sign2')+' = "'+request.POST.get('querytext2')+'")'
+        
+            #raise Exception(query)
+            exec('entry_list = querybase.filter('+query+')')
 
-        query='Q('+request.POST.get('field')+'__'+request.POST.get('sign')+' = "'+request.POST.get('querytext')+'")'
+        else:#when you hit update with no querytext
 
-        if request.POST.get('querytext2') and request.POST.get('joint'):#second querybox
-
-            query+=request.POST.get('joint')+'Q('+request.POST.get('field2')+'__'+request.POST.get('sign2')+' = "'+request.POST.get('querytext2')+'")'
-        #raise Exception(query)
-        exec('entry_list = querybase.filter('+query+')')
+            entry_list = querybase
         
     else:
-        #if this is just turning pages then use the latest query
-        if cache.get('dataview'+request.session['proj_id']) and request.method == 'GET':
-            entry_list = cache.get('dataview'+request.session['proj_id'])
+        
+        try:#wierd error association cache, have no idea how to fix this. So just if error occur, reset cache...
+            entry_list = cache.get('dataview'+request.session['proj_id'])#if this is just turning pages then use the latest query
+        
+        except:
+            entry_list = None
+            messages.error(request,"A Internal Error Occured. And your veiw will be reset.")
 
-            if request.GET.get('order'):
-                pre_order=request.GET.get('order')
-                #intense query sting cause we need to put null entries last..
-                query='entry_list.order_by("%s")'%pre_order
+        entry_list = entry_list if entry_list else querybase        
 
-                
-                exec("entry_list = "+query)
+        if request.GET.get('order'):
+            pre_order=request.GET.get('order')
+            #intense query sting cause we need to put null entries last..
+            query='entry_list.order_by("%s")'%pre_order
+            
+            
+            exec("entry_list = "+query)
 
-        else:
-            entry_list = querybase
 
-
-    cache.set('dataview'+request.session['proj_id'],entry_list,3600)
+    cache.set('dataview'+request.session['proj_id'],entry_list,30)
 
 
     #
     #Decide fields to display
     #
+    
     curprojfield_list = [field_list_class(i.name,i.verbose_name) for i in data._meta.fields if i.name not in data.hidden_fields]#get all field we can display
 
     compoundfield_list=list()
@@ -120,7 +129,7 @@ def datalist(request):
     elif cache.get('dataview_field_list'+request.session['proj_id']) and not request.GET.get('fieldreset'):#for get view, like page, order
     
         field_list=cache.get('dataview_field_list'+request.session['proj_id'])
-        #raise Exception(field_list)
+
     else:#if nothing
         field_list=curprojfield_list
 
@@ -166,8 +175,6 @@ def datalist(request):
                                                   'plates_selected':plates_selected,
                                                   'allfield_list':allfield_list,
                                                 })
-
-
 
 
 def upload(request):

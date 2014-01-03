@@ -7,17 +7,19 @@ from collections import OrderedDict as od
 from process.tasks import process_score
 from process.forms import PlatesToUpdate, ScoreForm
 from django.db.models import Count
-from main.utils import get_platelist
+from main.utils import get_platelist,job
 #from main.utils import get_platelist
 # Create your views here.
     
 def mark(request):
     form=PlatesToUpdate()
+    
     if not 'proj' in request.session:
         return render(request,"main/error.html",{'error_msg':"No project specified!"})
     
     exec ('from data.models import proj_'+request.session['proj_id']+' as data')
     
+
     welltypes=dict(data_base.schoice)
 
     proj=project.objects.get(pk=request.session['proj_id'])
@@ -29,13 +31,19 @@ def mark(request):
         form=PlatesToUpdate(request.POST)
 
         if form.is_valid():
-        
+
             platelist=form.cleaned_data['plates'].split(',')
             querybase=data.objects.filter(plate__in=platelist)
+
+            myjob=job()            
+            myjob.create(request,log='select plates: %s to update.'%','.join(platelist))
 
             for j in ['X','E','P','N','B']:#this sequence is priority low to high
                     
                 x=request.POST.get(j).split(',')
+
+                if len(x) > 1:
+                    myjob.update(log='updated wells: %(wells)s for welltype %(welltype)s.'%{'welltype':j,'wells':','.join(x)})
 
                 querybase.filter(library_pointer__isnull=True,well__in=x).update(welltype=j) 
 
@@ -51,6 +59,8 @@ def mark(request):
 
             messages.success(request,'WellType Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
     
+            myjob.complete()
+
     return render(request,'process/markwell.html',{'proj':proj,'welltypes':welltypes,'plates':plates,'form':form})
 
 def score(request):
@@ -75,8 +85,16 @@ def score(request):
     if request.method=='POST':
         form=PlatesToUpdate(request.POST)
         if form.is_valid():
+
+            myjob=job()
+            myjob.create(request,log='Update plates: %s. '%form.cleaned_data['plates'])
+            
             if process_score(data.objects.all(),proj,form.cleaned_data['plates'].split(',')):
+                
+                myjob.complete()
+
                 messages.success(request,'Job has been sent. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
+    
     return render(request,'process/score.html',{'plates':plates,
                         'entry_list':entry_list,
                         'field_list':field_list,
