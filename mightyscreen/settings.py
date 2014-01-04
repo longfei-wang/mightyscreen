@@ -30,6 +30,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
+#    'django_admin_bootstrapped',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -55,7 +56,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'async_messages.middleware.AsyncMiddleware',
 )
 
 ROOT_URLCONF = 'mightyscreen.urls'
@@ -68,7 +68,7 @@ WSGI_APPLICATION = 'mightyscreen.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'mightyscreen',
     	'HOST': '',
     	'USER' : 'test',
@@ -116,3 +116,4 @@ djcelery.setup_loader()
 BROKER_URL="django://"
 
 AUTH_PROFILE_MODULE = 'account.user_profile'
+

@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 from django.core.urlresolvers import reverse
-from async_messages import messages as umes
 from django.contrib.auth.models import User
 from celery.decorators import task
 from django.contrib import messages
@@ -30,5 +29,13 @@ def process_score(data,proj,plates):
 
 	#umes.success(proj.leader,'Score Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
 	return True
+
+
+
+#wrap  rawdata class in a function for easier queue.
+@task()
+def queue(d,m):
+    exec('d.%s'%m)
+    return True
 
 

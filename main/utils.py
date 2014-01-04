@@ -39,8 +39,6 @@ def flush_transaction():
     transaction.commit()
 
 
-
-
 class job():
 
     """the job class, need test"""

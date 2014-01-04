@@ -8,8 +8,30 @@ from process.tasks import process_score
 from process.forms import PlatesToUpdate, ScoreForm
 from django.db.models import Count
 from main.utils import get_platelist,job
+import process.readers as readers
+from process.tasks import queue
+from process.forms import UploadFileForm
 #from main.utils import get_platelist
 # Create your views here.
+
+def upload(request):
+
+    if 'proj' in request.session: 
+        form = UploadFileForm(initial={'user':request.user.pk,'project':request.session['proj_id']})
+    
+        if request.method == 'POST':
+            form = UploadFileForm(request.POST, request.FILES)
+            if form.is_valid():
+                reader = readers.Envision_Grid_Reader(form.cleaned_data)#if fileformat is other than Envision need to call other reader
+                reader.parse()
+                queue(reader,'save()')#then parse_data in background
+                    
+                return render(request,'main/redirect.html',{'message':'Data submitted to queue!','dest':'index'})
+                
+    else:
+        return render(request,'main/error.html',{'error_msg':'No working project specified!'})
+    return render(request,'process/upload.html', {'form':form})
+
     
 def mark(request):
     form=PlatesToUpdate()

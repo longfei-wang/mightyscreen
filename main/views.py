@@ -5,22 +5,14 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db.models import Q,Count
 from django.core.paginator import Paginator
-from main.forms import UploadFileForm
 from django.core.cache import cache
 from django.contrib import messages
 from django.core import serializers
 from main.utils import get_platelist, job
-import main.readers as readers
-from main.tasks import queue
 from library.models import compound
 import csv
-from itertools import chain
 # Create your views here.
 
-#def handle_uploaded_file(f):
-#    with open('some/file/name.txt', 'wb+') as destination:
-#        for chunk in f.chunks():
-#            destination.write(chunk)
 
 class field_list_class():#template variable containter for field_list
     def __init__(self,name,verbose_name):
@@ -179,23 +171,6 @@ def datalist(request):
                                                 })
 
 
-def upload(request):
-
-    if 'proj' in request.session: 
-        form = UploadFileForm(initial={'user':request.user.pk,'project':request.session['proj_id']})
-    
-        if request.method == 'POST':
-            form = UploadFileForm(request.POST, request.FILES)
-            if form.is_valid():
-                reader = readers.Envision_Grid_Reader(form.cleaned_data)#if fileformat is other than Envision need to call other reader
-                reader.parse()
-                queue(reader,'save()')#then parse_data in background
-                    
-                return render(request,'main/redirect.html',{'message':'Data submitted to queue!','dest':'index'})
-                
-    else:
-        return render(request,'main/error.html',{'error_msg':'No working project specified!'})
-    return render(request,'main/upload.html', {'form':form})
 
 
 def addtohitlist(request):

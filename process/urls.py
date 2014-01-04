@@ -11,6 +11,7 @@ urlpatterns = patterns('',
     url(r'^$', views.mark,name='process'),
     url(r'^mark', views.mark,name='mark'),
     url(r'^score', views.score,name='score'),
+	url(r'^upload/', views.upload, name='upload'),
     )    
 
 
