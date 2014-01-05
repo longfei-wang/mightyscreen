@@ -7,7 +7,6 @@ import pylab, scipy.optimize,numpy, scipy.stats
 import itertools
 
 #from scipy import *
-import cStringIO
 import StringIO
 
 #=============================================================================
@@ -45,9 +44,9 @@ def _func_sigmoid(x,EC50,k,base,amp):
 def _gauss(x, a, b, c):
     return a * pylab.exp(-(x - b)**2.0 / (2 * c**2))
 
-def _figsize(x = 12, y = 6):
+def _figsize(x = 8, y = 5):
     """ To set the output figure size \n
-    Default is 12 x 6"""
+    Default is 6 x 3"""
     figsize=(x,y)
     return figsize
 
@@ -79,6 +78,7 @@ def _fig_out(format_out ='svg'):
     http://stackoverflow.com/questions/5453375  \n    
     """
     if format_out=='png':
+        import cStringIO
         sio = cStringIO.StringIO()
         pylab.savefig(sio, format='png')
         image_string = """<img src="data:image/png;base64,%s"/><br>""" % sio.getvalue().encode("base64").strip()
@@ -90,6 +90,14 @@ def _fig_out(format_out ='svg'):
     return image_string
 
 
+def _dot_color_dict():
+    color_dict = {'B':['bad well', '#bdbdbd'], 
+                  'P':['positive\ncontrol', '#de2d26'],
+                  'N':['negative\ncontrol', '#0000CC'],
+                  'E':['empty', '#ffeda0'],
+                  'X':['compound', '#41b6c4'],
+                    }
+    return color_dict
     
 
 ##==============================================================================
@@ -158,12 +166,7 @@ def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1, sor
         ys.sort()    
     
     
-    color_dict = {'B':['bad well', '#bdbdbd'], 
-                  'P':['positive control', '#de2d26'],
-                  'N':['negative control', '#0000CC'],
-                  'E':['empty', '#ffeda0'],
-                  'X':['compound', '#41b6c4'],
-                    }
+    color_dict =_dot_color_dict()
     
 #    slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(xs,ys)    
 #    z = numpy.polyfit(xs,ys,1)
@@ -201,7 +204,7 @@ def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1, sor
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     
     # Put a legend to the right of the current axis
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5),prop={'size':12})
 
 #    pylab.legend(loc='best') 
     image_string = _fig_out()
@@ -215,12 +218,8 @@ def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,la
     ys = data_b
         
 
-    color_dict = {'B':['bad well', '#bdbdbd'], 
-                  'P':['positive control', '#de2d26'],
-                  'N':['negative control', '#0000CC'],
-                  'E':['empty', '#ffeda0'],
-                  'X':['compound', '#41b6c4'],
-                    }
+    color_dict =_dot_color_dict()
+    
     
     slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(xs,ys)    
     z = numpy.polyfit(xs,ys,1)
@@ -235,7 +234,7 @@ def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,la
     pylab.ylabel('%s of %s: %s'%(label_y,plate_pro,plate_number))       
     
     x = scipy.linspace(min(xs),max(xs),100)
-    pylab.plot(x,fitfunc(x),'b', label=('fitting\n R=%f'%r_value))          
+    pylab.plot(x,fitfunc(x),'b', label=('fitting\nR=%.3f'%r_value))          
     
     # plot interactive layer    
     patch_id = []
@@ -256,7 +255,7 @@ def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,la
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     
     # Put a legend to the right of the current axis
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), prop={'size':12})
 
 #    pylab.legend(loc='best') 
     image_string = _fig_out()
@@ -382,101 +381,3 @@ def plot_heatmap(well, intensity,plate_well_list, plate_number = 1, cmap = 'jet_
     image_string = _fig_out()
     return image_string
 
-def test_cluster(data_in, n = 10):
-    """use k_means_clustering"""    
-    
-    from numpy import vstack,array
-    from numpy.random import rand
-    from scipy.cluster.vq import kmeans,vq
-    
-    fig = pylab.figure(figsize=_figsize())    
-    
-    # data generation
-#    data = vstack((rand(150,2) + array([.5,.5]),rand(150,2)))
-    data = vstack((data_in))
-    ## computing K-Means with K = 2 (2 clusters)
-    #centroids,_ = kmeans(data,10)
-    ## assign each sample to a cluster
-    #idx,_ = vq(data,centroids)
-    #
-    ## some plotting using numpy's logical indexing
-    #plot(data[idx==0,0],data[idx==0,1],'ob',
-    #     data[idx==1,0],data[idx==1,1],'or')
-    #plot(centroids[:,0],centroids[:,1],'sg',markersize=8)
-    #show()
-    
-    # now with K = 3 (3 clusters)
-
-    centroids,_ = kmeans(data,n)
-    idx,_ = vq(data,centroids)
-    
-    color_s = 'rcgmbyk'
-    for i in range(n):
-        pylab.plot(data[idx==i],data[idx==i],'o', color = color_s[i%7])
-
-#    pylab.plot(centroids[:,0],centroids[:,1],'sm',markersize=8)
-
-    image_string = _fig_out()
-    return image_string
-
-
-
-def test_hierarchical_cluster(data_in, n = 10):
-    """use hierarchical_clustering"""    
-    
-    from numpy import vstack,array
-    from numpy.random import rand
-    from scipy.cluster.vq import kmeans,vq
-    
-    fig = pylab.figure(figsize=(12,6))    
-    
-    # data generation
-#    data = vstack((rand(150,2) + array([.5,.5]),rand(150,2)))
-    data = vstack((data_in))
-    ## computing K-Means with K = 2 (2 clusters)
-    #centroids,_ = kmeans(data,10)
-    ## assign each sample to a cluster
-    #idx,_ = vq(data,centroids)
-    #
-    ## some plotting using numpy's logical indexing
-    #plot(data[idx==0,0],data[idx==0,1],'ob',
-    #     data[idx==1,0],data[idx==1,1],'or')
-    #plot(centroids[:,0],centroids[:,1],'sg',markersize=8)
-    #show()
-    
-    # now with K = 3 (3 clusters)
-
-    centroids,_ = kmeans(data,n)
-    idx,_ = vq(data,centroids)
-    
-    color_s = 'rcgmbyk'
-    for i in range(n):
-        pylab.plot(data[idx==i],data[idx==i],'o', color = color_s[i%7])
-
-#    pylab.plot(centroids[:,0],centroids[:,1],'sm',markersize=8)
-
-    image_string = _fig_out()
-    return image_string
-
-
-
-#def _test_run():
-#    ## test plot_sigmoid_binding 
-#    f1 = 'test_plot_sigmoid_binding.tab'
-#    plot_sigmoid_binding(f1)
-    
-#    ##test plot_scatter
-#    f2 = 'test_plot_scatter.tab'
-#    plot_scatter(f2)
-    
-#    ##test plot_linearfit
-#    f2 = 'test_plot_scatter.tab'
-#    plot_linearfit(f2)
-
-#    ##test plot_linearfit
-#    f2 = 'test_plot_scatter.tab'
-#    plot_histogram(f2)
-
-#    ##test plot_linearfit
-#    f5 = 'test_plot_plate.tab'
-#    plot_plate(f5)
