@@ -10,6 +10,7 @@ from django.db.models import Count
 from library.models import compound
 
 import statistics.plot_statistics as stat
+import statistics.plot_cluster as clust
 from process.forms import PlatesToUpdate
 
 #=============================================================================
@@ -63,12 +64,49 @@ def _cmap_list():
                              'gnuplot', 'gnuplot2', 'ocean', 'rainbow',
                              'terrain', 'flag', 'prism'])]
     cmap_list = ['jet', 'brg', 'CMRmap', 'cubehelix',
-                             'gnuplot', 'gnuplot2', 'ocean', 'rainbow',
-                             'terrain', 'flag', 'prism','BrBG', 'bwr', 'coolwarm', 'PiYG', 'PRGn', 'PuOr',
-                             'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'seismic' ]
+                 'gnuplot', 'gnuplot2', 'ocean', 'rainbow',
+                 'terrain', 'flag', 'prism','BrBG', 'bwr', 'coolwarm', 'PiYG', 'PRGn', 'PuOr',
+                 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'seismic' ]
     return cmap_list
+
+def _dendro_para(request):
+    d_xy = []
+    m_xy = []
+    for a in 'xy':    
+        if request.POST.get(('dendro_color_by_'+a)):
+            value=request.POST.get(('dendro_color_by_'+a))
+            if value == 'similarity':
+                if request.POST.get(('dendro_color_value_similarity_'+a)):
+                    similarity=float(request.POST.get(('dendro_color_value_similarity_'+a))) ### some bug here
+                    distance = 1 -similarity
+                    d_xy.append(distance)
+                else:
+                    distance = 0.9 ## default value 
+                    d_xy.append(distance)
+    
+            elif value == 'bin':
+                if request.POST.get(('dendro_color_value_bin_'+a)):
+                    distance=int(request.POST.get(('dendro_color_value_bin_'+a))) 
+                    d_xy.append(distance)
+                else:
+                    distance = 2 ## default value, use distance to pass bin number into the function  
+                    d_xy.append(distance)
+        
+        else:
+            distance = 0.9 ## default color by distance 0.9
+            d_xy.append(distance)
+            
+        if request.POST.get(('linkage_method_'+a)):
+            method = request.POST.get(('linkage_method_'+a))
+            m_xy.append(method)
+        else:
+            method = 'complete'
+            m_xy.append(method) 
+            
+    return d_xy[0],m_xy[0],d_xy[1],m_xy[1]
+    
 #=============================================================================
-## stable views
+## stable views for plate analysis
 
 
 def index(request):
@@ -288,8 +326,7 @@ def scatter(request):
                                                      'url_name':url_name,
                                                      'field_list':field_list,
                                                      })  
-                                                     
-
+                                                    
 
 def histogram(request):
     """ basic function to plot histogram 
@@ -354,19 +391,76 @@ def histogram(request):
 
 
 #=============================================================================
-## Testing views
+## stable views for compound analysis
+def dendrogram(request):
+    img_list = []    
 
-import statistics.clustering as cluster
+
+    distance,method,distance_y,method_y = _dendro_para(request)
+
+    
+    entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
+    fp2_list = []
+    plate_well_list = []
+    for e in entry_list[:50]:
+        fp2_list.append(e.fp2)
+        plate_well_list.append(str(e.plate)+'_'+e.well)  
+    
+    c = clust.plot_dendro(fp2_list,plate_well_list,distance = distance,method = method )
+    img_list.append(c)
+    
+#    return HttpResponse(c)
+    url_name = 'stat_dendrogram'
+
+    return render(request,"statistics/clust.html",{'img_list':img_list,
+                                                     'url_name':url_name,
+                                                     })
+
+def dendrogram2d(request):
+    cmap_list = _cmap_list()    
+    
+    if request.POST.get('heatmap_color'):
+        cmap=request.POST.get('heatmap_color')
+    else:
+        cmap = 'YlGnBu'
+        
+    distance,method,distance_y,method_y = _dendro_para(request)
+#    raise Exception(_dendro_para(request))
+
+
+    img_list = []    
+    
+    entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
+    fp2_list = []
+    plate_well_list = []
+    for e in entry_list[:50]:
+        fp2_list.append(e.fp2)
+        plate_well_list.append(str(e.plate)+'_'+e.well)  
+    
+    c = clust.plot_dendro2d(fp2_list,plate_well_list,cmap=cmap, distance = distance, method = method,distance_y = distance_y, method_y = method_y  )
+    img_list.append(c)
+    
+#    return HttpResponse(c)
+    url_name = 'stat_2ddendrogram'
+    return render(request,"statistics/clust.html",{'img_list':img_list,
+                                                     'url_name':url_name,
+                                                     'cmap_list':cmap_list
+                                                     })
+
+
+
+#=============================================================================
+## Testing views
 
 def fingerprint_cluster(request):
 
     entry_list = compound.objects.filter(plate = '3266')#.filter(well = 'A05')
     fp2_list = []
-    for entry in entry_list[:8]:
+    for entry in entry_list[:6]:
         fp2_list.append(entry.fp2)
     
 #    c = cluster.test_hierarchical_cluster(fp2_list)
-    c = cluster.test_networkx(fp2_list)
+    c = clust.test_tanimoto(fp2_list)
     
     return HttpResponse(c)     
     
