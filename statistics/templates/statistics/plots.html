@@ -17,11 +17,11 @@
 {%endif%}
 
 {%if url_name == "stat_heatmap"%}
-<div style="width:200px;">
+<div style="width:150px;">
 <select name='heatmap_color' class='form-control'>
     {%for cmap in cmap_list%}
     <option value= {{cmap}}>{{cmap}}</option>
-    <option value= {{cmap}}_r>{{cmap}}_r</option>
+    <option value= {{cmap}}_r>{{cmap}} Reverse</option>
     {%endfor%}
 </select>
 </div>
