@@ -12,6 +12,7 @@ urlpatterns = patterns('',
     url(r'^view/', views.datalist, name='view'),
     url(r'^export/', views.export, name='export'),
     url(r'^addtohitlist/', views.addtohitlist, name='addtohitlist'),
+	url(r'^benchmark/', views.benchmark, name='benchmark'),
     )    
 
 

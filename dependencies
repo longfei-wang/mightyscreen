@@ -1,0 +1,7 @@
+south
+djcelery
+kombu.transport.django
+sqlalchemy
+django-sabridge
+pylab
+pandas

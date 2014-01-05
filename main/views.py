@@ -10,7 +10,9 @@ from django.contrib import messages
 from django.core import serializers
 from main.utils import get_platelist, job
 from library.models import compound
+from sabridge import Bridge
 import csv
+import time
 # Create your views here.
 
 
@@ -25,8 +27,47 @@ class field_list_class():#template variable containter for field_list
 
 
 def index(request):
+
     return render(request, "main/index.html")
 
+def benchmark(request):
+    """compare native django orm and django-sabridge + SQLAlchemy"""
+
+    if not 'proj' in request.session:
+        return render(request,"main/error.html",{'error_msg':"No project specified!"})      
+        
+    exec ('from data.models import proj_'+request.session['proj_id']+' as data')
+
+    start=time.clock()
+    tmp=compound.objects.all()
+    n=0
+    for i in tmp:
+        n+=1
+    elapsed = (time.clock() - start)
+
+    a= elapsed
+
+    bridge = Bridge()
+    c=bridge[compound]
+    d=bridge[data]
+
+    start=time.clock()
+
+    result=c.join(d)
+    raise Exception(dir(result))
+    m=0
+    for i in result:
+        
+        m+=1
+    elapsed = (time.clock() - start)
+    
+    b=elapsed
+
+    return HttpResponse(str(a)+','+str(n)+','+str(b)+','+str(m))
+
+
+
+    
 
 def datalist(request):
     """list view of data in current project. Dynamically import the right model/table for project"""

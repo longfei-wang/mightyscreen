@@ -16,7 +16,7 @@ def process_score(data,proj,plates):
 		x.flush()#flush the cache
 
 		#calculate avg and sd of one well within all reps
-		for l in data.filter(plate=i,welltype__in=['X','P','N']):
+		for l in data.filter(plate=i):
 			
 			#calculate score based on user's equation for each well.	
 			for h in proj.score.all():
