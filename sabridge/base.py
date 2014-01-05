@@ -6,6 +6,7 @@ class Bridge(object):
         # prep the attributes, allowing them to be lazily loaded
         self._meta = None
         self._tables = {}
+        self.engineobj = None
         
     def connection_url(self):
         """Build a URL for :py:func:`sqlalchemy.create_engine`
@@ -48,6 +49,12 @@ class Bridge(object):
 
         return self._tables[model_cls]
 
+    @property##added by longfei to make engine a property, need it for session later on
+    def engine(self):
+        if not self.engineobj:
+            self.engineobj = create_engine(self.connection_url())
+        return self.engineobj
+
     @property
     def meta(self):
         """:py:class:`sqlalchemy.schema.MetaData` instance bound to the current
@@ -57,7 +64,7 @@ class Bridge(object):
         # (e.g. during a TestCase)
         if self._meta is None:
             self._meta = MetaData()
-            self._meta.bind = create_engine(self.connection_url())
+            self._meta.bind = self.engine
         return self._meta
 
 def urlbuild(scheme, path, username=None, password=None, hostname=None, port=None):

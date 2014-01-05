@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.core import serializers
 from main.utils import get_platelist, job
 from library.models import compound
-from sabridge import Bridge
+from sabridge.base import Bridge
 import csv
 import time
 # Create your views here.
@@ -53,8 +53,8 @@ def benchmark(request):
 
     start=time.clock()
 
-    result=c.join(d)
-    raise Exception(dir(result))
+    result=c.select().execute()
+
     m=0
     for i in result:
         
@@ -67,7 +67,6 @@ def benchmark(request):
 
 
 
-    
 
 def datalist(request):
     """list view of data in current project. Dynamically import the right model/table for project"""
