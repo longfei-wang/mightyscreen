@@ -11,6 +11,7 @@ from django.core import serializers
 from main.utils import get_platelist, job
 from library.models import compound
 from sabridge.base import Bridge
+from django.views.generic.base import View
 import csv
 import time
 # Create your views here.
@@ -26,9 +27,61 @@ class field_list_class():#template variable containter for field_list
         return not self.__eq__(other)
 
 
-def index(request):
+class view_class(View):#the base view class for all
+    
+    job_obj=None
+    platelist=[]
+    data_model=None
 
-    return render(request, "main/index.html")
+    @property
+    def plates(self,request):
+
+        if not self.platelist:
+            plates=list()    
+        
+            for i in list(self.data.objects.order_by('-create_date','plate').values('plate','create_date').annotate(x=Count('plate'))):
+                plates.append(i['plate'])
+        
+            self.platelist=plates
+
+        return self.platelist
+
+    @property
+    def data(self,request):
+        if not self.data_model:
+
+            if not 'proj' in request.session:
+                exec ('from data.models import proj_1 as data')
+            else:
+                exec ('from data.models import proj_'+request.session['proj_id']+' as data')
+
+            self.data_model=data
+
+        return self.data_model
+
+    @property#self.job is the class to submit job
+    def job(self,request):
+        if self.job_obj:
+            self.job_obj=job()
+        return self.job_obj
+
+
+    def get(self,request):
+        #this can be overwritten
+        return self.c(request)
+    
+    def post(self,request):
+        #this can be overwritten
+        return self.c(request)
+
+    def c(self,request):#this is to combine get and post
+        pass
+
+class index(view_class):
+
+    def c(self,request):
+
+        return render(request, "main/index.html")
 
 def benchmark(request):
     """compare native django orm and django-sabridge + SQLAlchemy"""

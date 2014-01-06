@@ -1,13 +1,12 @@
 from django.conf.urls import patterns, include, url
 from django.conf import settings
 from django.contrib import admin
+from main.views import index
 
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Examples:
-    url(r'^$', 'main.views.index', name='home'),
-    # url(r'^blog/', include('blog.urls')),
+    url(r'^$', index.as_view(), name='home'),
     url(r'^main/',include('main.urls')),
     url(r'^account/', include('account.urls')),
     url(r'^process/', include('process.urls')),
