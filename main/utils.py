@@ -52,44 +52,52 @@ class job():
             jobtype=resolve(request.path_info).url_name #default jobtype name is the view name (defined in url.py)
 
         """if everything is ready, create a pending job entry."""
+        if request.user.is_authenticated():#for demo use, no log will be recorded
+            self.sub=submission(
+            jobtype=jobtype,
+            project=project.objects.get(pk=(request.session.get('proj_id') if request.session.get('proj_id') else 1)), #proj 1 is the demo project
+            submit_by=request.user,
+            submit_time=dt.datetime.now(),
+            log=log,
+            comments=comments,
+            status='p')
+            self.sub.save()
 
-        self.sub=submission(
-        jobtype=jobtype,
-        project=project.objects.get(pk=(request.session.get('proj_id') if request.session.get('proj_id') else 1)), #proj 1 is the demo project
-        submit_by=request.user,
-        submit_time=dt.datetime.now(),
-        log=log,
-        comments=comments,
-        status='p')
-        self.sub.save()
-
-        return self.sub.pk
+            return self.sub.pk
+        return None
 
     def update(self,progress='',log=''):
         """update logs and progress"""
-        self.sub.log+=log#';plate: %s uploaded'%self.plates[pla]
-        if progress:
-            self.sub.progress=progress
-        self.sub.save()
+        if self.sub:
+            self.sub.log+=log#';plate: %s uploaded'%self.plates[pla]
+            if progress:
+                self.sub.progress=progress
+            self.sub.save()
 
 
     def complete(self,log=''):
-        self.sub.log+='Job completed at %s. '%dt.datetime.now().strftime("%x,%H:%M")+log
-        self.sub.status='c'
-        self.sub.save()
+        if self.sub:
+            self.sub.log+='Job completed at %s. '%dt.datetime.now().strftime("%x,%H:%M")+log
+            self.sub.status='c'
+            self.sub.save()
 
     def fail(self,log=''):
-        self.sub.log+=log
-        self.sub.status='f'
-        self.sub.save()
+        if self.sub:
+            self.sub.log+=log
+            self.sub.status='f'
+            self.sub.save()
 
     def save_result(self,result):
         """Save result page/image for view later on. Note: result is a FileField objects"""
-        self.sub.result=result
+        if self.sub:
+            self.sub.result=result
 
     def get_result(self,submission_id):
-        sub=submission.objects.get(pk=submission_id)
-        return sub.result
+        if self.sub:
+            sub=submission.objects.get(pk=submission_id)
+            return sub.result
+        return None
 
 def get_related(plate):
     """a function that get all related project of a given project"""
+    pass
