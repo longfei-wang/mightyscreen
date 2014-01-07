@@ -21,7 +21,7 @@ class ScoreReader():
 		'sum':'SUM',
 		'var':'VAR_SAMP'
 		}
-		self.whitelist=['acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh', 'ceil', 'copysign', 'cos', 'cosh', 'degrees', 'e', 'erf', 'erfc', 'exp', 'expm1', 'fabs', 'factorial', 'floor', 'fmod', 'frexp', 'fsum', 'gamma', 'hypot', 'isinf', 'isnan', 'ldexp', 'lgamma', 'log', 'log10', 'log1p', 'modf', 'pi', 'pow', 'radians', 'sin', 'sinh', 'sqrt', 'tan', 'tanh', 'trunc','abs','if','else','in']
+		self.whitelist=['acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh', 'ceil', 'copysign', 'cos', 'cosh', 'degrees', 'e', 'erf', 'erfc', 'exp', 'expm1', 'fabs', 'factorial', 'floor', 'fmod', 'frexp', 'fsum', 'gamma', 'hypot', 'isinf', 'isnan', 'ldexp', 'lgamma', 'log', 'log10', 'log1p', 'modf', 'pi', 'pow', 'radians', 'sin', 'sinh', 'sqrt', 'tan', 'tanh', 'trunc','abs','if','else','in','and','or','not']
 
 	def save(self,key,value):#cache result
 		c=dict()  
@@ -43,7 +43,7 @@ class ScoreReader():
 	def flush(self):#flush all cache, should do this when changing plate
 		cache.set('ScoreReader',None)
 
-	def parse(self,curRow,formular='{FP_A}',mysql=False):#parse user's formular 
+	def parse(self,curRow,formular='{FP_A}',mysql=True):#parse user's formular 
 		curPlate=curRow.plate
 		curWell=curRow.well
 		var=re.findall('{[^}]+}',formular)

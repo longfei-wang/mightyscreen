@@ -12,6 +12,7 @@ from main.utils import get_platelist, job
 from library.models import compound
 from sabridge.base import Bridge
 from django.views.generic.base import View
+from main.models import project
 import csv
 import time
 # Create your views here.
@@ -32,10 +33,11 @@ class view_class(View):#the base view class for all
     job_obj=None
     platelist=[]
     data_model=None
+    project=None
 
     @property
     def plates(self,request):
-
+        """retreive a list of plates in current project database"""
         if not self.platelist:
             plates=list()    
         
@@ -47,13 +49,21 @@ class view_class(View):#the base view class for all
         return self.platelist
 
     @property
-    def data(self,request):
-        if not self.data_model:
-
+    def proj(self,request):
+        """get current project"""
+        if not self.project:
             if not 'proj' in request.session:
-                exec ('from data.models import proj_1 as data')
+                self.project=project.objects.get(pk=1)
             else:
-                exec ('from data.models import proj_'+request.session['proj_id']+' as data')
+                self.project=project.objects.get(pk=request.session['proj_id'])
+
+        return self.project
+
+    @property
+    def data(self,request):
+        """get current project database model"""
+        if not self.data_model:
+            exec ('from data.models import proj_'+str(self.proj.pk)+' as data')
 
             self.data_model=data
 
@@ -61,10 +71,10 @@ class view_class(View):#the base view class for all
 
     @property#self.job is the class to submit job
     def job(self,request):
+        """a job object for job submission"""
         if self.job_obj:
             self.job_obj=job()
         return self.job_obj
-
 
     def get(self,request):
         #this can be overwritten
@@ -74,7 +84,7 @@ class view_class(View):#the base view class for all
         #this can be overwritten
         return self.c(request)
 
-    def c(self,request):#this is to combine get and post
+    def c(self,request):#combine get and post for easier migration, you can overwrite get or post if u want
         pass
 
 class index(view_class):
