@@ -140,7 +140,7 @@ def plot_dendro(fp2_list,plate_well_list, method = 'complete',distance=0.9):
     """    
     D,M = _fp2_to_distancematrix(fp2_list)
     fig = pylab.figure(figsize=_figsize())
-    ax1 = fig.add_axes([0.05,0.1,0.85,0.80])
+    ax1 = fig.add_axes([0.05,0.15,0.85,0.75])
     Y = fch.linkage(D, method=method)
     if distance >=1:
         ct = Y[-(distance-1),2]
@@ -176,7 +176,7 @@ def plot_dendro(fp2_list,plate_well_list, method = 'complete',distance=0.9):
 
        
     label = map(_patch_id_to_label,patch_id)
-    pylab.xticks(leaf_positions,label)
+    pylab.xticks(leaf_positions,label，rotation = "vertical")
     pylab.yticks([1,0.8,0.6,0.4,0.2,0],['1.0','0.8','0.6','0.4','0.2','0.0'] )
     ax1.spines['right'].set_color('none')
     ax1.spines['top'].set_color('none')
