@@ -382,29 +382,30 @@ class histogram(view_stat_class):
 ## stable views for compound analysis
 class dendrogram(view_stat_class):
     def c(self,request):
-        
-        img_list = []    
-        data=self.data
+        img_list = []
+        if request.method=='POST':
+             
+            data=self.data
 
-        distance,method,distance_y,method_y = self._dendro_para(request)
+            distance,method,distance_y,method_y = self._dendro_para(request)
 
-        entry_list=data.objects.filter(ishit=1)
-        #entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
-        fp2_list = []
-        plate_well_list = []
-        for e in entry_list:
-            if e.compound_pointer:
-                fp2_list.append(e.compound_pointer.fp2)
-                plate_well_list.append(str(e.plate)+'_'+e.well)  
-        
-        if len(fp2_list)>1 and len(fp2_list)<100:
-            c = clust.plot_dendro(fp2_list,plate_well_list,distance = distance,method = method )
-            img_list.append(c)
+            entry_list=data.objects.filter(ishit=1)
+            #entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
+            fp2_list = []
+            plate_well_list = []
+            for e in entry_list:
+                if e.compound_pointer:
+                    fp2_list.append(e.compound_pointer.fp2)
+                    plate_well_list.append(str(e.plate)+'_'+e.well)  
             
-        #    return HttpResponse(c)
-            
-        else:
-            messages.warning(request,'Hit list compound numbers has to be within (1,100).')
+            if len(fp2_list)>1 and len(fp2_list)<100:
+                c = clust.plot_dendro(fp2_list,plate_well_list,distance = distance,method = method )
+                img_list.append(c)
+                
+            #    return HttpResponse(c)
+                
+            else:
+                messages.warning(request,'Hit list compound numbers has to be within (1,100).')
 
         url_name = 'stat_dendrogram'
         return render(request,"statistics/clust.html",{'img_list':img_list,
@@ -415,28 +416,31 @@ class dendrogram(view_stat_class):
 class dendrogram2d(view_stat_class):
     #has bug
     def c(self,request):
-        cmap_list = self._cmap_list()    
-        
-        if request.POST.get('heatmap_color'):
-            cmap=request.POST.get('heatmap_color')
-        else:
-            cmap = 'YlGnBu'
+        img_list = []
+        cmap_list = self._cmap_list()
+        if request.method=='POST':
+                
             
-        distance,method,distance_y,method_y = self._dendro_para(request)
-    #    raise Exception(_dendro_para(request))
+            if request.POST.get('heatmap_color'):
+                cmap=request.POST.get('heatmap_color')
+            else:
+                cmap = 'YlGnBu'
+                
+            distance,method,distance_y,method_y = self._dendro_para(request)
+        #    raise Exception(_dendro_para(request))
 
 
-        img_list = []    
-        
-        entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
-        fp2_list = []
-        plate_well_list = []
-        for e in entry_list[:50]:
-            fp2_list.append(e.fp2)
-            plate_well_list.append(str(e.plate)+'_'+e.well)  
-        
-        c = clust.plot_dendro2d(fp2_list,plate_well_list,cmap=cmap, distance = distance, method = method,distance_y = distance_y, method_y = method_y  )
-        img_list.append(c)
+                
+            
+            entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
+            fp2_list = []
+            plate_well_list = []
+            for e in entry_list[:50]:
+                fp2_list.append(e.fp2)
+                plate_well_list.append(str(e.plate)+'_'+e.well)  
+            
+            c = clust.plot_dendro2d(fp2_list,plate_well_list,cmap=cmap, distance = distance, method = method,distance_y = distance_y, method_y = method_y  )
+            img_list.append(c)
         
     #    return HttpResponse(c)
         url_name = 'stat_2ddendrogram'

@@ -1,16 +1,15 @@
-<style>
-.horizontal_selection div {
-display: inline-block;
-vertical-align: middle;
-}
-</style>
-
 {% extends 'statistics/index.html' %}
 {% load filters %}
 {% load staticfiles %}
 {% load bootstrap_tags %}
 
 {%block plot-option%}
+<style>
+.horizontal_selection div {
+display: inline-block;
+vertical-align: middle;
+}
+</style>
 
 <form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url url_name %}">
 {%if url_name == "stat_dendrogram"%}

@@ -93,17 +93,18 @@
             <input type="hidden" name="fieldlist" id="fieldlist_id" value="{% for i in field_list %}{{i.name}},{% endfor %}">
         <div class="well">
         
-        <dl>
+        <dl style="display: inline-block;vertical-align: top;padding-right:50px;">
             <dt>Compound Info</dt>
             {% for i in allfield_list %}
             {% if i.name != 'divider' %}
             <dd><input class="fieldcheckbox" type="checkbox" {% if i in field_list %}checked{% endif %} field="{{i.name}}">&nbsp;&nbsp;{{i.verbose_name}}</dd>
             {% else %}
-            </dl><dl><dt>{{i.verbose_name}}</dt>
+            </dl><dl style="display: inline-block;vertical-align: top;"><dt>{{i.verbose_name}}</dt>
             {% endif %}
             {% endfor %}
         </dl>
-        <a href="?fieldreset=1">Reset</a>
+        <br>
+        <input type="submit" value="Update" class="btn btn-default">&nbsp;&nbsp;&nbsp;<a href="?fieldreset=1">Reset</a>
         </div>
         </div>
     </div>

@@ -59,9 +59,12 @@ def profile(request):
     return render(request,'account/profile.html',{'user':user,'profile':profile})
 
 def jobview(request):
+    proj_id=int(request.session.get('proj_id'))
+    if not proj_id:
+        proj_id=1
     #proj=request.user.project_set.get(pk=request.session.get('proj_id'))
     field_list=['project','jobtype','submit_time','submit_by','comments','status','log']
-    return render(request,'account/jobs.html',{'field_list':field_list,'proj_id':int(request.session.get('proj_id'))})
+    return render(request,'account/jobs.html',{'field_list':field_list,'proj_id':proj_id})
 
 #view and manage projects
 def projects(request):

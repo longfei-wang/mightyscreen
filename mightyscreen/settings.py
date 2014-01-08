@@ -30,7 +30,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
-#    'django_admin_bootstrapped',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,7 +45,11 @@ INSTALLED_APPS = (
     'data',
     'account',
     'statistics',
-    'process',
+    'process',  
+    'mptt',
+    'compressor',
+    'easy_thumbnails',
+    'fiber',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -56,6 +59,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'fiber.middleware.ObfuscateEmailAddressMiddleware',
+    'fiber.middleware.AdminPageMiddleware',
 )
 
 ROOT_URLCONF = 'mightyscreen.urls'
@@ -93,7 +98,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
@@ -105,7 +110,8 @@ TEMPLATE_CONTEXT_PROCESSORS=("django.contrib.auth.context_processors.auth",
 "django.core.context_processors.static",
 "django.core.context_processors.tz",
 "django.core.context_processors.request",
-"django.contrib.messages.context_processors.messages")
+"django.contrib.messages.context_processors.messages",
+"django.core.context_processors.request")
 
 MEDIA_ROOT =os.path.join(BASE_DIR,'media')
 MEDIA_URL = '/media/'
@@ -117,3 +123,8 @@ BROKER_URL="django://"
 
 AUTH_PROFILE_MODULE = 'account.user_profile'
 
+import django.conf.global_settings as DEFAULT_SETTINGS
+
+STATICFILES_FINDERS = DEFAULT_SETTINGS.STATICFILES_FINDERS + (
+    'compressor.finders.CompressorFinder',
+)
