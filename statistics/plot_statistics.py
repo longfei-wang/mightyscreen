@@ -44,9 +44,9 @@ def _func_sigmoid(x,EC50,k,base,amp):
 def _gauss(x, a, b, c):
     return a * pylab.exp(-(x - b)**2.0 / (2 * c**2))
 
-def _figsize(x = 12, y = 6):
+def _figsize(x = 8, y = 5):
     """ To set the output figure size \n
-    Default is 12 x 6"""
+    Default is 6 x 3"""
     figsize=(x,y)
     return figsize
 
@@ -90,6 +90,14 @@ def _fig_out(format_out ='svg'):
     return image_string
 
 
+def _dot_color_dict():
+    color_dict = {'B':['bad well', '#bdbdbd'], 
+                  'P':['positive\ncontrol', '#de2d26'],
+                  'N':['negative\ncontrol', '#0000CC'],
+                  'E':['empty', '#ffeda0'],
+                  'X':['compound', '#41b6c4'],
+                    }
+    return color_dict
     
 
 ##==============================================================================
@@ -158,12 +166,7 @@ def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1, sor
         ys.sort()    
     
     
-    color_dict = {'B':['bad well', '#bdbdbd'], 
-                  'P':['positive control', '#de2d26'],
-                  'N':['negative control', '#0000CC'],
-                  'E':['empty', '#ffeda0'],
-                  'X':['compound', '#41b6c4'],
-                    }
+    color_dict =_dot_color_dict()
     
 #    slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(xs,ys)    
 #    z = numpy.polyfit(xs,ys,1)
@@ -201,7 +204,7 @@ def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1, sor
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     
     # Put a legend to the right of the current axis
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5),prop={'size':12})
 
 #    pylab.legend(loc='best') 
     image_string = _fig_out()
@@ -215,12 +218,8 @@ def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,la
     ys = data_b
         
 
-    color_dict = {'B':['bad well', '#bdbdbd'], 
-                  'P':['positive control', '#de2d26'],
-                  'N':['negative control', '#0000CC'],
-                  'E':['empty', '#ffeda0'],
-                  'X':['compound', '#41b6c4'],
-                    }
+    color_dict =_dot_color_dict()
+    
     
     slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(xs,ys)    
     z = numpy.polyfit(xs,ys,1)
@@ -235,7 +234,7 @@ def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,la
     pylab.ylabel('%s of %s: %s'%(label_y,plate_pro,plate_number))       
     
     x = scipy.linspace(min(xs),max(xs),100)
-    pylab.plot(x,fitfunc(x),'b', label=('fitting\n R=%f'%r_value))          
+    pylab.plot(x,fitfunc(x),'b', label=('fitting\nR=%.3f'%r_value))          
     
     # plot interactive layer    
     patch_id = []
@@ -256,7 +255,7 @@ def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,la
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     
     # Put a legend to the right of the current axis
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), prop={'size':12})
 
 #    pylab.legend(loc='best') 
     image_string = _fig_out()

@@ -1,45 +1,132 @@
+<style>
+.horizontal_selection div {
+display: inline-block;
+vertical-align: middle;
+}
+</style>
+
 {% extends 'statistics/index.html' %}
 {% load filters %}
 {% load staticfiles %}
 {% load bootstrap_tags %}
 
 {%block plot-option%}
+
 <form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url url_name %}">
-{%if url_name|length > 0%}
+{%if url_name == "stat_dendrogram"%}
 <!-- block to data column buttons-->
-<ul class="nav nav-pills data_column" >
+<!--ul class="nav nav-pills data_column" >
     {%for field in field_list%}
         <li class = "btn btn-default" data_column = {{field}} >{{field}}</li>
     {%endfor%}
 </ul>
 <textarea class = "data_column_to_plot" name= "data_column_to_plot" style="display:none;"></textarea>
-<hr>
-    
+<hr-->
+
+<div class= "horizontal_selection">
+<div style="width:150px;"><span><strong>Linkage Method:</strong></span></div>
 <div style="width:150px;">
-<select name='dendro_color_by' class='form-control'>
-    <option value= 'similarity'>Similarity Cutoff</option>
-    <option value= 'bin'>Bins</option>
+    <select name='linkage_method_x' class='form-control'>
+        <option value= 'complete'>complete</option>
+        <option value= 'single'>single</option>
+        <option value= 'average'>average</option>    
+    </select>
+</div>
+</div><br>
+
+<div class= "horizontal_selection">    
+<div style="width:150px;"><span><strong>Group By:</strong></span></div>
+<div style="width:150px;">
+    <select name='dendro_color_by_x' class='form-control' id= "dendro_color_by_x">
+        <option value= 'similarity'>Similarity Cutoff</option>
+        <option value= 'bin'>Bins</option>
+    </select>
+</div>
+
+
+<div style="width:80px;">
+<select name='dendro_color_value_similarity_x' id ='dendro_similarity_x' class='form-control similarity_choice'>
+    {%with '0.9 0.8 0.7 0.6 0.5 0.4 0.3 0.2 0.1' as list%}
+    {%for i in list.split reversed %}
+    <option value= {{i}}>{{i}}</option>
+    {%endfor%}
+    {%endwith%}
+</select>
+<select name='dendro_color_value_bin_x' id='dendro_bin_x' class='form-control bin_choice' style="display: none;">
+    {%with '10 9 8 7 6 5 4 3 2' as list%}
+    {%for i in list.split reversed %}
+    <option value= {{i}}>{{i}}</option>
+    {%endfor%}
+    {%endwith%}
 </select>
 </div>
-<div style="width:150px;">
-<select name='dendro_color_value' class='form-control'>
-    <option value= "0.1">0.9</option>
-</select>
+
 </div>
-<hr>
-    
+<hr>    
 {%endif%}
 
+
 {%if url_name == "stat_2ddendrogram"%}
-<div style="width:200px;">
+{%for j in 'xy'%}
+<div class= "horizontal_selection">
+<div><span class="label label-info">{{j|upper}}</span></div>
+<div><span><strong>Linkage Method:</strong></span></div>
+<div style="width:150px;">
+    <select name='linkage_method_{{j}}' class='form-control'>
+        <option value= 'complete'>complete</option>
+        <option value= 'single'>single</option>
+        <option value= 'average'>average</option>    
+    </select>
+</div>
+  
+<div><span><strong>Group By:</strong></span></div>
+<div style="width:150px;">
+    <select name='dendro_color_by_{{j}}' class='form-control' id= "dendro_color_by_{{j}}">
+        <option value= 'similarity'>Similarity Cutoff</option>
+        <option value= 'bin'>Bins</option>
+    </select>
+</div>
+
+
+<div style="width:80px;">
+<select name='dendro_color_value_similarity_{{j}}' id ='dendro_similarity_{{j}}' class='form-control similarity_choice'>
+    {%with '0.9 0.8 0.7 0.6 0.5 0.4 0.3 0.2 0.1' as list%}
+    {%for i in list.split reversed %}
+    <option value= {{i}}>{{i}}</option>
+    {%endfor%}
+    {%endwith%}
+</select>
+<select name='dendro_color_value_bin_{{j}}' id='dendro_bin_{{j}}' class='form-control bin_choice' style="display: none;">
+    {%with '10 9 8 7 6 5 4 3 2' as list%}
+    {%for i in list.split reversed %}
+    <option value= {{i}}>{{i}}</option>
+    {%endfor%}
+    {%endwith%}
+</select>
+</div>
+</div>
+<br>
+{%endfor%}
+<hr>  
+
+
+
+<div class= "horizontal_selection">    
+<div style="width:150px;"><span><strong>Heatmap color:</strong></span></div>
+<div style="width:150px;">
 <select name='heatmap_color' class='form-control'>
+    <option value= 'YlGnBu'>YlGnBu</option>
+    <option value= 'YlGnBu_r'>YlGnBu Reverse</option>
     {%for cmap in cmap_list%}
     <option value= {{cmap}}>{{cmap}}</option>
-    <option value= {{cmap}}_r>{{cmap}}_r</option>
+    <option value= {{cmap}}_r>{{cmap}} Reverse</option>
     {%endfor%}
 </select>
 </div>
+</div>
 <hr>
+{%endif%}
+
 
 
 
@@ -50,11 +137,11 @@
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
             <button type="submit" class="btn btn-success">Plot</button>
-            <button type="reset" class="btn btn-default">Clear</button>
+            <!--button type="reset" class="btn btn-default">Clear</button-->
         </div>
     </div>   
 </div>
-{%endif%}
+
 </form> 
 {%endblock%}
 
@@ -133,6 +220,25 @@ $patch.click(function(){
     //alert(plate+well);
 });
 </script>
+
+<script>
+// show different dropdown menu for different color by options
+{%for a in 'xy'%}
+$('#dendro_color_by_{{a}}').change(function(){
+
+    if ($(this).val() == "similarity"){
+        $("#dendro_similarity_{{a}}").show()
+        $("#dendro_bin_{{a}}").hide()
+    }
+   else if ($(this).val() == "bin") {
+        $("#dendro_similarity_{{a}}").hide()
+        $("#dendro_bin_{{a}}").show()
+    }
+})
+{%endfor%}
+</script>
+
+
 {% endblock %}
 
 {% block script-zoom %}
@@ -150,3 +256,7 @@ $section.mouseover(function() {
 })();
 </script>
 {% endblock %}
+
+
+
+

@@ -57,7 +57,7 @@ def _plate_base(plate_type):
         well_list = s_384.split()
     return well_list
 
-def _figsize(x = 12, y = 6):
+def _figsize(x = 9, y = 6):
     """ To set the output figure size \n
     Default is 12 x 6"""
     figsize=(x,y)
@@ -132,18 +132,26 @@ def _patch_id_to_label(patch_id):
 ##==============================================================================
 ## Stable functions
 
-def plot_dendro(fp2_list,plate_well_list, method = 'complete',similarity=0.9):
+def plot_dendro(fp2_list,plate_well_list, method = 'complete',distance=0.9):
     """ modified from
     http://stackoverflow.com/questions/2982929
         
     works for now!
     """    
-
     D,M = _fp2_to_distancematrix(fp2_list)
     fig = pylab.figure(figsize=_figsize())
-    ax1 = fig.add_axes([0.05,0.1,0.85,0.85])
+    ax1 = fig.add_axes([0.05,0.15,0.85,0.75])
     Y = fch.linkage(D, method=method)
-    Z1 = sch.dendrogram(Y, orientation='top', color_threshold=similarity)
+    if distance >=1:
+        ct = Y[-(distance-1),2]
+        lb_title = "bins"
+        lb_dis = distance
+        
+    else: 
+        ct = distance
+        lb_title = "Similarity"
+        lb_dis = 1-distance
+    Z1 = sch.dendrogram(Y, orientation='top', color_threshold=ct)
 
     patch_id = []
     for n in Z1['ivl']:
@@ -168,31 +176,42 @@ def plot_dendro(fp2_list,plate_well_list, method = 'complete',similarity=0.9):
 
        
     label = map(_patch_id_to_label,patch_id)
-    pylab.xticks(leaf_positions,label)
+    pylab.xticks(leaf_positions,label, rotation = "vertical")
     pylab.yticks([1,0.8,0.6,0.4,0.2,0],['1.0','0.8','0.6','0.4','0.2','0.0'] )
     ax1.spines['right'].set_color('none')
     ax1.spines['top'].set_color('none')
     ax1.spines['bottom'].set_color('none')
     ax1.spines['left'].set_color('none')
 #    ax1.spines['left'].set_position(('data',-5))
-    
+    pylab.title('Linkage Method: %s\n Group By: %s %.1f '%(method.title(),lb_title,lb_dis))
 
     image_string = _fig_out()
     
     return image_string
     
 
-def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,cmap='YlGnBu'):
+def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,distance_y = 0.7, method_y = 'complete',cmap='YlGnBu'):
     """ modified from
     http://stackoverflow.com/questions/2982929
     ax1 = fig.add_axes([0.05,0.1,0.2,0.6])        
     works for now!
     """    
     D,M = _fp2_to_distancematrix(fp2_list)
-    fig = pylab.figure(figsize=_figsize(12,8))
+    fig = pylab.figure(figsize=_figsize())
     ax1 = fig.add_axes([0.202,0.705,0.6,0.20])   
     Y = fch.linkage(D, method=method)
-    Z1 = sch.dendrogram(Y, orientation='top', color_threshold=distance)
+    if distance >=1:
+        ct = Y[-(distance-1),2]
+        lb_title = "bins"
+        lb_dis = distance
+        
+    else: 
+        ct = distance
+        lb_title = "Similarity"
+        lb_dis = 1-distance
+        
+    
+    Z1 = sch.dendrogram(Y, orientation='top', color_threshold=ct)
 
     patch_id = []
     for n in Z1['ivl']:
@@ -226,8 +245,18 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,cma
 
     ax2 = fig.add_axes([0.05,0.1,0.15,0.6])    
 
-    Y = fch.linkage(D, method=method)
-    Z2 = sch.dendrogram(Y, orientation='right', color_threshold=distance)
+    Y = fch.linkage(D, method=method_y)
+    if distance_y >=1:
+        ct = Y[-(distance_y-1),2]
+        lb_title_y = "bins"
+        lb_dis_y = distance_y
+        
+    else: 
+        ct = distance_y
+        lb_title_y = "Similarity"
+        lb_dis_y = 1-distance_y
+
+    Z2 = sch.dendrogram(Y, orientation='right', color_threshold=ct)
     
     # Compute and plot second dendrogram.
     ax2.set_xticks([])
@@ -272,7 +301,7 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,cma
     # Plot colorbar.
     axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
     pylab.colorbar(im, cax=axcolor)
-
+#    pylab.title('X (Linkage Method: %s) (Group By: %s %.1f )\nY (Linkage Method: %s) (Group By: %s %.1f )'%(method.title(),lb_title,lb_dis,method_y.title(),lb_title_y,lb_dis_y))
 
     image_string = _fig_out()
     
