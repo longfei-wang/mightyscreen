@@ -1,28 +1,12 @@
-<<<<<<< HEAD
-<style>
-.horizontal_selection div {
-display: inline-block;
-vertical-align: middle;
-}
-</style>
-
-=======
->>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
 {% extends 'statistics/index.html' %}
 {% load filters %}
 {% load staticfiles %}
 {% load bootstrap_tags %}
 
 {%block plot-option%}
-<<<<<<< HEAD
-=======
-<style>
-.horizontal_selection div {
-display: inline-block;
-vertical-align: middle;
-}
-</style>
->>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
+
+
+
 
 <form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url url_name %}">
 {%if url_name == "stat_dendrogram"%}
@@ -164,7 +148,7 @@ vertical-align: middle;
 {% block plot-img %}
 <div class= 'img_list'>
     {%if img_list|length == 0%}
-        <div class="alert alert-success"><h4> Please select plates </h4></div>
+        <!--div class="alert alert-success"><h4> Please select plates </h4></div-->
     {%else%}
     {%for img in img_list%}
         <hr>

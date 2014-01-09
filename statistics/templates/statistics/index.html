@@ -5,6 +5,13 @@
 
 
 {% block content %}
+<style>
+.horizontal_selection div {
+display: inline-block;
+vertical-align: middle;
+}
+</style>    
+    
 <!-- block to add navigation buttons-->
 <ul class="nav nav-tabs nav-pills-plots" >
     <li class ="stat_heatmap"><a href="{% url "stat_heatmap" %}">Heatmap</a></li>

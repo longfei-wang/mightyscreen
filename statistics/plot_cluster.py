@@ -158,12 +158,10 @@ def plot_dendro(fp2_list,plate_well_list, method = 'complete',distance=0.9):
         patch_id.append(('patch_ax_Z1_%s'%plate_well_list[int(n)]))
 
     leaf_positions =[]
-<<<<<<< HEAD
+
 #    node_positions=[]
 #    node_height=[]
-=======
 
->>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
     for i, d in zip(Z1['icoord'], Z1['dcoord']):
         x = 0.5 * sum(i[1:3])
         y = d[1]
@@ -180,21 +178,17 @@ def plot_dendro(fp2_list,plate_well_list, method = 'complete',distance=0.9):
 
        
     label = map(_patch_id_to_label,patch_id)
-<<<<<<< HEAD
+
     pylab.xticks(leaf_positions,label, rotation = "vertical")
-=======
-    
-    pylab.xticks(leaf_positions,label,rotation="vertical")
->>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
+
     pylab.yticks([1,0.8,0.6,0.4,0.2,0],['1.0','0.8','0.6','0.4','0.2','0.0'] )
     ax1.spines['right'].set_color('none')
     ax1.spines['top'].set_color('none')
     ax1.spines['bottom'].set_color('none')
     ax1.spines['left'].set_color('none')
-<<<<<<< HEAD
+
 #    ax1.spines['left'].set_position(('data',-5))
-=======
->>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
+
     pylab.title('Linkage Method: %s\n Group By: %s %.1f '%(method.title(),lb_title,lb_dis))
 
     image_string = _fig_out()
@@ -230,12 +224,10 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,dis
         patch_id.append(('patch_ax_Z1_%s'%plate_well_list[int(n)]))
 
     leaf_positions =[]
-<<<<<<< HEAD
+
 #    node_positions=[]
 #    node_height=[]
-=======
 
->>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
     for i, d in zip(Z1['icoord'], Z1['dcoord']):
         x = 0.5 * sum(i[1:3])
         y = d[1]
@@ -459,12 +451,48 @@ def _test_fp2_to_distancematrix(fp2_list):
             matrix[i,j]=distance
     return fp1
 
-def test_tanimoto(fp2_list):
+def test_pca(fp2_list):
+    """http://stackoverflow.com/questions/13224362
+    testing    
+    """
     
-    D1 = _fp2_to_distancematrix(fp2_list)
-    D2 = _test_fp2_to_distancematrix(fp2_list)
+    def PCA(data, dims_rescaled_data=2):
+        """
+        returns: data transformed in 2 dims/columns + regenerated original data
+        pass in: data as 2D NumPy array
+        """
+        import numpy as NP
+        from scipy import linalg as LA
+        mn = NP.mean(data, axis=0)
+        # mean center the data
+        data -= mn
+        # calculate the covariance matrix
+        C = NP.cov(data.T)
+        # calculate eigenvectors & eigenvalues of the covariance matrix
+        evals, evecs = LA.eig(C)
+        # sorted them by eigenvalue in decreasing order
+        idx = NP.argsort(evals)[::-1]
+        evecs = evecs[:,idx]
+        evals = evals[idx]
+        # select the first n eigenvectors (n is desired dimension
+        # of rescaled data array, or dims_rescaled_data)
+        evecs = evecs[:,:dims_rescaled_data]
+        # carry out the transformation on the data using eigenvectors
+        data_rescaled = NP.dot(evecs.T, data.T).T
+        # reconstruct original data array
+        data_original_regen = NP.dot(evecs, dim1).T + mn
+        return data_rescaled, data_original_regen
     
-    return D1,D2
+    D,M = _fp2_to_distancematrix(fp2_list)
+    data = M
+    clr1 =  '#2026B2'
+    fig = pylab.figure(figsize=_figsize())
+    ax1 = fig.add_axes([0.05,0.15,0.85,0.75])
+    data_resc, data_orig = PCA(data)
+    ax1.plot(data_resc[:,0], data_resc[:,1], '.', mfc=clr1, mec=clr1)    
+    image_string = _fig_out()
+    
+    return image_string
 #=============================================================================
 ### Old codes
 

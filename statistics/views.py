@@ -79,125 +79,6 @@ class view_stat_class(view_class):
                         distance = 0.9 ## default value 
                         d_xy.append(distance)
         
-<<<<<<< HEAD
-    else:
-        plates_selected = []   
-
-    if request.POST.get('data_column_to_plot'):
-        data_columns=request.POST.get('data_column_to_plot').split(',')        
-    else:
-        data_columns = []
-
-    field_list = []
-    for i in data._meta.fields:
-        if i.name not in "id library library_pointer_id compound_pointer_id plate well platewell ishit welltype project submission create_date create_by":
-            field_list.append(i.name)    
-
-    return [plates,plates_selected,data,field_list,data_columns]
-
-
-def _cmap_list():
-    cmaps = [('Sequential',     ['binary', 'Blues', 'BuGn', 'BuPu', 'gist_yarg',
-                             'GnBu', 'Greens', 'Greys', 'Oranges', 'OrRd',
-                             'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu',
-                             'Reds', 'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd']),
-         ('Sequential (2)', ['afmhot', 'autumn', 'bone', 'cool', 'copper',
-                             'gist_gray', 'gist_heat', 'gray', 'hot', 'pink',
-                             'spring', 'summer', 'winter']),
-         ('Diverging',      ['BrBG', 'bwr', 'coolwarm', 'PiYG', 'PRGn', 'PuOr',
-                             'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'seismic']),
-         ('Qualitative',    ['Accent', 'Dark2', 'hsv', 'Paired', 'Pastel1',
-                             'Pastel2', 'Set1', 'Set2', 'Set3', 'spectral']),
-         ('Miscellaneous',  ['gist_earth', 'gist_ncar', 'gist_rainbow',
-                             'gist_stern', 'jet', 'brg', 'CMRmap', 'cubehelix',
-                             'gnuplot', 'gnuplot2', 'ocean', 'rainbow',
-                             'terrain', 'flag', 'prism'])]
-    cmap_list = ['jet', 'brg', 'CMRmap', 'cubehelix',
-                 'gnuplot', 'gnuplot2', 'ocean', 'rainbow',
-                 'terrain', 'flag', 'prism','BrBG', 'bwr', 'coolwarm', 'PiYG', 'PRGn', 'PuOr',
-                 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'seismic' ]
-    return cmap_list
-
-def _dendro_para(request):
-    d_xy = []
-    m_xy = []
-    for a in 'xy':    
-        if request.POST.get(('dendro_color_by_'+a)):
-            value=request.POST.get(('dendro_color_by_'+a))
-            if value == 'similarity':
-                if request.POST.get(('dendro_color_value_similarity_'+a)):
-                    similarity=float(request.POST.get(('dendro_color_value_similarity_'+a))) ### some bug here
-                    distance = 1 -similarity
-                    d_xy.append(distance)
-                else:
-                    distance = 0.9 ## default value 
-                    d_xy.append(distance)
-    
-            elif value == 'bin':
-                if request.POST.get(('dendro_color_value_bin_'+a)):
-                    distance=int(request.POST.get(('dendro_color_value_bin_'+a))) 
-                    d_xy.append(distance)
-                else:
-                    distance = 2 ## default value, use distance to pass bin number into the function  
-                    d_xy.append(distance)
-        
-        else:
-            distance = 0.9 ## default color by distance 0.9
-            d_xy.append(distance)
-            
-        if request.POST.get(('linkage_method_'+a)):
-            method = request.POST.get(('linkage_method_'+a))
-            m_xy.append(method)
-        else:
-            method = 'complete'
-            m_xy.append(method) 
-            
-    return d_xy[0],m_xy[0],d_xy[1],m_xy[1]
-    
-#=============================================================================
-## stable views for plate analysis
-
-
-def index(request):
-    plates, plates_selected,data,field_list,data_columns =_select_plates(request)
-    form=PlatesToUpdate()    
-    img_list = []     
-    url_name = ''
-    return render(request, "statistics/index.html", {'url_name':url_name,
-                                                     'field_list':field_list
-                                                     })
-#    return HttpResponse(field_list)
-
-
-def details(request):
-    """ display detailed information of compounds, use list"""
-    try:
-        cmpd = compound.objects.get(plate = request.GET.get('plate'),well=request.GET.get('well'))
-    except:
-        cmpd= False
-    field_list="chemical_name molecular_weight formula library_name facility_reagent_id plate well pubchem_id tpsa logp inchikey canonical_smiles".split()
-    if request.GET.get('t'):#if t then show as tooltip
-        return render(request, "statistics/detail_tooltip.html", {'cmpd': cmpd,'field_list':field_list})    
-    return render(request, "statistics/details.html", {'cmpd': cmpd,'field_list':field_list})
-
-
-
-def heatmap(request):
-    """ basic function to plot heatmaps 
-    """
-    ### This function is still in the testing phase
-    ### because one plate seems like have more than 384 wells...
-  
-    plates,plates_selected,data,field_list,data_columns =_select_plates(request)
-    form=PlatesToUpdate()    
-    img_list = []  
-    cmap_list = _cmap_list()
-
-    if request.POST.get('heatmap_color'):
-        cmap=request.POST.get('heatmap_color')
-    else:
-        cmap = 'jet'
-=======
                 elif value == 'bin':
                     if request.POST.get(('dendro_color_value_bin_'+a)):
                         distance=int(request.POST.get(('dendro_color_value_bin_'+a))) 
@@ -218,7 +99,6 @@ def heatmap(request):
                 m_xy.append(method) 
                 
         return d_xy[0],m_xy[0],d_xy[1],m_xy[1]
->>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
     
 #=============================================================================
 ## stable views for plate analysis
@@ -296,10 +176,12 @@ class correlation(view_stat_class):
             all_plates =True if value =="default" else False
         else:
             all_plates =True
-        
 
-
-        if len(data_columns)>1:
+        if len(data_columns)>0:        
+            if len(data_columns)==1:
+                messages.warning(request,'Please select two parameters for correlation calculation')
+                data_columns.append(data_columns[0])
+    
             if all_plates == False:
                 for plate_number in plates_selected:    
                     entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])
@@ -347,13 +229,7 @@ class correlation(view_stat_class):
                 plate_number = (', ').join(map(str, plates_selected))
                 c = stat.plot_linearfit(correlation_list[0],correlation_list[1], plate_well_list, plate_number,well_type_list,label_x,label_y)
                 img_list.append(c) 
-        
-        
-        elif len(data_columns)==1:
-            img_list.append("Please select more than one parameters for correlation calculation")              
-                
-
-
+ 
         url_name = 'stat_correlation'
         return render(request,"statistics/plots.html",{'img_list':img_list,
                                                          'plates':plates,
@@ -448,44 +324,6 @@ class histogram(view_stat_class):
 
         if all_plates == False:        
             for plate_number in plates_selected:    
-<<<<<<< HEAD
-                entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])                 
-                for e in entry_list:
-                    well_list.append(e.well)
-                    fp_list.append(float(getattr(e,data_column)))
-                    plate_well_list.append(plate_number+'_'+e.well)
-                    well_type_list.append(e.welltype)
-    
-            ## Plot Reproductivity   
-            ## This plot might have bug if A and B doesn't have same well number
-            ## This will be addressed in the future
-            plate_number = (', ').join(map(str, plates_selected))
-            c = stat.plot_scatter(fp_list, plate_well_list,well_type_list,plate_number = (plate_number+' '+data_column),sort = sort)
-            img_list.append(c)  
-
-    url_name = 'stat_scatter'
-    return render(request,"statistics/plots.html",{'img_list':img_list,
-                                                     'plates':plates,
-                                                     'form':form,
-                                                     'url_name':url_name,
-                                                     'field_list':field_list,
-                                                     })  
-                                                    
-
-def histogram(request):
-    """ basic function to plot histogram 
-    """
-    ### This function is still in the testing phase
-    ### because one plate seems like have more than 384 wells...
-    plates, plates_selected,data,field_list,data_columns =_select_plates(request)
-    form=PlatesToUpdate()    
-    img_list = [] 
-    all_plates =True
-
-    if all_plates == False:        
-        for plate_number in plates_selected:    
-            entry_list = data.objects.filter(plate = plate_number)     
-=======
                 entry_list = data.objects.filter(plate = plate_number)     
                 for data_column in data_columns:
                     well_list = []
@@ -505,7 +343,6 @@ def histogram(request):
                     img_list.append(c)        
 
         if all_plates == True:        
->>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
             for data_column in data_columns:
                 well_list = []
                 plate_well_list = []
@@ -611,80 +448,8 @@ class dendrogram2d(view_stat_class):
 
 
 #=============================================================================
-## stable views for compound analysis
-def dendrogram(request):
-    img_list = []    
-
-
-    distance,method,distance_y,method_y = _dendro_para(request)
-
-    
-    entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
-    fp2_list = []
-    plate_well_list = []
-    for e in entry_list[:50]:
-        fp2_list.append(e.fp2)
-        plate_well_list.append(str(e.plate)+'_'+e.well)  
-    
-    c = clust.plot_dendro(fp2_list,plate_well_list,distance = distance,method = method )
-    img_list.append(c)
-    
-#    return HttpResponse(c)
-    url_name = 'stat_dendrogram'
-
-    return render(request,"statistics/clust.html",{'img_list':img_list,
-                                                     'url_name':url_name,
-                                                     })
-
-<<<<<<< HEAD
-def dendrogram2d(request):
-    cmap_list = _cmap_list()    
-    
-    if request.POST.get('heatmap_color'):
-        cmap=request.POST.get('heatmap_color')
-    else:
-        cmap = 'YlGnBu'
-        
-    distance,method,distance_y,method_y = _dendro_para(request)
-#    raise Exception(_dendro_para(request))
-
-
-    img_list = []    
-    
-    entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
-    fp2_list = []
-    plate_well_list = []
-    for e in entry_list[:50]:
-        fp2_list.append(e.fp2)
-        plate_well_list.append(str(e.plate)+'_'+e.well)  
-    
-    c = clust.plot_dendro2d(fp2_list,plate_well_list,cmap=cmap, distance = distance, method = method,distance_y = distance_y, method_y = method_y  )
-    img_list.append(c)
-    
-#    return HttpResponse(c)
-    url_name = 'stat_2ddendrogram'
-    return render(request,"statistics/clust.html",{'img_list':img_list,
-                                                     'url_name':url_name,
-                                                     'cmap_list':cmap_list
-                                                     })
-
-
-
-#=============================================================================
 ## Testing views
 
-def fingerprint_cluster(request):
-
-    entry_list = compound.objects.filter(plate = '3266')#.filter(well = 'A05')
-    fp2_list = []
-    for entry in entry_list[:6]:
-        fp2_list.append(entry.fp2)
-    
-#    c = cluster.test_hierarchical_cluster(fp2_list)
-    c = clust.test_tanimoto(fp2_list)
-    
-    return HttpResponse(c)     
-=======
 class fingerprint_cluster(view_stat_class):
     def c(self,request):
 
@@ -694,10 +459,9 @@ class fingerprint_cluster(view_stat_class):
             fp2_list.append(entry.fp2)
         
     #    c = cluster.test_hierarchical_cluster(fp2_list)
-        c = clust.test_tanimoto(fp2_list)
+        c = clust.test_pca(fp2_list)
         
         return HttpResponse(c)     
->>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
     
 
 #==============================================================================
