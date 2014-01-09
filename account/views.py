@@ -7,6 +7,7 @@ from main.models import project,score,experiment,readout
 from django.conf import settings
 from django.forms.models import modelform_factory,modelformset_factory
 from django.contrib import messages
+from django.forms import Select
 import main.utils
 import json
 import os
@@ -58,9 +59,12 @@ def profile(request):
     return render(request,'account/profile.html',{'user':user,'profile':profile})
 
 def jobview(request):
+    proj_id=int(request.session.get('proj_id'))
+    if not proj_id:
+        proj_id=1
     #proj=request.user.project_set.get(pk=request.session.get('proj_id'))
     field_list=['project','jobtype','submit_time','submit_by','comments','status','log']
-    return render(request,'account/jobs.html',{'field_list':field_list,'proj_id':int(request.session.get('proj_id'))})
+    return render(request,'account/jobs.html',{'field_list':field_list,'proj_id':proj_id})
 
 #view and manage projects
 def projects(request):
@@ -81,9 +85,12 @@ def projselect(request):
     return render(request,'main/error.html',{})
 
 def projedit(request):
+
     warning_fields=''
     form=ProjectForm()
-    if request.method=='POST':
+    proj_id=''
+
+    if request.method=='POST':#posted form
         if request.POST.get('proj_id'):#decide if create a new project or update one
             form=ProjectForm(request.POST,instance=project.objects.get(pk=request.POST.get('proj_id')))
 
@@ -107,23 +114,27 @@ def projedit(request):
 
                 return render(request,'main/redirect.html',{'message':'Project Created.','dest':'index'})
         
-    proj_id=''    
-    if request.method=='GET':
-        if request.GET.get('action') != 'new':
-            if request.GET.get('p') or request.session.get('proj_id'):
-                proj_pid= request.GET.get('p') if request.GET.get('p') else request.session.get('proj_id')
-                proj=project.objects.get(pk=proj_pid)
-                if request.user in proj.user.all():
-                    form=ProjectForm(instance=proj)
-                    proj_id=proj.pk
+        return render(request,'account/projectedit.html',{'form':form,'proj_id':proj_id})
+        
 
-    return render(request,'account/projectedit.html',{'form':form,
-                                                    'proj_id':proj_id,
-                                                    })
+    elif (request.GET.get('p') or request.session.get('proj_id')) and request.GET.get('action') != 'new':#edit project
+        proj_pid= request.GET.get('p') if request.GET.get('p') else request.session.get('proj_id')
+        proj=project.objects.get(pk=proj_pid)
+        if request.user in proj.user.all():
+            form=ProjectForm(instance=proj)
+            proj_id=proj.pk
+
+    else:#create a new project
+        form=ProjectForm(initial={'leader':request.user,'user':[request.user]})
+
+    return render(request,'account/projectedit.html',{'form':form,'proj_id':proj_id})
 
 def filternedit(request):
+
+
     if request.GET.get('edit'):
         edit=request.GET.get('edit')
+    
         if edit=='score':
             obj=score
         elif edit=='experiment':
@@ -137,21 +148,36 @@ def filternedit(request):
     entry_list=obj.objects.all()
     jsonstring = json.dumps(list(entry_list.values('id','name')))
 
-    formsetobject=modelformset_factory(obj,max_num=1)
+    formsetobject=modelformset_factory(obj,max_num=1,widgets={'create_by':Select(attrs={'readonly':True})})
 
-    if request.POST.get('ispost'):
+    if request.POST.get('ispost'):#submitting the form
 
         formset=formsetobject(request.POST)
 
         if formset.is_valid():
-                #check if creater of this entry, otherwise no permission!
-            formset.save()
+            
+
+            #check if you are the creater of this entry, otherwise no permission!
+            
+            forms = formset.save(commit=False)
+
+            banlist=[]
+            for i in formset.changed_objects:
+                if 'create_by' in i[1]:
+                    banlist.append(i[0])
+
+            for i in forms:
+                if i.create_by==request.user and i not in banlist:
+                    i.save()
+                else:
+                    messages.error(request,"You can't either change user or change other user's setting")
+            
             messages.success(request,'Entry Updated!')
     else:
+
         formset=formsetobject(queryset=obj.objects.filter(
                     pk__in=map(int,request.POST.getlist('selection'))
-                    ))
-
+                    ),initial=[{'create_by':request.user}])
 
     return render(request,'account/filternedit.html',{'formset':formset,
                                                     'entry_list':entry_list,

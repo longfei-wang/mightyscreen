@@ -1,7 +1,7 @@
 {% extends 'main/base.html' %}
 {% load staticfiles %}
 {% load bootstrap_tags %}
-
+{% load filters %}
 
 {% block content %}
 <ul class="nav nav-tabs">
@@ -37,7 +37,6 @@
 {% for form in formset %}
 <div class="well">
 {{form|as_bootstrap_h}}
-
 	    <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
             <button type="submit" class="btn btn-success">Update</button>

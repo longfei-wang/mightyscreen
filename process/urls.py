@@ -8,9 +8,10 @@ from django.conf.urls.static import static
 from process import views
 
 urlpatterns = patterns('',
-    url(r'^$', views.mark,name='process'),
-    url(r'^mark', views.mark,name='mark'),
-    url(r'^score', views.score,name='score'),
+    #url(r'^$', views.mark,name='process'),
+    url(r'^mark', views.mark.as_view(),name='mark'),
+    url(r'^score', views.score.as_view(),name='score'),
+	url(r'^upload/', views.upload.as_view(), name='upload'),
     )    
 
 

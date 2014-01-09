@@ -13,10 +13,6 @@
 {% endif %}
 
 
-
-
-
-
 <form enctype="multipart/form-data" method="post" class="form-inline" role="form" action="{% url "view" %}">
 {% csrf_token %}
 
@@ -97,17 +93,18 @@
             <input type="hidden" name="fieldlist" id="fieldlist_id" value="{% for i in field_list %}{{i.name}},{% endfor %}">
         <div class="well">
         
-        <dl>
+        <dl style="display: inline-block;vertical-align: top;padding-right:50px;">
             <dt>Compound Info</dt>
             {% for i in allfield_list %}
             {% if i.name != 'divider' %}
             <dd><input class="fieldcheckbox" type="checkbox" {% if i in field_list %}checked{% endif %} field="{{i.name}}">&nbsp;&nbsp;{{i.verbose_name}}</dd>
             {% else %}
-            </dl><dl><dt>{{i.verbose_name}}</dt>
+            </dl><dl style="display: inline-block;vertical-align: top;"><dt>{{i.verbose_name}}</dt>
             {% endif %}
             {% endfor %}
         </dl>
-        <a href="?fieldreset=1">Reset</a>
+        <br>
+        <input type="submit" value="Update" class="btn btn-default">&nbsp;&nbsp;&nbsp;<a href="?fieldreset=1">Reset</a>
         </div>
         </div>
     </div>
@@ -121,7 +118,7 @@
 <div>
 
 
-<ul class="pagination">
+<ul class="pagination"><!-- Pages -->
     <li class="{{pbutton_attr}}"><a href='?page=1'>First</a></li>
     <li class="{{pbutton_attr}}"><a href='?page={{prev_page}}'>Prev</a></li>
     {% for i in pages %}
@@ -133,7 +130,19 @@
 
 <div class="pagination pull-right">
 
-<div class="btn-group">
+<div class="btn-group"><!-- Apply Filters -->
+  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+    Apply Filters <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu pull-right" role="menu">
+    <li><a id="" href="{% url 'view' %}?filter=ishit">Hit</a></li>
+    <li><a id="" href="{% url 'view' %}?filter=LYfilter">LYfilter</a></li>
+    <li class="divider"></li>
+    <li><a  href="{% url 'view' %}?filter=reset">Reset Filters</a></li>
+  </ul>
+</div>
+
+<div class="btn-group"><!-- Hit List Management -->
   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
     Add to HitList <span class="caret"></span>
   </button>
@@ -141,11 +150,12 @@
     <li><a id="hitlistsubmit" href="javascript:;">Add Checked</a></li>
     <li><a  href="{% url "addtohitlist" %}">Add All Results</a></li>
     <li class="divider"></li>
-    <li><a  href="{% url "addtohitlist" %}?reset=1">Reset HitList</a></li>
+    <li><a  id="hitlistremove" href="javascript:;">Remove Checked</a></li>
+    <li><a  href="{% url "addtohitlist" %}?reset=1">Remove All</a></li>
   </ul>
 </div>
 
-<div class="btn-group">
+<div class="btn-group"><!-- Export Function -->
   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
     Export <span class="caret"></span>
   </button>
@@ -230,6 +240,7 @@
 <form id="hitlistform" enctype="multipart/form-data" method="post" action="{% url 'addtohitlist' %}">
     {% csrf_token %}
     <input type="hidden" name="hitlist" id="hitlistinput">
+    <input type="hidden" name="hitlistrm" id="hitlistrminput">
 </form>
 
 {% endblock %}
@@ -280,6 +291,17 @@ $("#hitlistsubmit").click(function(){
     $("#hitlistinput").val(value.join(','));
     $("#hitlistform").submit();
 });
+
+//remove all checked
+$("#hitlistremove").click(function(){
+    value=[]
+    $(".hitlistcheckbox:checked").each(function(){
+        value.push($(this).attr("platewell"));
+    });
+    $("#hitlistrminput").val(value.join(','));
+    $("#hitlistform").submit();
+});
+
 
 $(".fieldcheckbox").change(function(){
     fields=[]

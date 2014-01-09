@@ -57,7 +57,7 @@
                     <li><a href="{% url "jobview" %}">Jobs</a></li>
                     {% endif %}
 
-                    <li><a>Documents</a></li>
+                    <li><a href="{% url 'documents' %}">Documents</a></li>
                     <li><a href="https://github.com/longfei-wang/mightyscreen/issues">Contact Us</a></li>
 
                 </ul>
@@ -110,12 +110,20 @@
             <div class="well sidebar-nav">
 
                     <ul class="nav nav-pills nav-stacked">
+<<<<<<< HEAD
 
                         
                         <li><a href="{% url "upload" %}">Process</a></li>
                         <li><a href="{% url "score" %}">Evaluate</a></li>
                         <li><a href="{% url "view" %}">Lists</a></li>
                         <li><a href="{% url "stat_index" %}">Plots</a> </li>
+=======
+                        
+                        <li><a href="{% url "upload" %}">Process</a></li>
+                        <li><a href="{% url "score" %}">Evaluate</a></li>
+                        <li><a href="{% url "view" %}">List</a></li>
+                        <li><a href="{% url "stat_index" %}">Plot</a> </li>
+>>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
                     </ul>
 
             </div>
@@ -172,9 +180,13 @@
 <script src="{% static "main/js/bootstrap.min.js" %}"></script>
 <script>
 
+//for plate selector module under menu
 $("#plate-selector").change(function(){
     $("#selector-target").val($(this).val());
 });
+
+//to disable readonly select box. 
+$("select[readonly] > option:not([selected])").prop('disabled',true)
 
 </script>
 {% block script %}

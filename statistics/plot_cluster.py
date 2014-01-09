@@ -158,8 +158,12 @@ def plot_dendro(fp2_list,plate_well_list, method = 'complete',distance=0.9):
         patch_id.append(('patch_ax_Z1_%s'%plate_well_list[int(n)]))
 
     leaf_positions =[]
+<<<<<<< HEAD
 #    node_positions=[]
 #    node_height=[]
+=======
+
+>>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
     for i, d in zip(Z1['icoord'], Z1['dcoord']):
         x = 0.5 * sum(i[1:3])
         y = d[1]
@@ -176,13 +180,21 @@ def plot_dendro(fp2_list,plate_well_list, method = 'complete',distance=0.9):
 
        
     label = map(_patch_id_to_label,patch_id)
+<<<<<<< HEAD
     pylab.xticks(leaf_positions,label, rotation = "vertical")
+=======
+    
+    pylab.xticks(leaf_positions,label,rotation="vertical")
+>>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
     pylab.yticks([1,0.8,0.6,0.4,0.2,0],['1.0','0.8','0.6','0.4','0.2','0.0'] )
     ax1.spines['right'].set_color('none')
     ax1.spines['top'].set_color('none')
     ax1.spines['bottom'].set_color('none')
     ax1.spines['left'].set_color('none')
+<<<<<<< HEAD
 #    ax1.spines['left'].set_position(('data',-5))
+=======
+>>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
     pylab.title('Linkage Method: %s\n Group By: %s %.1f '%(method.title(),lb_title,lb_dis))
 
     image_string = _fig_out()
@@ -218,8 +230,12 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,dis
         patch_id.append(('patch_ax_Z1_%s'%plate_well_list[int(n)]))
 
     leaf_positions =[]
+<<<<<<< HEAD
 #    node_positions=[]
 #    node_height=[]
+=======
+
+>>>>>>> 33a7809286351fa8ee8461959ad70414bf085b10
     for i, d in zip(Z1['icoord'], Z1['dcoord']):
         x = 0.5 * sum(i[1:3])
         y = d[1]

@@ -55,6 +55,7 @@ class score(models.Model):
         return self.name        
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
+    #isfilter=models.BooleanField()#define if this is a filter
     formular = models.TextField()
     create_by = models.ForeignKey(User)
 
