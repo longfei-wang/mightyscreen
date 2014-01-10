@@ -129,6 +129,12 @@ def _patch_id_to_label(patch_id):
     s = patch_id.split("_")
     label = s[-2]+s[-1]
     return label
+
+def _linkage_color_list():
+    color_list = ["r","g","b","c","m","y","k", "#CC333F","#EDC951","#EB6841", "#D1F2A5","#F56991","#EFFAB4",
+                  "#FF9F80", "#83AF9B","#C8C8A9"]
+    return color_list
+
 ##==============================================================================
 ## Stable functions
 
@@ -138,6 +144,7 @@ def plot_dendro(fp2_list,plate_well_list, method = 'complete',distance=0.9):
         
     works for now!
     """    
+    sch.set_link_color_palette(_linkage_color_list())
     D,M = _fp2_to_distancematrix(fp2_list)
     fig = pylab.figure(figsize=_figsize())
     ax1 = fig.add_axes([0.05,0.15,0.85,0.75])
@@ -201,10 +208,11 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,dis
     http://stackoverflow.com/questions/2982929
     ax1 = fig.add_axes([0.05,0.1,0.2,0.6])        
     works for now!
-    """    
+    """  
+    sch.set_link_color_palette(_linkage_color_list())
     D,M = _fp2_to_distancematrix(fp2_list)
     fig = pylab.figure(figsize=_figsize())
-    ax1 = fig.add_axes([0.202,0.705,0.6,0.20])   
+    ax1 = fig.add_axes([0.202,0.635,0.6,0.20])   
     Y = fch.linkage(D, method=method)
     if distance >=1:
         ct = Y[-(distance-1),2]
@@ -251,7 +259,7 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,dis
     ax1.spines['bottom'].set_color('none')
     ax1.spines['left'].set_color('none')
 
-    ax2 = fig.add_axes([0.05,0.1,0.15,0.6])    
+    ax2 = fig.add_axes([0.05,0.03,0.15,0.6])    
 
     Y = fch.linkage(D, method=method_y)
     if distance_y >=1:
@@ -286,18 +294,18 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,dis
         x = 0.5 * sum(i[1:3])
         y = d[1]
         gid = "tooltip_node_height_Z2_%d_%.3g"%(x,y)
-        pylab.plot(x, y, 'yo',alpha = 0.3, gid = gid)  
+        pylab.plot(y, x, 'yo',alpha = 0.3, gid = gid, markersize = 4)  
         if d[0] ==0:
             leaf_positions.append(i[0])
         if d[3] ==0:
             leaf_positions.append(i[3])                              
     leaf_positions.sort()
     for n in range(len(leaf_positions)):
-        pylab.plot(leaf_positions[n], 0,'bo',gid = patch_id[n],alpha = 0.5)    
+        pylab.plot(0, leaf_positions[n],'bo',gid = patch_id[n],alpha = 0.5, markersize = 4)    
     
     
      ##Plot distance matrix.
-    axmatrix = fig.add_axes([0.202,0.1,0.6,0.6])
+    axmatrix = fig.add_axes([0.202,0.03,0.6,0.6])
     idx1 = Z1['leaves']
     idx2 = Z2['leaves']
     M = M[idx1,:]
@@ -307,9 +315,21 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,dis
     axmatrix.set_yticks([])
     
     # Plot colorbar.
-    axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
-    pylab.colorbar(im, cax=axcolor)
-#    pylab.title('X (Linkage Method: %s) (Group By: %s %.1f )\nY (Linkage Method: %s) (Group By: %s %.1f )'%(method.title(),lb_title,lb_dis,method_y.title(),lb_title_y,lb_dis_y))
+    axcolor = fig.add_axes([0.81,0.03,0.02,0.6])
+    cb = pylab.colorbar(im, cax=axcolor,)
+    cb.set_label("Dissimilarity")
+    
+    ##plot title
+    ax3 = fig.add_axes([0.05,0.86,0.85,0.02])
+    ax3.spines['right'].set_color('none')
+    ax3.spines['top'].set_color('none')
+    ax3.spines['bottom'].set_color('none')
+    ax3.spines['left'].set_color('none')
+    pylab.xticks([]), pylab.yticks([])
+    ax3.text(0.5,0, 'X (Linkage Method: %s) (Group By: %s %.1f )\nY (Linkage Method: %s) (Group By: %s %.1f )'%(method.title(),lb_title,lb_dis,method_y.title(),lb_title_y,lb_dis_y),ha='center',va='bottom')
+
+    
+#    ax1.text(1,2,'X (Linkage Method: %s) (Group By: %s %.1f )\nY (Linkage Method: %s) (Group By: %s %.1f )'%(method.title(),lb_title,lb_dis,method_y.title(),lb_title_y,lb_dis_y))
 
     image_string = _fig_out()
     
