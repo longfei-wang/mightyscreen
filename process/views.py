@@ -12,6 +12,7 @@ import process.readers as readers
 from process.tasks import queue
 from process.forms import UploadFileForm
 from main.views import view_class
+from collections import OrderedDict
 #from main.utils import get_platelist
 # Create your views here.
 
@@ -43,11 +44,13 @@ class mark(view_class):
         
         data=self.data
 
-        welltypes=dict(data_base.schoice)
+        welltypes=OrderedDict(data_base.schoice)
+        del welltypes['X']#no need to set compounds
 
         proj=self.proj
 
         plates=self.plates#get list of plates
+        x=[]
 
         if request.method=='POST':
             
@@ -58,26 +61,34 @@ class mark(view_class):
                 platelist=form.cleaned_data['plates'].split(',')
                 querybase=data.objects.filter(plate__in=platelist)
 
-                myjob=self.job            
+                myjob=self.job         
                 myjob.create(request,log='select plates: %s to update.'%','.join(platelist))
 
-                for j in ['X','E','P','N','B']:#this sequence is priority low to high
-                        
-                    x=request.POST.get(j).split(',')
 
-                    if len(x) > 1:
-                        myjob.update(log='updated wells: %(wells)s for welltype %(welltype)s.'%{'welltype':j,'wells':','.join(x)})
+                if request.POST.get('reset'):
 
-                    querybase.filter(library_pointer__isnull=True,well__in=x).update(welltype=j) 
+                    querybase.filter(library_pointer__isnull=True).update(welltype='X') 
+                    querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=False).update(welltype='X')
+                    querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=True).update(welltype='E')
 
-                    if j == 'X':#if already mapped to a library, then use different approach to mark wells
-                        querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=False,welltype__in=['E','P','N']).update(welltype=j)
-                    elif j=='E':
-                        querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=True,welltype__in=['X']).update(welltype=j)
-                    elif j in ['P','N']:#controls can only in empty
-                        querybase.filter(library_pointer__isnull=False,well__in=x,compound_pointer__isnull=True).update(welltype=j)
-                    elif j in 'B':#bad well can anywhere
-                        querybase.filter(library_pointer__isnull=False,well__in=x).update(welltype=j)
+
+                else:
+
+                    for j in ['E','P','N','B']:#this sequence is priority low to high
+
+                        if request.POST.get(j) and len(request.POST.get(j))>1:
+                            x=request.POST.get(j).split(',')
+                            
+                            myjob.update(log='updated wells: %(wells)s for welltype %(welltype)s.'%{'welltype':j,'wells':','.join(x)})
+
+                            querybase.filter(library_pointer__isnull=True,well__in=x).update(welltype=j) 
+
+                            if j == 'E':
+                                querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=True,welltype__in=['X']).update(welltype=j)
+                            elif j in ['P','N']:#controls can only in empty
+                                querybase.filter(library_pointer__isnull=False,well__in=x,compound_pointer__isnull=True).update(welltype=j)
+                            elif j == 'B':#bad well can anywhere
+                                querybase.filter(library_pointer__isnull=False,well__in=x).update(welltype=j)
 
 
                 messages.success(request,'WellType Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))

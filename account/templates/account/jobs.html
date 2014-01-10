@@ -29,7 +29,7 @@
               <td>{{ i }}</td>
         {% endfor %}
     </tr>
-    {% for j in x.submission_set.all %}
+    {% for j in x.submission_set.all reversed %}
         <tr>
             {% for i in field_list %}
 

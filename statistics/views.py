@@ -393,19 +393,19 @@ class dendrogram(view_stat_class):
             #entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
             fp2_list = []
             plate_well_list = []
-            for e in entry_list:
+            for e in entry_list[:100]:
                 if e.compound_pointer:
                     fp2_list.append(e.compound_pointer.fp2)
                     plate_well_list.append(str(e.plate)+'_'+e.well)  
             
-            if len(fp2_list)>1 and len(fp2_list)<100:
-                c = clust.plot_dendro(fp2_list,plate_well_list,distance = distance,method = method )
-                img_list.append(c)
+            if len(fp2_list)>100:
+                messages.warning(request,'Hit list compound numbers has to be between 1 and 100.')
+
+            c = clust.plot_dendro(fp2_list,plate_well_list,distance = distance,method = method )
+            img_list.append(c)
                 
-            #    return HttpResponse(c)
+   
                 
-            else:
-                messages.warning(request,'Hit list compound numbers has to be within (1,100).')
 
         url_name = 'stat_dendrogram'
         return render(request,"statistics/clust.html",{'img_list':img_list,

@@ -147,10 +147,10 @@ class data_base(models.Model):
     ishit=models.PositiveSmallIntegerField(default=0,verbose_name='hit')
 
     schoice = (
+    ('B','bad well'),
     ('E','empty'),
     ('P','positive control'),
     ('N','negative control'),
-    ('B','bad well'),
     ('X','compound'),
     )
     welltype=models.CharField(max_length=1,choices=schoice,default='X')
