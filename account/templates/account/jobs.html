@@ -36,6 +36,8 @@
 
                 {% if i == "status" %}
                     <td>{{j.get_status_display}}</td>                  
+                {% elif i == "log" %}
+                    <td>{{ j.log_to_html|safe }}</td>
                 {% else %}
                     <td>{{ j|getattr:i }}</td>
                 {% endif %}

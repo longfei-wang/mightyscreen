@@ -131,7 +131,7 @@ def _patch_id_to_label(patch_id):
     return label
 
 def _linkage_color_list():
-    color_list = ["r","g","b","c","m","y","k", "#CC333F","#EDC951","#EB6841", "#D1F2A5","#F56991","#EFFAB4",
+    color_list = ["r","g","c","m","y","k", "#CC333F","#EDC951","#EB6841", "#D1F2A5","#F56991","#EFFAB4",
                   "#FF9F80", "#83AF9B","#C8C8A9"]
     return color_list
 

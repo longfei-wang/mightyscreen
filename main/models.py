@@ -107,6 +107,15 @@ class plate(models.Model):
 class submission(models.Model):
     def __unicode__(self):
         return self.pk
+    def log_to_html(self):
+        log=[]
+        for i in self.log.split('.'):
+            if len(i)>80:
+                log.append(i[:77]+'...<br>')
+            else:
+                log.append(i[:80]+'<br>')
+        return ''.join(log)
+
     jobtype=models.CharField(max_length=20)
     project=models.ForeignKey('project')
     submit_time = models.DateTimeField()
