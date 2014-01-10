@@ -22,6 +22,6 @@ urlpatterns = patterns('',
 ##testing
 
 urlpatterns +=(
-    url(r'^test/', views.fingerprint_cluster, name='stat_test'),
+    url(r'^test/', views.fingerprint_cluster.as_view(), name='stat_test'),
 )
 

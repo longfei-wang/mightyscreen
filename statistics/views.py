@@ -63,7 +63,8 @@ class view_stat_class(view_class):
                      'terrain', 'flag', 'prism','BrBG', 'bwr', 'coolwarm', 'PiYG', 'PRGn', 'PuOr',
                      'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'seismic' ]
         return cmap_list
-
+    
+        
     def _dendro_para(self,request):
         d_xy = []
         m_xy = []
@@ -176,10 +177,12 @@ class correlation(view_stat_class):
             all_plates =True if value =="default" else False
         else:
             all_plates =True
-        
 
-
-        if len(data_columns)>1:
+        if len(data_columns)>0:        
+            if len(data_columns)==1:
+                messages.warning(request,'Please select two parameters for correlation calculation')
+                data_columns.append(data_columns[0])
+    
             if all_plates == False:
                 for plate_number in plates_selected:    
                     entry_list = data.objects.filter(plate = plate_number if plate_number.isdigit() else plate_number[:-1])
@@ -227,13 +230,7 @@ class correlation(view_stat_class):
                 plate_number = (', ').join(map(str, plates_selected))
                 c = stat.plot_linearfit(correlation_list[0],correlation_list[1], plate_well_list, plate_number,well_type_list,label_x,label_y)
                 img_list.append(c) 
-        
-        
-        elif len(data_columns)==1:
-            img_list.append("Please select more than one parameters for correlation calculation")              
-                
-
-
+ 
         url_name = 'stat_correlation'
         return render(request,"statistics/plots.html",{'img_list':img_list,
                                                          'plates':plates,
@@ -393,19 +390,20 @@ class dendrogram(view_stat_class):
             #entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
             fp2_list = []
             plate_well_list = []
+
             for e in entry_list[:100]:
                 if e.compound_pointer:
                     fp2_list.append(e.compound_pointer.fp2)
                     plate_well_list.append(str(e.plate)+'_'+e.well)  
-            
-            if len(fp2_list)>100:
-                messages.warning(request,'Hit list compound numbers has to be between 1 and 100.')
 
+                            
             c = clust.plot_dendro(fp2_list,plate_well_list,distance = distance,method = method )
             img_list.append(c)
                 
-   
-                
+            #    return HttpResponse(c)
+            if len(entry_list)>100:
+                messages.warning(request,'For dendrogram, hit list compounds have to be within 1 and 100. Additional Compounds will not be clustered')                           
+
 
         url_name = 'stat_dendrogram'
         return render(request,"statistics/clust.html",{'img_list':img_list,
@@ -419,29 +417,27 @@ class dendrogram2d(view_stat_class):
         img_list = []
         cmap_list = self._cmap_list()
         if request.method=='POST':
-                
-            
             if request.POST.get('heatmap_color'):
                 cmap=request.POST.get('heatmap_color')
             else:
                 cmap = 'YlGnBu'
-                
-            distance,method,distance_y,method_y = self._dendro_para(request)
-        #    raise Exception(_dendro_para(request))
-
-
-                
             
-            entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
+            data=self.data
+            distance,method,distance_y,method_y = self._dendro_para(request)
+
+            entry_list=data.objects.filter(ishit=1)
             fp2_list = []
             plate_well_list = []
-            for e in entry_list[:50]:
-                fp2_list.append(e.fp2)
-                plate_well_list.append(str(e.plate)+'_'+e.well)  
+            for e in entry_list[:100]:
+                if e.compound_pointer:
+                    fp2_list.append(e.compound_pointer.fp2)
+                    plate_well_list.append(str(e.plate)+'_'+e.well)  
             
             c = clust.plot_dendro2d(fp2_list,plate_well_list,cmap=cmap, distance = distance, method = method,distance_y = distance_y, method_y = method_y  )
             img_list.append(c)
-        
+
+            if len(entry_list)>100:
+                messages.warning(request,'For dendrogram, hit list compounds have to be within 1 and 100. Additional Compounds will not be clustered')                                   
     #    return HttpResponse(c)
         url_name = 'stat_2ddendrogram'
         return render(request,"statistics/clust.html",{'img_list':img_list,
@@ -463,7 +459,7 @@ class fingerprint_cluster(view_stat_class):
             fp2_list.append(entry.fp2)
         
     #    c = cluster.test_hierarchical_cluster(fp2_list)
-        c = clust.test_tanimoto(fp2_list)
+        c = clust.test_pca(fp2_list)
         
         return HttpResponse(c)     
     

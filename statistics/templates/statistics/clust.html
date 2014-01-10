@@ -4,12 +4,9 @@
 {% load bootstrap_tags %}
 
 {%block plot-option%}
-<style>
-.horizontal_selection div {
-display: inline-block;
-vertical-align: middle;
-}
-</style>
+
+
+
 
 <form role="form" class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url url_name %}">
 {%if url_name == "stat_dendrogram"%}
@@ -151,7 +148,7 @@ vertical-align: middle;
 {% block plot-img %}
 <div class= 'img_list'>
     {%if img_list|length == 0%}
-        <div class="alert alert-success"><h4> Please select plates </h4></div>
+        <!--div class="alert alert-success"><h4> Please select plates </h4></div-->
     {%else%}
     {%for img in img_list%}
         <hr>

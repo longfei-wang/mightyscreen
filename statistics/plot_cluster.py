@@ -129,6 +129,12 @@ def _patch_id_to_label(patch_id):
     s = patch_id.split("_")
     label = s[-2]+s[-1]
     return label
+
+def _linkage_color_list():
+    color_list = ["r","g","b","c","m","y","k", "#CC333F","#EDC951","#EB6841", "#D1F2A5","#F56991","#EFFAB4",
+                  "#FF9F80", "#83AF9B","#C8C8A9"]
+    return color_list
+
 ##==============================================================================
 ## Stable functions
 
@@ -138,6 +144,7 @@ def plot_dendro(fp2_list,plate_well_list, method = 'complete',distance=0.9):
         
     works for now!
     """    
+    sch.set_link_color_palette(_linkage_color_list())
     D,M = _fp2_to_distancematrix(fp2_list)
     fig = pylab.figure(figsize=_figsize())
     ax1 = fig.add_axes([0.05,0.15,0.85,0.75])
@@ -159,6 +166,9 @@ def plot_dendro(fp2_list,plate_well_list, method = 'complete',distance=0.9):
 
     leaf_positions =[]
 
+#    node_positions=[]
+#    node_height=[]
+
     for i, d in zip(Z1['icoord'], Z1['dcoord']):
         x = 0.5 * sum(i[1:3])
         y = d[1]
@@ -175,13 +185,17 @@ def plot_dendro(fp2_list,plate_well_list, method = 'complete',distance=0.9):
 
        
     label = map(_patch_id_to_label,patch_id)
-    
-    pylab.xticks(leaf_positions,label,rotation="vertical")
+
+    pylab.xticks(leaf_positions,label, rotation = "vertical")
+
     pylab.yticks([1,0.8,0.6,0.4,0.2,0],['1.0','0.8','0.6','0.4','0.2','0.0'] )
     ax1.spines['right'].set_color('none')
     ax1.spines['top'].set_color('none')
     ax1.spines['bottom'].set_color('none')
     ax1.spines['left'].set_color('none')
+
+#    ax1.spines['left'].set_position(('data',-5))
+
     pylab.title('Linkage Method: %s\n Group By: %s %.1f '%(method.title(),lb_title,lb_dis))
 
     image_string = _fig_out()
@@ -194,10 +208,11 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,dis
     http://stackoverflow.com/questions/2982929
     ax1 = fig.add_axes([0.05,0.1,0.2,0.6])        
     works for now!
-    """    
+    """  
+    sch.set_link_color_palette(_linkage_color_list())
     D,M = _fp2_to_distancematrix(fp2_list)
     fig = pylab.figure(figsize=_figsize())
-    ax1 = fig.add_axes([0.202,0.705,0.6,0.20])   
+    ax1 = fig.add_axes([0.202,0.635,0.6,0.20])   
     Y = fch.linkage(D, method=method)
     if distance >=1:
         ct = Y[-(distance-1),2]
@@ -217,6 +232,9 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,dis
         patch_id.append(('patch_ax_Z1_%s'%plate_well_list[int(n)]))
 
     leaf_positions =[]
+
+#    node_positions=[]
+#    node_height=[]
 
     for i, d in zip(Z1['icoord'], Z1['dcoord']):
         x = 0.5 * sum(i[1:3])
@@ -241,7 +259,7 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,dis
     ax1.spines['bottom'].set_color('none')
     ax1.spines['left'].set_color('none')
 
-    ax2 = fig.add_axes([0.05,0.1,0.15,0.6])    
+    ax2 = fig.add_axes([0.05,0.03,0.15,0.6])    
 
     Y = fch.linkage(D, method=method_y)
     if distance_y >=1:
@@ -276,18 +294,18 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,dis
         x = 0.5 * sum(i[1:3])
         y = d[1]
         gid = "tooltip_node_height_Z2_%d_%.3g"%(x,y)
-        pylab.plot(x, y, 'yo',alpha = 0.3, gid = gid)  
+        pylab.plot(y, x, 'yo',alpha = 0.3, gid = gid, markersize = 4)  
         if d[0] ==0:
             leaf_positions.append(i[0])
         if d[3] ==0:
             leaf_positions.append(i[3])                              
     leaf_positions.sort()
     for n in range(len(leaf_positions)):
-        pylab.plot(leaf_positions[n], 0,'bo',gid = patch_id[n],alpha = 0.5)    
+        pylab.plot(0, leaf_positions[n],'bo',gid = patch_id[n],alpha = 0.5, markersize = 4)    
     
     
      ##Plot distance matrix.
-    axmatrix = fig.add_axes([0.202,0.1,0.6,0.6])
+    axmatrix = fig.add_axes([0.202,0.03,0.6,0.6])
     idx1 = Z1['leaves']
     idx2 = Z2['leaves']
     M = M[idx1,:]
@@ -297,9 +315,21 @@ def plot_dendro2d(fp2_list,plate_well_list, method = 'complete',distance=0.7,dis
     axmatrix.set_yticks([])
     
     # Plot colorbar.
-    axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
-    pylab.colorbar(im, cax=axcolor)
-#    pylab.title('X (Linkage Method: %s) (Group By: %s %.1f )\nY (Linkage Method: %s) (Group By: %s %.1f )'%(method.title(),lb_title,lb_dis,method_y.title(),lb_title_y,lb_dis_y))
+    axcolor = fig.add_axes([0.81,0.03,0.02,0.6])
+    cb = pylab.colorbar(im, cax=axcolor,)
+    cb.set_label("Dissimilarity")
+    
+    ##plot title
+    ax3 = fig.add_axes([0.05,0.86,0.85,0.02])
+    ax3.spines['right'].set_color('none')
+    ax3.spines['top'].set_color('none')
+    ax3.spines['bottom'].set_color('none')
+    ax3.spines['left'].set_color('none')
+    pylab.xticks([]), pylab.yticks([])
+    ax3.text(0.5,0, 'X (Linkage Method: %s) (Group By: %s %.1f )\nY (Linkage Method: %s) (Group By: %s %.1f )'%(method.title(),lb_title,lb_dis,method_y.title(),lb_title_y,lb_dis_y),ha='center',va='bottom')
+
+    
+#    ax1.text(1,2,'X (Linkage Method: %s) (Group By: %s %.1f )\nY (Linkage Method: %s) (Group By: %s %.1f )'%(method.title(),lb_title,lb_dis,method_y.title(),lb_title_y,lb_dis_y))
 
     image_string = _fig_out()
     
@@ -441,12 +471,48 @@ def _test_fp2_to_distancematrix(fp2_list):
             matrix[i,j]=distance
     return fp1
 
-def test_tanimoto(fp2_list):
+def test_pca(fp2_list):
+    """http://stackoverflow.com/questions/13224362
+    testing    
+    """
     
-    D1 = _fp2_to_distancematrix(fp2_list)
-    D2 = _test_fp2_to_distancematrix(fp2_list)
+    def PCA(data, dims_rescaled_data=2):
+        """
+        returns: data transformed in 2 dims/columns + regenerated original data
+        pass in: data as 2D NumPy array
+        """
+        import numpy as NP
+        from scipy import linalg as LA
+        mn = NP.mean(data, axis=0)
+        # mean center the data
+        data -= mn
+        # calculate the covariance matrix
+        C = NP.cov(data.T)
+        # calculate eigenvectors & eigenvalues of the covariance matrix
+        evals, evecs = LA.eig(C)
+        # sorted them by eigenvalue in decreasing order
+        idx = NP.argsort(evals)[::-1]
+        evecs = evecs[:,idx]
+        evals = evals[idx]
+        # select the first n eigenvectors (n is desired dimension
+        # of rescaled data array, or dims_rescaled_data)
+        evecs = evecs[:,:dims_rescaled_data]
+        # carry out the transformation on the data using eigenvectors
+        data_rescaled = NP.dot(evecs.T, data.T).T
+        # reconstruct original data array
+        data_original_regen = NP.dot(evecs, dim1).T + mn
+        return data_rescaled, data_original_regen
     
-    return D1,D2
+    D,M = _fp2_to_distancematrix(fp2_list)
+    data = M
+    clr1 =  '#2026B2'
+    fig = pylab.figure(figsize=_figsize())
+    ax1 = fig.add_axes([0.05,0.15,0.85,0.75])
+    data_resc, data_orig = PCA(data)
+    ax1.plot(data_resc[:,0], data_resc[:,1], '.', mfc=clr1, mec=clr1)    
+    image_string = _fig_out()
+    
+    return image_string
 #=============================================================================
 ### Old codes
 

@@ -353,7 +353,8 @@ def plot_heatmap(well, intensity,plate_well_list, plate_number = 1, cmap = 'jet_
     
     
     ##plot empty plate
-    pylab.scatter(xsmock_column,ysmock_row_inverse, s=100,c = 'w', cmap = cmap)
+    if len(xs_column) !=384:
+        pylab.scatter(xsmock_column,ysmock_row_inverse, s=100,c = 'w', cmap = cmap)
     
     ## plot data as heatmap
     pylab.scatter(xs_column,ys_row_inverse, s=100,c = intensity, cmap = cmap)

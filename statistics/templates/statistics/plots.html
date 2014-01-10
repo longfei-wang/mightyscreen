@@ -17,6 +17,8 @@
 {%endif%}
 
 {%if url_name == "stat_heatmap"%}
+<div class= "horizontal_selection">
+<div style=""><span><strong>Heatmap color:</strong></span></div>
 <div style="width:150px;">
 <select name='heatmap_color' class='form-control'>
     {%for cmap in cmap_list%}
@@ -25,19 +27,25 @@
     {%endfor%}
 </select>
 </div>
+</div>
 <hr>
 {%elif url_name == "stat_scatter"%}
-<div class = "" style="width:200px;">
+<div class= "horizontal_selection">
+<div style=""><span><strong>Plot:</strong></span></div>
+<div class = "" style="width:200px; padding-right:50px;">
 <select name='all_plates' class='form-control'>
-    <option value= "default">Plot all plates together</option>
-    <option value= "0">Plot individual plates</option>
+    <option value= "default">All plates together</option>
+    <option value= "0">Individual plates</option>
 </select>
-    
-    &nbsp&nbsp&nbsp&nbsp&nbsp
+</div>
+
+<div style=""><span><strong>Sort by:</strong></span></div>
+<div class = "" style="width:200px;" > 
 <select name='sort_value' class='form-control'>
-    <option value= "default">Sort by value</option>
-    <option value= "0">Sort by well</option>
+    <option value= "default">Value</option>
+    <option value= "0">Well</option>
 </select>
+</div>
 </div>
 <hr>
 {%elif url_name == "stat_correlation" or url_name == "stat_histogram"%}
