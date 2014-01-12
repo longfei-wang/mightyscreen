@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.db.models import Q,Count
+from django.db.models import Count
 from django.core.paginator import Paginator
 from django.core.cache import cache
 from django.contrib import messages
@@ -13,6 +13,7 @@ from library.models import compound
 from sabridge.base import Bridge
 from django.views.generic.base import View
 from main.models import project
+from mongoengine.queryset import Q
 import csv
 import time
 # Create your views here.
@@ -129,8 +130,6 @@ def benchmark(request):
 
     return HttpResponse(str(a)+','+str(n)+','+str(b)+','+str(m))
 
-
-
 class datalist(view_class):
 
     def c(self,request):
@@ -138,11 +137,14 @@ class datalist(view_class):
 
         pre_order='id'
         plates=self.plates
-        data=self.data
+        #data=self.data
+        args=''
         plates_selected=[]
+        quoted_fields=['plate','well']#this is for the crappy quote/unquote requirement of mongoengine
         #
         #Perform all the Query
         #
+        from data.models import proj_data_2 as data
 
         querybase=data.objects.all()
 
@@ -150,77 +152,72 @@ class datalist(view_class):
             plates_selected=request.POST.get('plates').split(',')#plates_selected is a pass-through variable
             querybase=querybase.filter(plate__in=plates_selected)
         
-        querybase.order_by('pk')        
         
         if request.method=='POST':
 
-            if request.POST.get('querytext'):#first query box
+            if request.POST.get('querytext'):#first query bar
+                quote = '"' if request.POST.get('field') in quoted_fields else ''
+                query='Q('+request.POST.get('field')+'__'+request.POST.get('sign')+' = '+quote+request.POST.get('querytext')+quote+')'
 
-                query='Q('+request.POST.get('field')+'__'+request.POST.get('sign')+' = "'+request.POST.get('querytext')+'")'
-
-                if request.POST.get('querytext2') and request.POST.get('joint'):#second querybox
-
-                    query+=request.POST.get('joint')+'Q('+request.POST.get('field2')+'__'+request.POST.get('sign2')+' = "'+request.POST.get('querytext2')+'")'
+                if request.POST.get('querytext2') and request.POST.get('joint'):#second query bar
+                    quote = '"' if request.POST.get('field2') in quoted_fields else ''
+                    query+=request.POST.get('joint')+'Q('+request.POST.get('field2')+'__'+request.POST.get('sign2')+' = '+quote+request.POST.get('querytext2')+quote+')'
             
-                #raise Exception(query)
-                exec('entry_list = querybase.filter('+query+')')
+                args='.filter(%s)'%query
 
             else:#when you hit update with no querytext
 
-                entry_list = querybase
+                args=''
             
         else:
             
-            try:#wierd error association cache, have no idea how to fix this. So just if error occur, reset cache...
-                entry_list = cache.get('dataview'+str(self.proj.pk))#if this is just turning pages then use the latest query
-            
-            except:
-                entry_list = None
-                messages.error(request,"A Internal Error Occured. And your veiw will be reset.")
-
-            entry_list = entry_list if entry_list else querybase        
+            args = cache.get('dataview'+str(self.proj.pk))#if this is just turning pages then use the latest query
+            args='' if not args else args
 
             if request.GET.get('order'):
                 pre_order=request.GET.get('order')
                 #intense query sting cause we need to put null entries last..
-                query='entry_list.order_by("%s")'%pre_order
+                args+='.order_by("%s")'%pre_order
                 
-                
-                exec("entry_list = "+query)
 
             elif request.GET.get('filter'):
 
                 if request.GET.get('filter') == 'reset':
                 
-                    entry_list=querybase
+                    args=''
                 
                 else:
-                    exec('entry_list=entry_list.filter(%s__gt=0)'%request.GET.get('filter'))
+                    args='.filter(%s__gt=0)'%request.GET.get('filter')
 
-        cache.set('dataview'+str(self.proj.pk),entry_list,30)
+        try:
+            exec ('entry_list=querybase'+args)
+        except:
+            args=''
+            entry_list=querybase
+            messages.warning(request,'A Internal Error Occured. Your list will be reset.')
+            
+        cache.set('dataview'+str(self.proj.pk),args,30)
 
 
         #
         #Decide fields to display
         #
-        
-        curprojfield_list = [field_list_class(i.name,i.verbose_name) for i in data._meta.fields if i.name not in data.hidden_fields]#get all field we can display
 
+        curprojfield_list = data.field_list()
         compoundfield_list=list()
 
-        for i in compound._meta.fields:
-            if i.name not in compound.hidden_fields:
-                i.name='compound_pointer__'+i.name if 'compound_pointer__' not in i.name else i.name#have to prefix the name to make query possible. related field name
-                compoundfield_list.append(field_list_class(i.name,i.verbose_name))
+        # for i in compound._meta.fields:
+        #     if i.name not in compound.hidden_fields:
+        #         i.name='compound_pointer__'+i.name if 'compound_pointer__' not in i.name else i.name#have to prefix the name to make query possible. related field name
+        #         compoundfield_list.append(field_list_class(i.name,i.verbose_name))
 
 
         d=field_list_class('divider','Current Project')
 
-        allfield_list=compoundfield_list+[d]+curprojfield_list
+        allfield_list=curprojfield_list
 
         if request.POST.get('fieldlist'):#for post
-
-            field_list=[field_list_class(i.name,i.verbose_name) for i in allfield_list if i.name in request.POST.get('fieldlist').split(',')]
+            field_list=[i for i in allfield_list if i.name in request.POST.get('fieldlist').split(',')]
 
         elif cache.get('dataview_field_list'+str(self.proj.pk)) and not request.GET.get('fieldreset'):#for get view, like page, order
         
@@ -270,6 +267,7 @@ class datalist(view_class):
                                                       'plates':plates,
                                                       'plates_selected':plates_selected,
                                                       'allfield_list':allfield_list,
+                                                      'proj':self.proj
                                                     })
 
 

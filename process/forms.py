@@ -10,10 +10,7 @@ class ScoreForm(forms.ModelForm):
         fields='name description formular'.split()
 
 
-class UploadFileForm(forms.ModelForm):
-    class Meta:
-        model = data_base
-        fields=['library_pointer']
+class UploadFileForm(forms.Form):
     
     #title = forms.CharField(max_length=50)
     project = forms.CharField(widget=forms.HiddenInput)

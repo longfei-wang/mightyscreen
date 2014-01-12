@@ -22,9 +22,9 @@ class project(models.Model):
     def rep(self):
         return 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split()[:self.replicate]
     def readouts(self):
-        return self.experiment.readout.all()
+        return [i[0] for i in self.experiment.readout.values_list('name')]
     def scores(self):
-        return self.score.all()
+        return [i[0] for i in self.score.values_list('name')]
 
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
@@ -159,5 +159,4 @@ class data_base(models.Model):
     submission=models.ForeignKey('submission')
     create_date = models.DateTimeField()
     create_by = models.ForeignKey(User)
-
 

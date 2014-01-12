@@ -13,8 +13,7 @@ class rawdatafile():#a base class for all file format
         """formdata is the django UploadFileForm in main.models
         pandas is used to parse the datafile"""   
         
-        self.library_obj=formdata['library_pointer']
-        self.library=self.library_obj.library_name if self.library_obj else formdata['library']
+        self.library=formdata['library']
 
         self.formdata=formdata
         
@@ -173,7 +172,9 @@ class Envision_Grid_Reader(rawdatafile):
 
         self.open_job_entry()
         
-        exec ('from data.models import proj_'+str(self.proj_id)+' as data')
+        exec ('from data.models import proj_data_'+str(self.proj_id)+' as data')
+
+
         for pla in range(self.plates_num):            
 
             for row in range(len(self.row)):
@@ -182,42 +183,39 @@ class Envision_Grid_Reader(rawdatafile):
 
                     platewell=self.plates[pla]+self.row[row]+self.col[col]
                     
-                    try:#check if this well has coresponding compound in our library
-                        cmpd=compound.objects.get(plate_well = platewell,library_name=self.library_obj)
-                    except ObjectDoesNotExist:
-                        cmpd=None
+                    # try:#check if this well has coresponding compound in our library
+                    #     cmpd=compound.objects.get(plate_well = platewell,library_name=self.library_obj)
+                    # except ObjectDoesNotExist:
+                    cmpd=None
 
                     #update_or_create: if same well already exists, it will be over written.
                     entry, created=data.objects.get_or_create(
                     library = self.library,
                     platewell=platewell,
-                    plate = self.plates[pla],
-                    well=self.row[row]+self.col[col],
-                    project=self.p,
-                    defaults={'submission':self.sub,
-                              'create_date':self.datetime,
-                              'create_by':self.sub.submit_by,
-                              'compound_pointer':cmpd,
-                              'library_pointer':self.library_obj}
                     )
 
-                    entry.submission=self.sub
+                    entry.plate = self.plates[pla]
+                    entry.well=self.row[row]+self.col[col]
+                    entry.submission=self.sub.pk
                     entry.create_date=self.datetime
-                    entry.create_by=self.sub.submit_by
-                    entry.compound_pointer=cmpd
-                    entry.library_pointer=self.library_obj
+                    entry.create_by=self.sub.submit_by.pk
+                    #entry.compound=cmpd
 
-                    for rep in range(self.replicate_num):#all the readouts
+                    for i in self.readout.all():
+                        readout=[] 
+                        for rep in range(self.replicate_num):#all the readouts
                     
-                        for i in self.readout.all(): 
+                        
                             y=self.map[pla][rep][i.name][0]
                             x=self.map[pla][rep][i.name][1]
 
                             if self.wells==384:
-                                exec('entry.%(readout)s_%(rep)s=self.rawdata[row+y][col+x]'%{'readout':i,'rep':self.replicate[rep]})
+                                readout.append(float(self.rawdata[row+y][col+x]))
+                                #exec('entry.%(readout)s_%(rep)s=self.rawdata[row+y][col+x]'%{'readout':i,'rep':self.replicate[rep]})
                             elif self.wells==1536:
-                                exec('entry.%(readout)s_%(rep)s=self.rawdata[row*2+y][col*2+x]'%{'readout':i,'rep':self.replicate[rep]})
-
+                                readout.append(float(self.rawdata[row*2+y][col*2+x]))
+                                #exec('entry.%(readout)s_%(rep)s=self.rawdata[row*2+y][col*2+x]'%{'readout':i,'rep':self.replicate[rep]})
+                        entry.readout[i.name]=readout
                     entry.save()
                             
             self.update_job_status(';plate: %s uploaded'%self.plates[pla])
