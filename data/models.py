@@ -16,7 +16,7 @@ class project_data_base(Document):
     meta={'abstract':True}
     
     hidden_fields=['id','create_by','platewell','submission','readout','score']#obsolete
-    visible_fields=['plate','well','create_date','hit']
+    visible_fields=['plate','well','create_date','welltype','hit']
     
     def __init__(self,*args,**kwargs):
  

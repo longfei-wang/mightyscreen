@@ -107,10 +107,6 @@ def projedit(request):
             else:
                 form.save()
                 #not sure if this is safe here. guess so. what if users submit at the same time? has to be queued
-                dir=os.path.join(settings.BASE_DIR,'manage.py')
-                os.system('python %s schemamigration data --auto'%dir)
-                os.system('python %s migrate data'%dir)
-                main.utils.flush_transaction()
 
                 return render(request,'main/redirect.html',{'message':'Project Created.','dest':'index'})
         

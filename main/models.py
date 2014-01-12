@@ -17,10 +17,13 @@ class project_relation(models.Model):
 
 #define a screening sub project
 class project(models.Model):
+
+    rep_namespace='A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split()
+
     def __unicode__(self):
         return self.name
     def rep(self):
-        return 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split()[:self.replicate]
+        return self.rep_namespace[:self.replicate]
     def readouts(self):
         return [i[0] for i in self.experiment.readout.values_list('name')]
     def scores(self):

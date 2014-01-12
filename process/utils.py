@@ -1,7 +1,7 @@
-from django.db import connection
 from django.core.cache import cache
 from math import *
 import re
+import numpy as np
 
 class ScoreReader():
 	"""a class that parse the scores from user's formular"""
@@ -13,13 +13,6 @@ class ScoreReader():
 		'neg':'N',
 		'pos':'P',
 		'com':'X',
-		'sd':'STDDEV_SAMP',
-		'avg':'AVG',
-		'min':'MIN',
-		'max':'MAX',
-		'count':'COUNT',
-		'sum':'SUM',
-		'var':'VAR_SAMP'
 		}
 		self.whitelist=['acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh', 'ceil', 'copysign', 'cos', 'cosh', 'degrees', 'e', 'erf', 'erfc', 'exp', 'expm1', 'fabs', 'factorial', 'floor', 'fmod', 'frexp', 'fsum', 'gamma', 'hypot', 'isinf', 'isnan', 'ldexp', 'lgamma', 'log', 'log10', 'log1p', 'modf', 'pi', 'pow', 'radians', 'sin', 'sinh', 'sqrt', 'tan', 'tanh', 'trunc','abs','if','else','in','and','or','not']
 
@@ -43,13 +36,25 @@ class ScoreReader():
 	def flush(self):#flush all cache, should do this when changing plate
 		cache.set('ScoreReader',None)
 
-	def parse(self,curRow,formular='{FP_A}',mysql=True):#parse user's formular 
+	def cal(self,values,f,axis=None):
+		map={'std':'np.std',
+		'avg':'np.average',
+		'min':'np.amin',
+		'max':'np.amax',
+		'sum':'np.sum',
+		'count':'np.size',
+		'var':'np.var'}
+		if f in map:
+			return eval('%s(values,axis)'%map[f])
+		else:
+			raise Exception("Unkown Function:%s"%f)
+
+	def parse(self,curRow,formular='{FP_A}'):#parse user's formular 
 		curPlate=curRow.plate
 		curWell=curRow.well
-		var=re.findall('{[^}]+}',formular)
-		cursor = connection.cursor()
-		col_quote= '' if mysql == True else '"'		
-		row=[0]
+		var=re.findall('{[^}]+}',formular)	
+
+		exec ('from data.models import proj_data_%s as data'%str(self.proj.pk))
 
 		for i in var:
 
@@ -59,60 +64,45 @@ class ScoreReader():
 
 
 					if self.fetch(i.strip('{}')):#check if already in cache
-						row=[self.fetch(i.strip('{}'))]
+						var=self.fetch(i.strip('{}'))
 					else:#otherwise calculate
-						if j[1] == 'all':#all replicates
-							arg=list()
-							for x in self.rep:
-								arg.append("""(SELECT %(quote)s%(col)s_%(rep)s%(quote)s AS VAL FROM data_proj_%(proj_id)s WHERE plate='%(plate)s' and welltype='%(welltype)s')"""%{
-								               'quote':col_quote,
-								               'proj_id':self.proj.pk,
-								               'col':j[0],
-								               'rep':x,
-								               'plate':curPlate,
-								               'welltype':self.dict[j[2]]})
 
-							query=" UNION ALL ".join(arg)
-							cursor.execute("""SELECT %(f)s(VAL) FROM (%(query)s) as subquery"""%{'f':self.dict[j[3]],'query':query})
-							row = cursor.fetchone()
+						result=data.objects.filter(plate=curPlate,welltype=self.dict[j[2]]).only('readout')
+						
+						if not result:#if no result found then no pos or neg
+							raise Exception('There is no Positive/Negative wells marked on plate:%s'%curPlate)
+
+						values=list()#first make a 2 dimension array. row*rep
+						for m in result:
+							if j[0] in m.readout:
+								values.append(m.readout[j[0]])
+
+						if j[1] == 'all':#all replicates
+
+							var=self.cal(values,j[3])
 
 						else:
-							query="""SELECT %(f)s(%(quote)s%(col)s_%(rep)s%(quote)s) FROM data_proj_%(proj_id)s WHERE plate='%(plate)s' and welltype='%(welltype)s'"""%{
-									'quote':col_quote,
-									'proj_id':self.proj.pk,
-									'col':j[0],
-									'rep':j[1],
-									'plate':curPlate,
-									'welltype':self.dict[j[2]],
-									'f':self.dict[j[3]]}
-							
-							cursor.execute(query)
-							row = cursor.fetchone()
-
-						if not row[0]: 
-							raise Exception('There is no Positive or Negative wells marked on plate:%s'%curPlate)
 						
-						self.save(i.strip('{}'),str(row[0]))
+							if self.proj.rep_namespace.index(j[1]):
+								var=self.cal(values,j[3],0)[self.proj.rep_namespace.index(j[1])]
+							else:
+								raise Exception("Unkown replicate")							
+						
+						self.save(i.strip('{}'),str(var))
 				
-				elif j[2] in 'sd avg min max count sum var':#variable for one row
-					if j[1] == 'all':#all replicates
-						arg=list()
-						for x in self.rep:
-							arg.append("""(SELECT %(quote)s%(col)s_%(rep)s%(quote)s AS VAL FROM data_proj_%(proj_id)s WHERE plate='%(plate)s' and well='%(well)s')"""%{
-										   'quote':col_quote,
-										   'proj_id':self.proj.pk,
-										   'col':j[0],'rep':x,
-										   'plate':curPlate,
-										   'well':curWell})
-						
-						query=" UNION ALL ".join(arg)
-						cursor.execute("""SELECT %(f)s(VAL) FROM (%(query)s) as subquery"""%{'f':self.dict[j[2]],'query':query})
-						row = cursor.fetchone()
+				else:
+					if j[1] == 'all' and j[0] in curRow.readout:#all replicates
+						var=self.cal(curRow.readout[j[0]],j[2])
+					else:
+						raise Exception("Unkown replicate/function")
+
 			else:#just refer to row
 				if hasattr(curRow,i.strip('{}')):
-					row=[getattr(curRow,i.strip('{}'))]
+					var=getattr(curRow,i.strip('{}'))
+				elif hasattr(curRow,j[0]+'_'+j[1]):
+					var=getattr(curRow,j[0]+'_'+j[1])
 			
-			formular=formular.replace(i,str(row[0])) if row[0] else formular#this need to be float
+			formular=formular.replace(i,str(var)) if var else formular#this need to be float
 			
 		if re.findall('{[^}]+}',formular):
 			raise Exception('Unsupported Variables:%s'%', '.join(re.findall('{[^}]+}',formular)))

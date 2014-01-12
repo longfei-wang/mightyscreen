@@ -41,10 +41,10 @@ class view_class(View):#the base view class for all
         """retreive a list of plates in current project database"""
         if not self.platelist:
             plates=list()    
-        
-            for i in list(self.data.objects.order_by('-create_date','plate').values('plate','create_date').annotate(x=Count('plate'))):
-                plates.append(i['plate'])
-        
+            result=self.data._get_collection().aggregate({"$group":{"_id":"$plate"}})['result']
+            for i in result:
+                plates.append(i['_id'])
+
             self.platelist=plates
 
         return self.platelist
@@ -65,7 +65,7 @@ class view_class(View):#the base view class for all
     def data(self):
         """get current project database model"""
         if not self.data_model:
-            exec ('from data.models import proj_'+str(self.proj.pk)+' as data')
+            exec ('from data.models import proj_data_'+str(self.proj.pk)+' as data')
 
             self.data_model=data
 
@@ -137,14 +137,13 @@ class datalist(view_class):
 
         pre_order='id'
         plates=self.plates
-        #data=self.data
+        data=self.data
         args=''
         plates_selected=[]
         quoted_fields=['plate','well']#this is for the crappy quote/unquote requirement of mongoengine
         #
         #Perform all the Query
         #
-        from data.models import proj_data_2 as data
 
         querybase=data.objects.all()
 

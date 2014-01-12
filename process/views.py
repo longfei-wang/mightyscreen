@@ -68,16 +68,16 @@ class mark(view_class):
                     if len(x) > 1:
                         myjob.update(log='updated wells: %(wells)s for welltype %(welltype)s.'%{'welltype':j,'wells':','.join(x)})
 
-                    querybase.filter(library_pointer__isnull=True,well__in=x).update(welltype=j) 
+                    querybase.filter(well__in=x).update(set__welltype=j) 
 
-                    if j == 'X':#if already mapped to a library, then use different approach to mark wells
-                        querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=False,welltype__in=['E','P','N']).update(welltype=j)
-                    elif j=='E':
-                        querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=True,welltype__in=['X']).update(welltype=j)
-                    elif j in ['P','N']:#controls can only in empty
-                        querybase.filter(library_pointer__isnull=False,well__in=x,compound_pointer__isnull=True).update(welltype=j)
-                    elif j in 'B':#bad well can anywhere
-                        querybase.filter(library_pointer__isnull=False,well__in=x).update(welltype=j)
+                    # if j == 'X':#if already mapped to a library, then use different approach to mark wells
+                    #     querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=False,welltype__in=['E','P','N']).update(welltype=j)
+                    # elif j=='E':
+                    #     querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=True,welltype__in=['X']).update(welltype=j)
+                    # elif j in ['P','N']:#controls can only in empty
+                    #     querybase.filter(library_pointer__isnull=False,well__in=x,compound_pointer__isnull=True).update(welltype=j)
+                    # elif j in 'B':#bad well can anywhere
+                    #     querybase.filter(library_pointer__isnull=False,well__in=x).update(welltype=j)
 
 
                 messages.success(request,'WellType Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
@@ -101,7 +101,7 @@ class score(view_class):
 
         field_list=['name','description','formular']
 
-        plates=get_platelist(model=data)#get list of plates
+        plates=self.plates#get list of plates
 
 
         if request.method=='POST':

@@ -24,7 +24,7 @@ def process_score(data,proj,plates):
 				score=x.parse(l,h.formular)
 
 				
-				exec ('l.%(name)s=%(value)s'%{'name':h.name,'value':score})
+				exec ('l.score["%(name)s"]=%(value)s'%{'name':h.name,'value':score})
 			l.save()
 
 	#umes.success(proj.leader,'Score Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
