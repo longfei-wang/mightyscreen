@@ -127,39 +127,39 @@ class submission(models.Model):
 
 #Data object abstract for all screening raw data. Real table is in app:data
 #Two ways of identify compound. FaciclityID? or Plate+Well
-class data_base(models.Model):
-    def __unicode__(self):
-        return self.library+self.plate+self.well
+# class data_base(models.Model):
+#     def __unicode__(self):
+#         return self.library+self.plate+self.well
         
-    class Meta:
-        abstract=True
+#     class Meta:
+#         abstract=True
     
-    hidden_fields=['id','library','library_pointer','create_by','compound_pointer','platewell','submission','project']
+#     hidden_fields=['id','library','library_pointer','create_by','compound_pointer','platewell','submission','project']
     
     
-    library = models.CharField(max_length=50,verbose_name='Library')
-    library_pointer=models.ForeignKey(lib,null=True,blank=True,verbose_name='Library')
+#     library = models.CharField(max_length=50,verbose_name='Library')
+#     library_pointer=models.ForeignKey(lib,null=True,blank=True,verbose_name='Library')
     
-    compound_pointer=models.ForeignKey(compound,null=True,blank=True)#this is the unique key to library
+#     compound_pointer=models.ForeignKey(compound,null=True,blank=True)#this is the unique key to library
 
-    platewell = models.CharField(max_length=50)#using plate well as unique identifier, not good for more than one libraries
+#     platewell = models.CharField(max_length=50)#using plate well as unique identifier, not good for more than one libraries
 
-    plate = models.CharField(max_length=20)
-    well = models.CharField(max_length=20)
+#     plate = models.CharField(max_length=20)
+#     well = models.CharField(max_length=20)
     
-    ishit=models.PositiveSmallIntegerField(default=0,verbose_name='hit')
+#     ishit=models.PositiveSmallIntegerField(default=0,verbose_name='hit')
 
-    schoice = (
-    ('E','empty'),
-    ('P','positive control'),
-    ('N','negative control'),
-    ('B','bad well'),
-    ('X','compound'),
-    )
-    welltype=models.CharField(max_length=1,choices=schoice,default='X')
+#     schoice = (
+#     ('E','empty'),
+#     ('P','positive control'),
+#     ('N','negative control'),
+#     ('B','bad well'),
+#     ('X','compound'),
+#     )
+#     welltype=models.CharField(max_length=1,choices=schoice,default='X')
 
-    project = models.ForeignKey('project')
-    submission=models.ForeignKey('submission')
-    create_date = models.DateTimeField()
-    create_by = models.ForeignKey(User)
+#     project = models.ForeignKey('project')
+#     submission=models.ForeignKey('submission')
+#     create_date = models.DateTimeField()
+#     create_by = models.ForeignKey(User)
 

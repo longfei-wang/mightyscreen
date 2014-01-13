@@ -1,5 +1,5 @@
 from django.db import models
-from main.models import data_base,project
+from main.models import project
 from mongoengine import *
 import datetime
 import collections
@@ -87,29 +87,4 @@ class project_data_base(Document):
 
     readout=DictField()
     score=DictField()
-
-
-
-
-try:#preventing syncdb crash when project don't exist
-    proj=project.objects.all()
-    num=proj.count()
-except:
-    proj=None
-
-if proj:
-    for i in proj:
-        n=''
-        for j in i.experiment.readout.all():
-                for h in i.rep():
-
-                    n+='%(readout)s_%(rep)s=models.FloatField(null=True);'%{'readout':j,'rep':h}
-        
-        for l in i.score.all():
-            
-            n+=l.name+'=models.FloatField(null=True);'
-        
-        #raise Exception(n)
-        exec ('class proj_'+str(i.pk)+'(data_base):'+n)
-
 

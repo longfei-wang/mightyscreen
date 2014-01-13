@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.core.context_processors import csrf
 from django.contrib import messages
-from main.models import project, data_base, score as sc#alias cause name conflict with method
+from main.models import project, score as sc#alias cause name conflict with method
 from collections import OrderedDict as od
 from process.tasks import process_score
 from process.forms import PlatesToUpdate, ScoreForm
