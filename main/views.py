@@ -89,6 +89,17 @@ class view_class(View):#the base view class for all
     def c(self,request):#combine get and post for easier migration, you can overwrite get or post if u want
         pass
 
+
+
+
+
+
+
+
+
+
+
+
 class index(view_class):
 
     def c(self,request):
@@ -130,6 +141,15 @@ def benchmark(request):
 
     return HttpResponse(str(a)+','+str(n)+','+str(b)+','+str(m))
 
+
+
+
+
+
+
+
+
+
 class datalist(view_class):
 
     def c(self,request):
@@ -147,12 +167,12 @@ class datalist(view_class):
 
         querybase=data.objects.all()
 
-        if request.POST.get('plates'):
-            plates_selected=request.POST.get('plates').split(',')#plates_selected is a pass-through variable
-            querybase=querybase.filter(plate__in=plates_selected)
-        
         
         if request.method=='POST':
+ 
+            if request.POST.get('plates'):
+                plates_selected=request.POST.get('plates').split(',')#plates_selected is a pass-through variable
+                args+='.filter(plate__in=%s)'%plates_selected
 
             if request.POST.get('querytext'):#first query bar
                 quote = '"' if request.POST.get('field') in quoted_fields else ''
@@ -162,11 +182,7 @@ class datalist(view_class):
                     quote = '"' if request.POST.get('field2') in quoted_fields else ''
                     query+=request.POST.get('joint')+'Q('+request.POST.get('field2')+'__'+request.POST.get('sign2')+' = '+quote+request.POST.get('querytext2')+quote+')'
             
-                args='.filter(%s)'%query
-
-            else:#when you hit update with no querytext
-
-                args=''
+                args+='.filter(%s)'%query
             
         else:
             
@@ -195,8 +211,7 @@ class datalist(view_class):
             entry_list=querybase
             messages.warning(request,'A Internal Error Occured. Your list will be reset.')
             
-        cache.set('dataview'+str(self.proj.pk),args,30)
-
+        cache.set('dataview'+str(self.proj.pk),args,3600)
 
         #
         #Decide fields to display
@@ -280,34 +295,35 @@ class addtohitlist(view_class):
 
         myjob.create(request)
 
-        if cache.get('dataview'+str(self.proj.pk)):
-            
-            obj=cache.get('dataview'+str(self.proj.pk))
+        if cache.get('dataview'+str(self.proj.pk)) is not None:
+
+            args=cache.get('dataview'+str(self.proj.pk))
+
+            exec('obj=self.data.objects'+args)
 
             if request.method=='POST':
                 if request.POST.get('hitlist'):
                     
                     hitlist= request.POST.get('hitlist').split(',')
 
-                    obj.filter(platewell__in=hitlist).update(ishit=1)
+                    obj.filter(platewell__in=hitlist).update(set__hit=1)
                 
                 elif request.POST.get('hitlistrm'):
                     
                     hitlistrm= request.POST.get('hitlistrm').split(',')
 
-                    obj.filter(platewell__in=hitlistrm).update(ishit=0)
+                    obj.filter(platewell__in=hitlistrm).update(set__hit=0)
 
             elif request.GET.get('reset'):
 
-                obj.update(ishit=0)
+                obj.update(set__hit=0)
 
             elif request.GET.get('platewell'):
 
-                obj.filter(platewell=request.GET.get('platewell')).update(ishit=1)
+                obj.filter(platewell=request.GET.get('platewell')).update(set__hit=1)
             
             else:
-
-                obj.update(ishit=1)
+                obj.update(set__hit=1)
         
             messages.success(request,'Hit List Updated')
             myjob.complete()
@@ -321,9 +337,13 @@ class addtohitlist(view_class):
 
 class export(view_class):
     def c(self,request):
-        if cache.get('dataview'+str(self.proj.pk)):
+        if cache.get('dataview'+str(self.proj.pk)) is not None:
             
-            obj=cache.get('dataview'+str(self.proj.pk))
+            args=cache.get('dataview'+str(self.proj.pk))
+
+            exec('obj=self.data.objects'+args)
+            
+            field_list=self.data.field_list()
 
             if request.GET.get('format')=='csv':
 
@@ -335,15 +355,16 @@ class export(view_class):
 
                 header_row=True
                 header=[]
-                for i in obj.values():
+                
+                for i in field_list:
+                    header.append(i.verbose_name)
+                writer.writerow(header)
+
+                for i in obj:
                     values=[]
-                    for key in i:
-                        if header_row:
-                            header.append(key)
-                        values.append(i[key])
-                    if header_row:
-                        writer.writerow(header)
-                        header_row=False
+                    for j in field_list:
+                        values.append(getattr(i,j.name))
+
                     writer.writerow(values)
 
                 return response

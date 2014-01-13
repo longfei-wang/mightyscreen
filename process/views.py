@@ -12,6 +12,7 @@ import process.readers as readers
 from process.tasks import queue
 from process.forms import UploadFileForm
 from main.views import view_class
+from data.models import project_data_base
 #from main.utils import get_platelist
 # Create your views here.
 
@@ -43,7 +44,7 @@ class mark(view_class):
         
         data=self.data
 
-        welltypes=dict(data_base.schoice)
+        welltypes=dict(project_data_base.wtchoice)
 
         proj=self.proj
 
