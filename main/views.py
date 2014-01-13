@@ -64,12 +64,12 @@ class view_class(View):#the base view class for all
     @property
     def data(self):
         """get current project database model"""
-        if not self.data_model:
-            exec ('from data.models import proj_data_'+str(self.proj.pk)+' as data')
 
-            self.data_model=data
-
-        return self.data_model
+        from data.models import project_data_base
+        exec('class proj_data_%s(project_data_base):pass;'%str(self.proj.pk))
+        exec('data = proj_data_%s'%str(self.proj.pk))
+        data.set_proj(self.proj)
+        return data
 
     @property#self.job is the class to submit job
     def job(self):

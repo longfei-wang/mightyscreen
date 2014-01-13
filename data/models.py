@@ -9,7 +9,7 @@ import collections
 #figured that the table would be too big to store all the data. 
 #A HTS project can easily have millions of entries. Better handle project seperately
 
-field=collections.namedtuple('field',['name','verbose_name','path'],verbose=True)
+field=collections.namedtuple('field',['name','verbose_name','path'])
 
 class project_data_base(Document):
 
@@ -56,12 +56,17 @@ class project_data_base(Document):
             x.append(field(k,k,'score__'+k))
         return x
 
+    @classmethod
+    def set_proj(self,proj):
+        self.readouts=proj.readouts()
+        self.scores=proj.scores()
+        self.reps=proj.rep()
 
-    
+
+
     plate=StringField(max_length=20)
     well=StringField(max_length=20)
-    platewell=StringField(max_length=50,required=True)
-
+    platewell=StringField(max_length=50,required=True)  
     library=StringField(max_length=50,required=True)#library name should be unique
     #compound=ReferenceField(lib)
     
@@ -82,25 +87,6 @@ class project_data_base(Document):
 
     readout=DictField()
     score=DictField()
-
-
-
-try:#preventing syncdb crash when project don't exist
-    proj=project.objects.all()
-    num=proj.count()
-except:
-    proj=None
-
-if proj:
-    for i in proj:
-        n='readouts=i.readouts();scores=i.scores();reps=i.rep();'
-        for j in i.experiment.readout.all():
-            pass
-        
-        for l in i.score.all():    
-            pass
-        
-        exec ('class proj_data_'+str(i.pk)+'(project_data_base):'+n)
 
 
 

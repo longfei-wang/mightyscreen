@@ -106,6 +106,8 @@ def projedit(request):
                                                                 })
             else:
                 form.save()
+                # dir=os.path.join(settings.BASE_DIR,'reloadmodels.py')
+                # os.system('python %s'%dir)                
                 #not sure if this is safe here. guess so. what if users submit at the same time? has to be queued
 
                 return render(request,'main/redirect.html',{'message':'Project Created.','dest':'index'})
