@@ -1,4 +1,3 @@
-from django.db import models
 from mongoengine import *
 
 # Create your models here.
@@ -33,11 +32,11 @@ class compound(Document):
     library_name = ReferenceField(library)
     sub_library_name = StringField(max_length=50)
     facility_reagent_id = StringField(max_length = 30)
-    plate = IntField()
+    plate = StringField(max_length=20)
     well = StringField(max_length = 20)
     plate_well = StringField(max_length = 20)
     pubchem_cid = IntField()
-    chemical_name = models.TextField()
+    chemical_name = StringField()
     molecular_weight = DecimalField()
     formula = StringField(max_length = 30)
     tpsa = DecimalField()
