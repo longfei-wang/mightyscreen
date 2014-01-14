@@ -36,7 +36,7 @@ class compound(Document):
 
     hidden_fields=['plate_well','sdf','id','fp2','fp3','fp4','plate','well']
 
-    library_name = ReferenceField(library, dbref=True)
+    library_name = StringField(max_length = 30)
     sub_library_name = StringField(max_length=50)
     facility_reagent_id = StringField(max_length = 30)
     plate = StringField(max_length=20)
