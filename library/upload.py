@@ -526,10 +526,10 @@ def json_to_mongo(formated_dic_lib_file):
             lib.save()
         except NotUniqueError:
             pass            
+
         
         com = compound()
-
-#        com.library_name = lib
+        com.library_name = mol['Library_Name']
         com.sub_library_name = mol['Library']
         com.facility_reagent_id = str(mol["Facility_Reagent_ID"])
         com.plate= mol["Plate"]
@@ -553,67 +553,6 @@ def json_to_mongo(formated_dic_lib_file):
             com.save()
         except NotUniqueError:
             pass         
-        
-        
-        
-        
-#        cur.execute("""INSERT IGNORE INTO library_library(library_name, number_of_compounds, number_of_sub_librarys)
-#        VALUES(%s, 0, 0)
-#        """,mol['Library_Name'])
-#           
-#        cur.execute(""" INSERT IGNORE INTO library_sub_library
-#                    (sub_library_name, number_of_compounds, super_library_id)
-#                    VALUES (%s, 0, 
-#                    (SELECT id FROM library_library WHERE library_name = %s)
-#                    )
-#                """, (mol['Library'],mol['Library_Name']))
-#
-#        cur.execute("""INSERT IGNORE INTO library_compound
-#            (library_name_id,sub_library_name_id,facility_reagent_id,plate,well,plate_well,
-#            pubchem_cid,chemical_name,molecular_weight,formula,tpsa,logp,
-#            inchikey,canonical_smiles,inchi,fp2,fp3,fp4,svg,sdf)
-#            VALUES((SELECT id FROM library_library WHERE library_name = %s),
-#            (SELECT id FROM library_sub_library WHERE sub_library_name = %s),
-#            %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
-#            (mol["Library_Name"],
-#            mol['Library'],
-#            mol["Facility_Reagent_ID"],
-#            mol["Plate"],
-#            mol["Well"],
-#            mol["Plate_Well"],
-#            mol["PubChem_CID"],
-#            mol["Chemical_Name"],
-#            mol["Molecular_Weight"],
-#            mol["Formula"],
-#            mol["TPSA"],
-#            mol["logP"],
-#            mol["InChiKey"],
-#            mol["Canonical_Smiles"],
-#            mol["InChI"],
-#            mol["Fp2"],
-#            mol["Fp3"],
-#            mol["Fp4"],
-#            mol["svg"],
-#            mol['sdf'],               
-#            )              
-#            )                           
-#        conn.commit()
-#
-#    cur.execute("""
-#                UPDATE library_sub_library, library_compound
-#                SET number_of_compounds =
-#                (SELECT COUNT(id) FROM library_compound 
-#                WHERE library_compound.sub_library_name_id = library_sub_library.id)""")    
-#    cur.execute("""
-#                UPDATE library_library t1, library_sub_library t2
-#                SET t1.number_of_compounds =
-#                (SELECT SUM(number_of_compounds) FROM library_sub_library 
-#                WHERE t2.super_library_id = t1.id),
-#                t1.number_of_sub_librarys =
-#                (SELECT count(id) FROM library_sub_library 
-#                WHERE t2.super_library_id = t1.id)                
-#                """)
-#    conn.commit()
 
 
 def upload(json_directory = 'parsed/'):
