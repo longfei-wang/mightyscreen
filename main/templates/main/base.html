@@ -37,7 +37,7 @@
 
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="{% url "index" %}">Home</a></li>
+                    <li><a href="{% url "index" %}">Home</a></li>
                     {% if user.is_authenticated %}
                     <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
@@ -84,17 +84,9 @@
 
                 {% else %}
 
-                    <form class="navbar-form navbar-right" role="form" enctype="multipart/form-data" method="post" action="{% url "login" %}?from={{request.path}}">{% csrf_token %}
-                        <div class="form-group">
-                            <input type="text" placeholder="Username" id="id_username" name="username" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <input type="password" placeholder="Password" id="id_password" name="password" class="form-control">
-                        </div>
-                    
-                        <button type="submit" class="btn btn-success">Sign in</button>
-                        <a href="{% url "register" %}">Sign up</a>
-                    </form>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="{% url 'login' %}"><span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;&nbsp;&nbsp;</a></li>
+                    </ul>
                 {% endif %}
             </div><!--/.navbar-collapse -->
         </div>

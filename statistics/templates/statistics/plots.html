@@ -149,6 +149,7 @@ $patch.click(function(){
 {% block script-zoom %}
 <script src="{% static "main/js/jquery.panzoom.js" %}"></script>
 <script>
+
 var $section = $('section.img');
 $section.mouseover(function() {
     a = $(this)
@@ -156,7 +157,8 @@ $section.mouseover(function() {
     $zoomIn: a.find(".panzoom-zoom-in"),
     $zoomOut: a.find(".panzoom-zoom-out"),
     $zoomRange: a.find(".panzoom-zoom-range"),
-    $reset: a.find(".panzoom-reset")
+    $reset: a.find(".panzoom-reset"),
+    cursor:"pointer",
   });
 })();
 </script>
