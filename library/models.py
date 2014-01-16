@@ -1,17 +1,9 @@
 from mongoengine import *
-
+import collections
 # Create your models here.
 
-#==============================================================================
-## test models from QY
 
-#class for uploaded files
-#class rawDataFile(models.Model):
-#    def __unicode__(self):
-#        return self.readout
-#    
-#    datafile = models.FileField(upload_to = 'rawdata_test_%Y%m%d')
-
+field=collections.namedtuple('field',['name','verbose_name','path'])
 
 class library(Document):
     
@@ -31,10 +23,21 @@ class library(Document):
 
 class compound(Document):
     
+    visible_fields='sub_library_name pubchem_cid chemical_name molecular_weight formula tpsa logp canonical_smiles svg'.split()
+
+    hidden_fields=['plate_well','sdf','id','fp2','fp3','fp4','plate','well']
+
+
     def __unicode__(self):
         return (self.plate_well)
 
-    hidden_fields=['plate_well','sdf','id','fp2','fp3','fp4','plate','well']
+    @classmethod
+    def field_list(self):        
+        """field list is a list of fieldname displayed name and it's real path for query
+        This is only for datalist"""
+
+        x = [field(i,self._fields[i].verbose_name if self._fields[i].verbose_name else i,'compound__'+i) for i in self.visible_fields]#get all field we can display
+        return x
 
     library_name = StringField(max_length = 30)
     sub_library_name = StringField(max_length=50)

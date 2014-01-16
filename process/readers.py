@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from collections import defaultdict
 from library.models import library, compound
-from django.core.exceptions import ObjectDoesNotExist
 #from astropy.table import Table
 import pandas as pd
 import datetime as dt
@@ -9,14 +8,14 @@ import datetime as dt
 from main.models import project, submission
 
 class rawdatafile():#a base class for all file format
-    def __init__(self,formdata):
+    def __init__(self,formdata,data):
         """formdata is the django UploadFileForm in main.models
         pandas is used to parse the datafile"""   
         
         self.library=formdata['library']
 
         self.formdata=formdata
-        
+        self.data=data#the project model/table to work on
         self.proj_id=formdata['project']
         self.plates=formdata['plates'].split(',')
         self.plates_num=len(self.plates)
@@ -172,7 +171,7 @@ class Envision_Grid_Reader(rawdatafile):
 
         self.open_job_entry()
         
-        exec ('from data.models import proj_data_'+str(self.proj_id)+' as data')
+        data=self.data
 
 
         for pla in range(self.plates_num):            
@@ -183,10 +182,12 @@ class Envision_Grid_Reader(rawdatafile):
 
                     platewell=self.plates[pla]+self.row[row]+self.col[col]
                     
-                    # try:#check if this well has coresponding compound in our library
-                    #     cmpd=compound.objects.get(plate_well = platewell,library_name=self.library_obj)
-                    # except ObjectDoesNotExist:
-                    cmpd=None
+
+                    try:#check if this well has coresponding compound in our library
+                        cmpd=compound.objects.get(plate_well = platewell,library_name=self.library)
+                    except:
+                        cmpd=None
+                    
 
                     #update_or_create: if same well already exists, it will be over written.
                     entry, created=data.objects.get_or_create(
@@ -199,7 +200,7 @@ class Envision_Grid_Reader(rawdatafile):
                     entry.submission=self.sub.pk
                     entry.create_date=self.datetime
                     entry.create_by=self.sub.submit_by.pk
-                    #entry.compound=cmpd
+                    entry.compound=cmpd
 
                     for i in self.readout.all():
                         readout=[] 

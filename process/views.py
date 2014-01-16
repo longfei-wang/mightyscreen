@@ -26,7 +26,7 @@ class upload(view_class):
         if request.method == 'POST':
             form = UploadFileForm(request.POST, request.FILES)
             if form.is_valid():
-                reader = readers.Envision_Grid_Reader(form.cleaned_data)#if fileformat is other than Envision need to call other reader
+                reader = readers.Envision_Grid_Reader(form.cleaned_data,self.data)#if fileformat is other than Envision need to call other reader
                 reader.parse()
                 queue(reader,'save()')#then parse_data in background
                 return render(request,'main/redirect.html',{'message':'Data submitted to queue!','dest':'index'})
@@ -71,14 +71,8 @@ class mark(view_class):
 
                     querybase.filter(well__in=x).update(set__welltype=j) 
 
-                    # if j == 'X':#if already mapped to a library, then use different approach to mark wells
-                    #     querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=False,welltype__in=['E','P','N']).update(welltype=j)
-                    # elif j=='E':
-                    #     querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=True,welltype__in=['X']).update(welltype=j)
-                    # elif j in ['P','N']:#controls can only in empty
-                    #     querybase.filter(library_pointer__isnull=False,well__in=x,compound_pointer__isnull=True).update(welltype=j)
-                    # elif j in 'B':#bad well can anywhere
-                    #     querybase.filter(library_pointer__isnull=False,well__in=x).update(welltype=j)
+                querybase.filter(compound__exists=True,welltype__in=['E','P','N']).update(set__welltype='X')#if it has compound reference than you have to make sure
+                #querybase.filter(compound__exists=False,welltype='X').update(set__welltype='E')
 
 
                 messages.success(request,'WellType Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))

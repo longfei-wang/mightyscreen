@@ -24,7 +24,7 @@
     </div>
     <div class="form-group">
         <select name="field" class="form-control">
-            {% for i in field_list %}
+            {% for i in projfield_list %}
                 <option value="{{i.path}}">{{ i.verbose_name }}</option>
             {% endfor %}
         </select>
@@ -57,7 +57,7 @@
         
 
         <select name="field2" class="form-control">
-            {% for i in field_list %}
+            {% for i in projfield_list %}
                 <option value="{{i.path}}">{{ i.verbose_name }}</option>
             {% endfor %}
         </select>
@@ -183,13 +183,17 @@
     
     {% for j in entry_list %}
         <tr>
-            <td><input type="checkbox" platewell="{{j.platewell}}" class="hitlistcheckbox"></td>
-            <td>{% if j.compound_pointer %}
-                <button class="btn btn-default btn-xs cmpdTrigger" platewell="{{j.platewell}}" plate="{{j.plate}}" well="{{j.well}}"><span class="glyphicon glyphicon-eye-open"></span></button>
+            <td><input type="checkbox" cid="{{j.id}}" class="hitlistcheckbox"></td>
+            <td>{% if j.compound %}
+                <button class="btn btn-default btn-xs cmpdTrigger" compound="{{j.compound.id}}" cid="{{j.id}}"><span class="glyphicon glyphicon-eye-open"></span></button>
                 {% endif %}
             </td>
             {% for i in field_list %}
-                <td>{{ j|getattr:i.name|tabler}}</td>
+                {% if 'compound__' in i.path %}
+                    <td>{{ j.compound|getattr:i.name|tabler|safe}}</td>
+                {% else %}
+                    <td>{{ j|getattr:i.name|tabler}}</td>
+                {% endif %}
             {% endfor %}
         </tr>
     {% endfor %}
@@ -247,16 +251,15 @@ $(".cmpdTrigger").each(function(){//Compound Detail View
 
     $(this).click(function(){
         $("#cmpdContent").html('');
-        plate=$(this).attr('plate');
-        well=$(this).attr('well');
-        platewell=$(this).attr('platewell');
+        compound=$(this).attr('compound');
+        cid=$(this).attr('cid');
 
         $.get("/statistics/details/",
-            {plate:plate,well:well,t:1},
+            {compound:compound,t:1},
             function(data){
                 $("#cmpdContent").html(data);
             });
-        $("#hitlistadd").attr("href","{% url 'addtohitlist' %}?platewell="+platewell);
+        $("#hitlistadd").attr("href","{% url 'addtohitlist' %}?cid="+cid);
         $("#cmpdDetail").modal('show');
         //alert(plate+well);
     });
@@ -278,7 +281,7 @@ $("#checkall").change(function(){
 $("#hitlistsubmit").click(function(){
     value=[]
     $(".hitlistcheckbox:checked").each(function(){
-        value.push($(this).attr("platewell"));
+        value.push($(this).attr("cid"));
     });
     $("#hitlistinput").val(value.join(','));
     $("#hitlistform").submit();
@@ -288,13 +291,13 @@ $("#hitlistsubmit").click(function(){
 $("#hitlistremove").click(function(){
     value=[]
     $(".hitlistcheckbox:checked").each(function(){
-        value.push($(this).attr("platewell"));
+        value.push($(this).attr("cid"));
     });
     $("#hitlistrminput").val(value.join(','));
     $("#hitlistform").submit();
 });
 
-
+//select fields to display
 $(".fieldcheckbox").change(function(){
     fields=[]
     $(".fieldcheckbox:checked").each(function(){

@@ -3,6 +3,7 @@ from main.models import project
 from mongoengine import *
 import datetime
 import collections
+from library.models import *
 # Create your models here.
 
 #automatically generate data model(table) for each project with their specific readouts
@@ -68,7 +69,7 @@ class project_data_base(Document):
     well=StringField(max_length=20)
     platewell=StringField(max_length=50,required=True)  
     library=StringField(max_length=50,required=True)#library name should be unique
-    #compound=ReferenceField(lib)
+    compound=ReferenceField(compound)
     
     hit=IntField(default=0)
 

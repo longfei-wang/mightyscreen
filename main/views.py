@@ -14,6 +14,8 @@ from sabridge.base import Bridge
 from django.views.generic.base import View
 from main.models import project
 from mongoengine.queryset import Q
+from library.models import *
+from data.models import field
 import csv
 import time
 # Create your views here.
@@ -166,8 +168,8 @@ class datalist(view_class):
         #
 
         querybase=data.objects.all()
-
         
+
         if request.method=='POST':
  
             if request.POST.get('plates'):
@@ -217,18 +219,14 @@ class datalist(view_class):
         #Decide fields to display
         #
 
-        curprojfield_list = data.field_list()
-        compoundfield_list=list()
+        curprojfield_list = data.field_list()#field list of current proj
 
-        # for i in compound._meta.fields:
-        #     if i.name not in compound.hidden_fields:
-        #         i.name='compound_pointer__'+i.name if 'compound_pointer__' not in i.name else i.name#have to prefix the name to make query possible. related field name
-        #         compoundfield_list.append(field_list_class(i.name,i.verbose_name))
+        compoundfield_list = compound.field_list()#field list of compound library
 
 
-        d=field_list_class('divider','Current Project')
+        d=[field('divider','Current Project','')]
 
-        allfield_list=curprojfield_list
+        allfield_list=compoundfield_list+d+curprojfield_list
 
         if request.POST.get('fieldlist'):#for post
             field_list=[i for i in allfield_list if i.name in request.POST.get('fieldlist').split(',')]
@@ -281,6 +279,7 @@ class datalist(view_class):
                                                       'plates':plates,
                                                       'plates_selected':plates_selected,
                                                       'allfield_list':allfield_list,
+                                                      'projfield_list':curprojfield_list,
                                                       'proj':self.proj
                                                     })
 
@@ -306,13 +305,13 @@ class addtohitlist(view_class):
                     
                     hitlist= request.POST.get('hitlist').split(',')
 
-                    obj.filter(platewell__in=hitlist).update(set__hit=1)
+                    obj.filter(id__in=hitlist).update(set__hit=1)
                 
                 elif request.POST.get('hitlistrm'):
                     
                     hitlistrm= request.POST.get('hitlistrm').split(',')
 
-                    obj.filter(platewell__in=hitlistrm).update(set__hit=0)
+                    obj.filter(id__in=hitlistrm).update(set__hit=0)
 
             elif request.GET.get('reset'):
 
@@ -320,7 +319,7 @@ class addtohitlist(view_class):
 
             elif request.GET.get('platewell'):
 
-                obj.filter(platewell=request.GET.get('platewell')).update(set__hit=1)
+                obj.filter(id=request.GET.get('cid')).update(set__hit=1)
             
             else:
                 obj.update(set__hit=1)

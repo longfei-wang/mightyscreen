@@ -18,6 +18,7 @@ from process.forms import PlatesToUpdate
 ## facilitate functions    
 class view_stat_class(view_class):
     """basic view class for stats"""
+
     def _select_plates(self,request):
     #    form=PlatesToUpdate()
         plates=self.plates
@@ -35,9 +36,13 @@ class view_stat_class(view_class):
             data_columns = []
 
         field_list = []
-        for i in data._meta.fields:
-            if i.name not in "id library library_pointer_id compound_pointer_id plate well platewell ishit welltype project submission create_date create_by":
-                field_list.append(i.name)    
+
+        for j in self.proj.readouts():
+            for i in self.proj.rep():
+                field_list.append(j+'_'+i)
+
+        for i in self.proj.scores():
+            field_list.append(i)
 
         return [plates,plates_selected,self.data,field_list,data_columns]
 
@@ -106,10 +111,10 @@ class view_stat_class(view_class):
 
 class details(view_class):
     def c(self,request):
-
+        #raise Exception(request.GET)
         """ display detailed information of compounds, use list"""
         try:
-            cmpd = compound.objects.get(plate = request.GET.get('plate'),well=request.GET.get('well'))
+            cmpd = compound.objects.get(id=request.GET.get('compound'))
         except:
             cmpd= False
         field_list="chemical_name molecular_weight formula library_name facility_reagent_id plate well pubchem_id tpsa logp inchikey canonical_smiles".split()
@@ -389,23 +394,19 @@ class dendrogram(view_stat_class):
 
             distance,method,distance_y,method_y = self._dendro_para(request)
 
-            entry_list=data.objects.filter(ishit=1)
+            entry_list=data.objects.filter(hit=1)
             #entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
             fp2_list = []
             plate_well_list = []
             for e in entry_list:
-                if e.compound_pointer:
-                    fp2_list.append(e.compound_pointer.fp2)
+                if e.compound:
+                    fp2_list.append(e.compound.fp2)
                     plate_well_list.append(str(e.plate)+'_'+e.well)  
             
-            if len(fp2_list)>1 and len(fp2_list)<100:
-                c = clust.plot_dendro(fp2_list,plate_well_list,distance = distance,method = method )
-                img_list.append(c)
+
+            c = clust.plot_dendro(fp2_list,plate_well_list,distance = distance,method = method )
+            img_list.append(c)
                 
-            #    return HttpResponse(c)
-                
-            else:
-                messages.warning(request,'Hit list compound numbers has to be within (1,100).')
 
         url_name = 'stat_dendrogram'
         return render(request,"statistics/clust.html",{'img_list':img_list,
@@ -429,10 +430,8 @@ class dendrogram2d(view_stat_class):
             distance,method,distance_y,method_y = self._dendro_para(request)
         #    raise Exception(_dendro_para(request))
 
-
-                
             
-            entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
+            entry_list=data.objects.filter(hit=1)#.filter(well = 'A05')
             fp2_list = []
             plate_well_list = []
             for e in entry_list[:50]:

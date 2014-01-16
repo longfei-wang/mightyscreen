@@ -3,9 +3,9 @@
 
 
 ## openbabel and pybel is needed for parse finger print calculation
-import pybel
-import openbabel
-import json,MySQLdb
+#import pybel
+#import openbabel
+import json
 import datetime, os
 
 ## Four essential functions to handle finger print 
