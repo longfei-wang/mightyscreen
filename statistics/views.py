@@ -110,7 +110,7 @@ class view_stat_class(view_class):
 
 
 class details(view_class):
-    def c(self,request):
+    def get(self,request):
         #raise Exception(request.GET)
         """ display detailed information of compounds, use list"""
         try:
@@ -125,7 +125,7 @@ class details(view_class):
 
 
 class heatmap(view_stat_class):
-    def c(self,request):
+    def get(self,request):
         """ basic function to plot heatmaps 
         """
         ### This function is still in the testing phase
@@ -167,7 +167,7 @@ class heatmap(view_stat_class):
                                                          })  
 
 class correlation(view_stat_class):
-    def c(self,request):
+    def get(self,request):
         """ basic function to plot heatmaps 
         """
         ### This function is still in the testing phase
@@ -249,7 +249,7 @@ class correlation(view_stat_class):
                                                                                                        
                                                                                                          
 class scatter(view_stat_class):
-    def c(self,request):
+    def get(self,request):
         """ basic function to plot heatmaps 
         """
         ### This function is still in the testing phase
@@ -321,7 +321,7 @@ class scatter(view_stat_class):
                                                         
 
 class histogram(view_stat_class):
-    def c(self,request):
+    def get(self,request):
         """ basic function to plot histogram 
         """
         ### This function is still in the testing phase
@@ -386,7 +386,7 @@ class histogram(view_stat_class):
 #=============================================================================
 ## stable views for compound analysis
 class dendrogram(view_stat_class):
-    def c(self,request):
+    def get(self,request):
         img_list = []
         if request.method=='POST':
              
@@ -416,7 +416,7 @@ class dendrogram(view_stat_class):
 
 class dendrogram2d(view_stat_class):
     #has bug
-    def c(self,request):
+    def get(self,request):
         img_list = []
         cmap_list = self._cmap_list()
         if request.method=='POST':
@@ -454,7 +454,7 @@ class dendrogram2d(view_stat_class):
 ## Testing views
 
 class fingerprint_cluster(view_stat_class):
-    def c(self,request):
+    def get(self,request):
 
         entry_list = compound.objects.filter(plate = '3266')#.filter(well = 'A05')
         fp2_list = []
@@ -536,7 +536,7 @@ class fingerprint_cluster(view_stat_class):
 
 
 
-#def compound_list(request):
+#def getompound_list(request):
 #    """ display list of compounds \n
 #    This function is supposed to be used by users to select a few compounds \n
 #    And it will return this table as summary    

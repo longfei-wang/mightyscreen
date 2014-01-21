@@ -7,10 +7,10 @@ from process.utils import ScoreReader
 
 
 @task()
-def process_score(data,proj,plates):
+def process_score(data,proj,plates,datamodel):
 	"""A function that read user's equation and store the score into database
 	currently very low speed, need code optimization. A celery wrapper for readerscore class"""
-	x=ScoreReader(proj)
+	x=ScoreReader(proj,datamodel)
 
 	for i in plates:
 		x.flush()#flush the cache

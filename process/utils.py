@@ -5,7 +5,8 @@ import numpy as np
 
 class ScoreReader():
 	"""a class that parse the scores from user's formular"""
-	def __init__(self,proj):
+	def __init__(self,proj,data):
+		self.data=data
 		self.proj=proj
 		self.readout=proj.experiment.readout.all()
 		self.rep=self.proj.rep()
@@ -54,7 +55,7 @@ class ScoreReader():
 		curWell=curRow.well
 		var=re.findall('{[^}]+}',formular)	
 
-		exec ('from data.models import proj_data_%s as data'%str(self.proj.pk))
+		data=self.data
 
 		for i in var:
 

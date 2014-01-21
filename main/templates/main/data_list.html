@@ -132,7 +132,7 @@
 
 <div class="btn-group"><!-- Apply Filters -->
   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-    Apply Filters <span class="caret"></span>
+    Filters <span class="caret"></span>
   </button>
   <ul class="dropdown-menu pull-right" role="menu">
     <li><a id="" href="{% url 'view' %}?filter=hit">Hit</a></li>
@@ -144,7 +144,7 @@
 
 <div class="btn-group"><!-- Hit List Management -->
   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-    Add to HitList <span class="caret"></span>
+    HitList <span class="caret"></span>
   </button>
   <ul class="dropdown-menu pull-right" role="menu">
     <li><a id="hitlistsubmit" href="javascript:;">Add Checked</a></li>
@@ -165,6 +165,17 @@
     <li><a href="{% url 'export' %}?format=json" target="_blank">To Json</a></li>
   </ul>
 </div>
+
+<div class="btn-group"><!-- Export Function -->
+  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+    Share <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu pull-right" role="menu">
+    <li><a id="id_share_view" href="javascript:;">Current View</a></li>
+
+  </ul>
+</div>
+
 
 </div>
 
@@ -305,5 +316,18 @@ $(".fieldcheckbox").change(function(){
     });
     $("#fieldlist_id").val(fields.join(','));
 });
+
+//save current view
+$("#id_share_view").click(function(){
+
+    $.get("/main/save_view/",
+        function(data){
+            alert(data);
+        });
+    
+    //alert(plate+well);
+});
+
+
 </script>
 {% endblock %}

@@ -19,7 +19,7 @@ from data.models import project_data_base
 
 class upload(view_class):
 
-    def c(self,request):
+    def get(self,request):
 
         form = UploadFileForm(initial={'user':request.user.pk,'project':self.proj.pk})
     
@@ -38,7 +38,7 @@ class upload(view_class):
  
 class mark(view_class):
 
-    def c(self,request):
+    def get(self,request):
 
         form=PlatesToUpdate()
         
@@ -82,7 +82,7 @@ class mark(view_class):
         return render(request,'process/markwell.html',{'proj':proj,'welltypes':welltypes,'plates':plates,'form':form})
 
 class score(view_class):
-    def c(self,request):
+    def get(self,request):
         form=PlatesToUpdate()
 
         data=self.data
@@ -106,7 +106,7 @@ class score(view_class):
                 myjob=self.job
                 myjob.create(request,log='Update plates: %s. '%form.cleaned_data['plates'])
                 
-                if process_score(data.objects.all(),proj,form.cleaned_data['plates'].split(',')):
+                if process_score(data.objects.all(),proj,form.cleaned_data['plates'].split(','),self.data):
                     
                     myjob.complete()
 

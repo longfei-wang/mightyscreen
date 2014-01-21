@@ -12,10 +12,11 @@ from main.utils import get_platelist, job
 from library.models import compound
 from sabridge.base import Bridge
 from django.views.generic.base import View
-from main.models import project
+from main.models import project, view as views
 from mongoengine.queryset import Q
 from library.models import *
 from data.models import field
+import pickle
 import csv
 import time
 # Create your views here.
@@ -35,7 +36,6 @@ class view_class(View):#the base view class for all
     
     job_obj=None
     platelist=[]
-    data_model=None
     project=None
 
     @property
@@ -73,6 +73,16 @@ class view_class(View):#the base view class for all
         data.set_proj(self.proj)
         return data
 
+    def get_data(self,proj_id):
+        
+        from data.models import project_data_base
+        exec('class proj_data_%s(project_data_base):pass;'%str(proj_id))
+        exec('data = proj_data_%s'%str(proj_id))
+        data.set_proj(project.objects.get(pk=proj_id))
+        
+        return data
+
+
     @property#self.job is the class to submit job
     def job(self):
         """a job object for job submission"""
@@ -80,20 +90,9 @@ class view_class(View):#the base view class for all
             self.job_obj=job()
         return self.job_obj
 
-    def get(self,request):
-        #this can be overwritten
-        return self.c(request)
-    
-    def post(self,request):
-        #this can be overwritten
-        return self.c(request)
 
-    def c(self,request):#combine get and post for easier migration, you can overwrite get or post if u want
-        pass
-
-
-
-
+    def post(self,request,*args,**kwargs):
+        return self.get(request,*args,**kwargs)
 
 
 
@@ -104,7 +103,7 @@ class view_class(View):#the base view class for all
 
 class index(view_class):
 
-    def c(self,request):
+    def get(self,request):
 
         return render(request, "main/index.html")
 
@@ -154,20 +153,32 @@ def benchmark(request):
 
 class datalist(view_class):
 
-    def c(self,request):
+    def get(self,request,view_id=''):
         """list view of data in current project. Dynamically import the right model/table for project"""
-
+        
+        view = None
         pre_order='id'
         plates=self.plates
-        data=self.data
+        
         args=''
         plates_selected=[]
         quoted_fields=['plate','well']#this is for the crappy quote/unquote requirement of mongoengine
+        
+        if view_id:#if there is a saved view then get the view instead
+            try:
+                view=views.objects.get(id=view_id)
+            except:
+                pass
+
+        data=self.data if not view else self.get_data(view.proj_id) 
+
         #
         #Perform all the Query
         #
-
-        querybase=data.objects.all()
+        if view:
+            exec('querybase=data.objects'+view.query)
+        else:
+            querybase=data.objects.all()
         
 
         if request.method=='POST':
@@ -193,7 +204,7 @@ class datalist(view_class):
 
             if request.GET.get('order'):
                 pre_order=request.GET.get('order')
-                #intense query sting cause we need to put null entries last..
+
                 args+='.order_by("%s")'%pre_order
                 
 
@@ -218,28 +229,34 @@ class datalist(view_class):
         #
         #Decide fields to display
         #
+        if view:
 
-        curprojfield_list = data.field_list()#field list of current proj
-
-        compoundfield_list = compound.field_list()#field list of compound library
-
-
-        d=[field('divider','Current Project','')]
-
-        allfield_list=compoundfield_list+d+curprojfield_list
-
-        if request.POST.get('fieldlist'):#for post
-            field_list=[i for i in allfield_list if i.name in request.POST.get('fieldlist').split(',')]
-
-        elif cache.get('dataview_field_list'+str(self.proj.pk)) and not request.GET.get('fieldreset'):#for get view, like page, order
+            curprojfield_list = pickle.loads(view.field_list)
+            allfield_list = curprojfield_list
+            field_list = curprojfield_list
         
-            field_list=cache.get('dataview_field_list'+str(self.proj.pk))
+        else:
 
-        else:#if nothing
-            field_list=curprojfield_list
+            curprojfield_list = data.field_list()#field list of current proj
+
+            compoundfield_list = compound.field_list()#field list of compound library
 
 
-        cache.set('dataview_field_list'+str(self.proj.pk),field_list,3600)    
+            d=[field('divider','Current Project','')]
+
+            allfield_list=compoundfield_list+d+curprojfield_list
+
+            if request.POST.get('fieldlist'):#for post
+                field_list=[i for i in allfield_list if i.name in request.POST.get('fieldlist').split(',')]
+
+            elif cache.get('dataview_field_list'+str(self.proj.pk)) and not request.GET.get('fieldreset'):#for get view, like page, order
+            
+                field_list=cache.get('dataview_field_list'+str(self.proj.pk))
+
+            else:#if nothing
+                field_list=curprojfield_list
+
+            cache.set('dataview_field_list'+str(self.proj.pk),field_list,3600)    
 
 
         #
@@ -288,7 +305,7 @@ class datalist(view_class):
 
 class addtohitlist(view_class):
     
-    def c(self,request):
+    def get(self,request):
         
         myjob=self.job
 
@@ -334,8 +351,34 @@ class addtohitlist(view_class):
         return redirect('view')
 
 
+class save_view(view_class):
+    
+    def get(self,request):
+        
+        response='Fuck there is nothing'
+
+        query = cache.get('dataview'+str(self.proj.pk)) 
+        
+        field_list = cache.get('dataview_field_list'+str(self.proj.pk))
+
+        if query is not None and field_list:
+
+            
+
+            entry = views(
+                query=query,
+                field_list=pickle.dumps(field_list),
+                user_id=request.user.id,
+                proj_id=self.proj.id,
+                )
+            entry.save()
+            response=str(entry.id)
+
+        return HttpResponse(response,mimetype='text')
+
+
 class export(view_class):
-    def c(self,request):
+    def get(self,request):
         if cache.get('dataview'+str(self.proj.pk)) is not None:
             
             args=cache.get('dataview'+str(self.proj.pk))
