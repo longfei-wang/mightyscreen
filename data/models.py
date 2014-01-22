@@ -88,4 +88,4 @@ class project_data_base(Document):
 
     readout=DictField()
     score=DictField()
-
+    comment=ListField(StringField())

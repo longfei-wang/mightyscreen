@@ -13,7 +13,7 @@
 {% endif %}
 
 
-<form enctype="multipart/form-data" method="post" class="form-inline" role="form" action="{% url "view" %}">
+<form enctype="multipart/form-data" method="post" class="form-inline" role="form" action="{{url}}">
 {% csrf_token %}
 
 <div class="well">
@@ -80,6 +80,8 @@
 
 </div>
 
+
+{% if not field_lock %}
     <div class="panel" id="accordion"><!-- The field selector -->
 
         <div>
@@ -108,7 +110,7 @@
         </div>
         </div>
     </div>
-
+{% endif %}
 </form>
 
 
@@ -128,6 +130,12 @@
     <li class="{{pbutton_attr}}"><a href='?page={{last_page}}'>Last</a></li>
 </ul>
 
+
+
+
+
+{% if not field_lock %}
+
 <div class="pagination pull-right">
 
 <div class="btn-group"><!-- Apply Filters -->
@@ -142,6 +150,8 @@
   </ul>
 </div>
 
+
+
 <div class="btn-group"><!-- Hit List Management -->
   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
     HitList <span class="caret"></span>
@@ -155,6 +165,8 @@
   </ul>
 </div>
 
+
+
 <div class="btn-group"><!-- Export Function -->
   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
     Export <span class="caret"></span>
@@ -165,6 +177,8 @@
     <li><a href="{% url 'export' %}?format=json" target="_blank">To Json</a></li>
   </ul>
 </div>
+
+
 
 <div class="btn-group"><!-- Export Function -->
   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -178,6 +192,11 @@
 
 
 </div>
+
+{% endif %}
+
+
+
 
 </div>
 

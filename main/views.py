@@ -1,16 +1,14 @@
 from django.shortcuts import render,redirect
-from django.http import HttpResponse
+from django.http import HttpResponse,Http404
 from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.db.models import Count
 from django.core.paginator import Paginator
 from django.core.cache import cache
 from django.contrib import messages
 from django.core import serializers
 from main.utils import get_platelist, job
 from library.models import compound
-from sabridge.base import Bridge
 from django.views.generic.base import View
 from main.models import project, view as views
 from mongoengine.queryset import Q
@@ -67,11 +65,7 @@ class view_class(View):#the base view class for all
     def data(self):
         """get current project database model"""
 
-        from data.models import project_data_base
-        exec('class proj_data_%s(project_data_base):pass;'%str(self.proj.pk))
-        exec('data = proj_data_%s'%str(self.proj.pk))
-        data.set_proj(self.proj)
-        return data
+        return self.get_data(self.proj.pk)
 
     def get_data(self,proj_id):
         
@@ -90,12 +84,13 @@ class view_class(View):#the base view class for all
             self.job_obj=job()
         return self.job_obj
 
+    
+    def cachekey(self,request):
+        """#generate unique key for cache"""
+        return request.session.session_key+str(self.proj.id)
 
     def post(self,request,*args,**kwargs):
         return self.get(request,*args,**kwargs)
-
-
-
 
 
 
@@ -107,78 +102,29 @@ class index(view_class):
 
         return render(request, "main/index.html")
 
-def benchmark(request):
-    """compare native django orm and django-sabridge + SQLAlchemy"""
-
-    if not 'proj' in request.session:
-        exec ('from data.models import proj_1 as data')      
-        
-    exec ('from data.models import proj_'+request.session['proj_id']+' as data')
-
-    start=time.clock()
-    tmp=compound.objects.all()
-    n=0
-    for i in tmp:
-        n+=1
-    elapsed = (time.clock() - start)
-
-    a= elapsed
-
-    bridge = Bridge()
-    c=bridge[compound]
-    d=bridge[data]
-
-    start=time.clock()
-
-    result=c.select().execute()
-
-    m=0
-    for i in result:
-        
-        m+=1
-    elapsed = (time.clock() - start)
-    
-    b=elapsed
-
-    return HttpResponse(str(a)+','+str(n)+','+str(b)+','+str(m))
-
-
-
-
-
-
-
-
 
 
 class datalist(view_class):
 
-    def get(self,request,view_id=''):
+    def get(self,request,data=None,rootquery='',field_list=None):
         """list view of data in current project. Dynamically import the right model/table for project"""
-        
-        view = None
+
+        data = self.data if not data else data
+        cachekey = self.cachekey(request)
+        url = request.path
+        field_lock=False #decide if you can customize field or not    
         pre_order='id'
         plates=self.plates
-        
         args=''
         plates_selected=[]
         quoted_fields=['plate','well']#this is for the crappy quote/unquote requirement of mongoengine
         
-        if view_id:#if there is a saved view then get the view instead
-            try:
-                view=views.objects.get(id=view_id)
-            except:
-                pass
-
-        data=self.data if not view else self.get_data(view.proj_id) 
 
         #
         #Perform all the Query
         #
-        if view:
-            exec('querybase=data.objects'+view.query)
-        else:
-            querybase=data.objects.all()
+        exec('querybase=data.objects'+rootquery)
+
         
 
         if request.method=='POST':
@@ -199,7 +145,7 @@ class datalist(view_class):
             
         else:
             
-            args = cache.get('dataview'+str(self.proj.pk))#if this is just turning pages then use the latest query
+            args = cache.get('dataview'+cachekey)#if this is just turning pages then use the latest query
             args='' if not args else args
 
             if request.GET.get('order'):
@@ -224,16 +170,18 @@ class datalist(view_class):
             entry_list=querybase
             messages.warning(request,'A Internal Error Occured. Your list will be reset.')
             
-        cache.set('dataview'+str(self.proj.pk),args,3600)
+        cache.set('dataview'+cachekey,args,3600)
 
         #
         #Decide fields to display
         #
-        if view:
+        if field_list:
 
-            curprojfield_list = pickle.loads(view.field_list)
-            allfield_list = curprojfield_list
-            field_list = curprojfield_list
+            curprojfield_list = field_list
+
+            allfield_list = field_list
+
+            field_lock = True
         
         else:
 
@@ -246,17 +194,18 @@ class datalist(view_class):
 
             allfield_list=compoundfield_list+d+curprojfield_list
 
+
             if request.POST.get('fieldlist'):#for post
                 field_list=[i for i in allfield_list if i.name in request.POST.get('fieldlist').split(',')]
 
-            elif cache.get('dataview_field_list'+str(self.proj.pk)) and not request.GET.get('fieldreset'):#for get view, like page, order
+            elif cache.get('dataview_field_list'+cachekey) and not request.GET.get('fieldreset'):#for get view, like page, order
             
-                field_list=cache.get('dataview_field_list'+str(self.proj.pk))
+                field_list=cache.get('dataview_field_list'+cachekey)
 
             else:#if nothing
                 field_list=curprojfield_list
 
-            cache.set('dataview_field_list'+str(self.proj.pk),field_list,3600)    
+            cache.set('dataview_field_list'+cachekey,field_list,3600)    
 
 
         #
@@ -297,23 +246,73 @@ class datalist(view_class):
                                                       'plates_selected':plates_selected,
                                                       'allfield_list':allfield_list,
                                                       'projfield_list':curprojfield_list,
-                                                      'proj':self.proj
+                                                      'proj':self.proj,
+                                                      'field_lock':field_lock,
+                                                      'url':url,
                                                     })
+
+
+
+class save_view(view_class):#save a view
+    
+    def get(self,request):
+        
+        response='Fuck there is nothing'
+
+        query = cache.get('dataview'+self.cachekey(request)) 
+        
+        field_list = cache.get('dataview_field_list'+self.cachekey(request))
+
+        if query is not None and field_list:
+
+            
+
+            entry = views(
+                query=query,
+                field_list=pickle.dumps(field_list),
+                user_id=request.user.id,
+                proj_id=self.proj.id,
+                )
+            entry.save()
+            response=str(entry.id)
+
+        return HttpResponse(response,mimetype='text')
+
+
+
+
+class get_view(datalist): #retreive views from a view.
+    
+    def get(self,request,view_id):
+        
+        view=None
+
+        if view_id:#if there is a saved view then get the view instead
+            try:
+                view=views.objects.get(id=view_id)
+            except:
+                pass
+
+        if not view:
+            raise Http404
+        return super(get_view,self).get(request,self.get_data(view.proj_id),view.query,pickle.loads(view.field_list))
+
+
 
 
 
 
 class addtohitlist(view_class):
-    
+
     def get(self,request):
         
         myjob=self.job
 
         myjob.create(request)
 
-        if cache.get('dataview'+str(self.proj.pk)) is not None:
+        if cache.get('dataview'+self.cachekey(request)) is not None:
 
-            args=cache.get('dataview'+str(self.proj.pk))
+            args=cache.get('dataview'+self.cachekey(request))
 
             exec('obj=self.data.objects'+args)
 
@@ -351,37 +350,17 @@ class addtohitlist(view_class):
         return redirect('view')
 
 
-class save_view(view_class):
-    
-    def get(self,request):
-        
-        response='Fuck there is nothing'
 
-        query = cache.get('dataview'+str(self.proj.pk)) 
-        
-        field_list = cache.get('dataview_field_list'+str(self.proj.pk))
 
-        if query is not None and field_list:
 
-            
 
-            entry = views(
-                query=query,
-                field_list=pickle.dumps(field_list),
-                user_id=request.user.id,
-                proj_id=self.proj.id,
-                )
-            entry.save()
-            response=str(entry.id)
-
-        return HttpResponse(response,mimetype='text')
 
 
 class export(view_class):
     def get(self,request):
-        if cache.get('dataview'+str(self.proj.pk)) is not None:
+        if cache.get('dataview'+self.cachekey(request)) is not None:
             
-            args=cache.get('dataview'+str(self.proj.pk))
+            args=cache.get('dataview'+self.cachekey(request))
 
             exec('obj=self.data.objects'+args)
             
