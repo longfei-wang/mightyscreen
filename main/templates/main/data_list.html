@@ -13,7 +13,7 @@
 {% endif %}
 
 
-<form enctype="multipart/form-data" method="post" class="form-inline" role="form" action="{% url "view" %}">
+<form enctype="multipart/form-data" method="post" class="form-inline" role="form" action="{{url}}">
 {% csrf_token %}
 
 <div class="well">
@@ -24,8 +24,8 @@
     </div>
     <div class="form-group">
         <select name="field" class="form-control">
-            {% for i in field_list %}
-                <option value="{{i.name}}">{{ i.verbose_name }}</option>
+            {% for i in projfield_list %}
+                <option value="{{i.path}}">{{ i.verbose_name }}</option>
             {% endfor %}
         </select>
 
@@ -50,15 +50,15 @@
     <div class="form-group">
         <select name="joint" class="form-control">
                  <option value=""></option>
-                <option value=",">AND</option>
+                <option value="&">AND</option>
                 <option value="|">OR</option>
-                <option value=",~">NOT</option>
+                <option value="&~">NOT</option>
         </select>
         
 
         <select name="field2" class="form-control">
-            {% for i in field_list %}
-                <option value="{{i.name}}">{{ i.verbose_name }}</option>
+            {% for i in projfield_list %}
+                <option value="{{i.path}}">{{ i.verbose_name }}</option>
             {% endfor %}
         </select>
 
@@ -80,6 +80,8 @@
 
 </div>
 
+
+{% if not field_lock %}
     <div class="panel" id="accordion"><!-- The field selector -->
 
         <div>
@@ -108,7 +110,7 @@
         </div>
         </div>
     </div>
-
+{% endif %}
 </form>
 
 
@@ -128,6 +130,12 @@
     <li class="{{pbutton_attr}}"><a href='?page={{last_page}}'>Last</a></li>
 </ul>
 
+
+
+
+
+{% if not field_lock %}
+
 <div class="pagination pull-right">
 
 <div class="btn-group"><!-- Apply Filters -->
@@ -135,12 +143,14 @@
     Filters <span class="caret"></span>
   </button>
   <ul class="dropdown-menu pull-right" role="menu">
-    <li><a id="" href="{% url 'view' %}?filter=ishit">Hit</a></li>
+    <li><a id="" href="{% url 'view' %}?filter=hit">Hit</a></li>
     <li><a id="" href="{% url 'view' %}?filter=LYfilter">LYfilter</a></li>
     <li class="divider"></li>
     <li><a  href="{% url 'view' %}?filter=reset">Reset Filters</a></li>
   </ul>
 </div>
+
+
 
 <div class="btn-group"><!-- Hit List Management -->
   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -155,6 +165,8 @@
   </ul>
 </div>
 
+
+
 <div class="btn-group"><!-- Export Function -->
   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
     Export <span class="caret"></span>
@@ -166,7 +178,25 @@
   </ul>
 </div>
 
+
+
+<div class="btn-group"><!-- Export Function -->
+  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+    Share <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu pull-right" role="menu">
+    <li><a id="id_share_view" href="javascript:;">Current View</a></li>
+
+  </ul>
 </div>
+
+
+</div>
+
+{% endif %}
+
+
+
 
 </div>
 
@@ -176,27 +206,23 @@
         <td><input type="checkbox" id="checkall"></td><td></td>
         {% for i in field_list %}
             <td>
-                <strong><a href='?order={% if i.name == pre_order %}-{% endif %}{{i.name}}'>{{ i.verbose_name }}</a></strong>
+                <strong><a href='?order={% if i.path == pre_order %}-{% endif %}{{i.path}}'>{{ i.verbose_name }}</a></strong>
             </td>
         {% endfor %}
     </tr>
     
     {% for j in entry_list %}
         <tr>
-            <td><input type="checkbox" platewell="{{j.platewell}}" class="hitlistcheckbox"></td>
-            <td>{% if j.compound_pointer %}
-                <button class="btn btn-default btn-xs cmpdTrigger" platewell="{{j.platewell}}" plate="{{j.plate}}" well="{{j.well}}"><span class="glyphicon glyphicon-eye-open"></span></button>
+            <td><input type="checkbox" cid="{{j.id}}" class="hitlistcheckbox"></td>
+            <td>{% if j.compound %}
+                <button class="btn btn-default btn-xs cmpdTrigger" compound="{{j.compound.id}}" cid="{{j.id}}"><span class="glyphicon glyphicon-eye-open"></span></button>
                 {% endif %}
             </td>
             {% for i in field_list %}
-                {% if 'compound_pointer__' in i.name %}
-                <td>
-                {% with i.name|cut:'compound_pointer__' as realname %}
-                {{j.compound_pointer|getattr:realname|safe}}
-                {% endwith %}
-                </td>
+                {% if 'compound__' in i.path %}
+                    <td>{{ j.compound|getattr:i.name|tabler|safe}}</td>
                 {% else %}
-                <td>{{ j|getattr:i.name|tabler}}</td>
+                    <td>{{ j|getattr:i.name|tabler}}</td>
                 {% endif %}
             {% endfor %}
         </tr>
@@ -255,16 +281,15 @@ $(".cmpdTrigger").each(function(){//Compound Detail View
 
     $(this).click(function(){
         $("#cmpdContent").html('');
-        plate=$(this).attr('plate');
-        well=$(this).attr('well');
-        platewell=$(this).attr('platewell');
+        compound=$(this).attr('compound');
+        cid=$(this).attr('cid');
 
         $.get("/statistics/details/",
-            {plate:plate,well:well,t:1},
+            {compound:compound,t:1},
             function(data){
                 $("#cmpdContent").html(data);
             });
-        $("#hitlistadd").attr("href","{% url 'addtohitlist' %}?platewell="+platewell);
+        $("#hitlistadd").attr("href","{% url 'addtohitlist' %}?cid="+cid);
         $("#cmpdDetail").modal('show');
         //alert(plate+well);
     });
@@ -286,7 +311,7 @@ $("#checkall").change(function(){
 $("#hitlistsubmit").click(function(){
     value=[]
     $(".hitlistcheckbox:checked").each(function(){
-        value.push($(this).attr("platewell"));
+        value.push($(this).attr("cid"));
     });
     $("#hitlistinput").val(value.join(','));
     $("#hitlistform").submit();
@@ -296,13 +321,13 @@ $("#hitlistsubmit").click(function(){
 $("#hitlistremove").click(function(){
     value=[]
     $(".hitlistcheckbox:checked").each(function(){
-        value.push($(this).attr("platewell"));
+        value.push($(this).attr("cid"));
     });
     $("#hitlistrminput").val(value.join(','));
     $("#hitlistform").submit();
 });
 
-
+//select fields to display
 $(".fieldcheckbox").change(function(){
     fields=[]
     $(".fieldcheckbox:checked").each(function(){
@@ -310,5 +335,18 @@ $(".fieldcheckbox").change(function(){
     });
     $("#fieldlist_id").val(fields.join(','));
 });
+
+//save current view
+$("#id_share_view").click(function(){
+
+    $.get("/main/save_view/",
+        function(data){
+            alert(data);
+        });
+    
+    //alert(plate+well);
+});
+
+
 </script>
 {% endblock %}

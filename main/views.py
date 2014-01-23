@@ -1,18 +1,20 @@
 from django.shortcuts import render,redirect
-from django.http import HttpResponse
+from django.http import HttpResponse,Http404
 from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.db.models import Q,Count
 from django.core.paginator import Paginator
 from django.core.cache import cache
 from django.contrib import messages
 from django.core import serializers
 from main.utils import get_platelist, job
 from library.models import compound
-from sabridge.base import Bridge
 from django.views.generic.base import View
-from main.models import project
+from main.models import project, view as views
+from mongoengine.queryset import Q
+from library.models import *
+from data.models import field
+import pickle
 import csv
 import time
 # Create your views here.
@@ -32,7 +34,6 @@ class view_class(View):#the base view class for all
     
     job_obj=None
     platelist=[]
-    data_model=None
     project=None
 
     @property
@@ -40,10 +41,10 @@ class view_class(View):#the base view class for all
         """retreive a list of plates in current project database"""
         if not self.platelist:
             plates=list()    
-        
-            for i in list(self.data.objects.order_by('-create_date','plate').values('plate','create_date').annotate(x=Count('plate'))):
-                plates.append(i['plate'])
-        
+            result=self.data._get_collection().aggregate({"$group":{"_id":"$plate"}})['result']
+            for i in result:
+                plates.append(i['_id'])
+
             self.platelist=plates
 
         return self.platelist
@@ -63,12 +64,18 @@ class view_class(View):#the base view class for all
     @property
     def data(self):
         """get current project database model"""
-        if not self.data_model:
-            exec ('from data.models import proj_'+str(self.proj.pk)+' as data')
 
-            self.data_model=data
+        return self.get_data(self.proj.pk)
 
-        return self.data_model
+    def get_data(self,proj_id):
+        
+        from data.models import project_data_base
+        exec('class proj_data_%s(project_data_base):pass;'%str(proj_id))
+        exec('data = proj_data_%s'%str(proj_id))
+        data.set_proj(project.objects.get(pk=proj_id))
+        
+        return data
+
 
     @property#self.job is the class to submit job
     def job(self):
@@ -77,160 +84,128 @@ class view_class(View):#the base view class for all
             self.job_obj=job()
         return self.job_obj
 
-    def get(self,request):
-        #this can be overwritten
-        return self.c(request)
     
-    def post(self,request):
-        #this can be overwritten
-        return self.c(request)
+    def cachekey(self,request):
+        """#generate unique key for cache"""
+        return request.session.session_key+str(self.proj.id)
 
-    def c(self,request):#combine get and post for easier migration, you can overwrite get or post if u want
-        pass
+    def post(self,request,*args,**kwargs):
+        return self.get(request,*args,**kwargs)
+
+
+
+
 
 class index(view_class):
 
-    def c(self,request):
+    def get(self,request):
 
         return render(request, "main/index.html")
-
-def benchmark(request):
-    """compare native django orm and django-sabridge + SQLAlchemy"""
-
-    if not 'proj' in request.session:
-        exec ('from data.models import proj_1 as data')      
-        
-    exec ('from data.models import proj_'+request.session['proj_id']+' as data')
-
-    start=time.clock()
-    tmp=compound.objects.all()
-    n=0
-    for i in tmp:
-        n+=1
-    elapsed = (time.clock() - start)
-
-    a= elapsed
-
-    bridge = Bridge()
-    c=bridge[compound]
-    d=bridge[data]
-
-    start=time.clock()
-
-    result=c.select().execute()
-
-    m=0
-    for i in result:
-        
-        m+=1
-    elapsed = (time.clock() - start)
-    
-    b=elapsed
-
-    return HttpResponse(str(a)+','+str(n)+','+str(b)+','+str(m))
 
 
 
 class datalist(view_class):
 
-    def c(self,request):
+    def get(self,request,data=None,rootquery='',field_list=None):
         """list view of data in current project. Dynamically import the right model/table for project"""
 
+        data = self.data if not data else data
+        cachekey = self.cachekey(request)
+        url = request.path
+        field_lock=False #decide if you can customize field or not    
         pre_order='id'
         plates=self.plates
-        data=self.data
+        args=''
         plates_selected=[]
+        quoted_fields=['plate','well']#this is for the crappy quote/unquote requirement of mongoengine
+        
+
         #
         #Perform all the Query
         #
+        exec('querybase=data.objects'+rootquery)
 
-        querybase=data.objects.all()
+        
 
-        if request.POST.get('plates'):
-            plates_selected=request.POST.get('plates').split(',')#plates_selected is a pass-through variable
-            querybase=querybase.filter(plate__in=plates_selected)
-        
-        querybase.order_by('pk')        
-        
         if request.method=='POST':
+ 
+            if request.POST.get('plates'):
+                plates_selected=request.POST.get('plates').split(',')#plates_selected is a pass-through variable
+                args+='.filter(plate__in=%s)'%plates_selected
 
-            if request.POST.get('querytext'):#first query box
+            if request.POST.get('querytext'):#first query bar
+                quote = '"' if request.POST.get('field') in quoted_fields else ''
+                query='Q('+request.POST.get('field')+'__'+request.POST.get('sign')+' = '+quote+request.POST.get('querytext')+quote+')'
 
-                query='Q('+request.POST.get('field')+'__'+request.POST.get('sign')+' = "'+request.POST.get('querytext')+'")'
-
-                if request.POST.get('querytext2') and request.POST.get('joint'):#second querybox
-
-                    query+=request.POST.get('joint')+'Q('+request.POST.get('field2')+'__'+request.POST.get('sign2')+' = "'+request.POST.get('querytext2')+'")'
+                if request.POST.get('querytext2') and request.POST.get('joint'):#second query bar
+                    quote = '"' if request.POST.get('field2') in quoted_fields else ''
+                    query+=request.POST.get('joint')+'Q('+request.POST.get('field2')+'__'+request.POST.get('sign2')+' = '+quote+request.POST.get('querytext2')+quote+')'
             
-                #raise Exception(query)
-                exec('entry_list = querybase.filter('+query+')')
-
-            else:#when you hit update with no querytext
-
-                entry_list = querybase
+                args+='.filter(%s)'%query
             
         else:
             
-            try:#wierd error association cache, have no idea how to fix this. So just if error occur, reset cache...
-                entry_list = cache.get('dataview'+str(self.proj.pk))#if this is just turning pages then use the latest query
-            
-            except:
-                entry_list = None
-                messages.error(request,"A Internal Error Occured. And your veiw will be reset.")
-
-            entry_list = entry_list if entry_list else querybase        
+            args = cache.get('dataview'+cachekey)#if this is just turning pages then use the latest query
+            args='' if not args else args
 
             if request.GET.get('order'):
                 pre_order=request.GET.get('order')
-                #intense query sting cause we need to put null entries last..
-                query='entry_list.order_by("%s")'%pre_order
+
+                args+='.order_by("%s")'%pre_order
                 
-                
-                exec("entry_list = "+query)
 
             elif request.GET.get('filter'):
 
                 if request.GET.get('filter') == 'reset':
                 
-                    entry_list=querybase
+                    args=''
                 
                 else:
-                    exec('entry_list=entry_list.filter(%s__gt=0)'%request.GET.get('filter'))
+                    args='.filter(%s__gt=0)'%request.GET.get('filter')
 
-        cache.set('dataview'+str(self.proj.pk),entry_list,30)
-
+        try:
+            exec ('entry_list=querybase'+args)
+        except:
+            args=''
+            entry_list=querybase
+            messages.warning(request,'A Internal Error Occured. Your list will be reset.')
+            
+        cache.set('dataview'+cachekey,args,3600)
 
         #
         #Decide fields to display
         #
+        if field_list:
+
+            curprojfield_list = field_list
+
+            allfield_list = field_list
+
+            field_lock = True
         
-        curprojfield_list = [field_list_class(i.name,i.verbose_name) for i in data._meta.fields if i.name not in data.hidden_fields]#get all field we can display
+        else:
 
-        compoundfield_list=list()
+            curprojfield_list = data.field_list()#field list of current proj
 
-        for i in compound._meta.fields:
-            if i.name not in compound.hidden_fields:
-                i.name='compound_pointer__'+i.name if 'compound_pointer__' not in i.name else i.name#have to prefix the name to make query possible. related field name
-                compoundfield_list.append(field_list_class(i.name,i.verbose_name))
+            compoundfield_list = compound.field_list()#field list of compound library
 
 
-        d=field_list_class('divider','Current Project')
+            d=[field('divider','Current Project','')]
 
-        allfield_list=compoundfield_list+[d]+curprojfield_list
-
-        if request.POST.get('fieldlist'):#for post
-
-            field_list=[field_list_class(i.name,i.verbose_name) for i in allfield_list if i.name in request.POST.get('fieldlist').split(',')]
-
-        elif cache.get('dataview_field_list'+str(self.proj.pk)) and not request.GET.get('fieldreset'):#for get view, like page, order
-        
-            field_list=cache.get('dataview_field_list'+str(self.proj.pk))
-
-        else:#if nothing
-            field_list=curprojfield_list
+            allfield_list=compoundfield_list+d+curprojfield_list
 
 
-        cache.set('dataview_field_list'+str(self.proj.pk),field_list,3600)    
+            if request.POST.get('fieldlist'):#for post
+                field_list=[i for i in allfield_list if i.name in request.POST.get('fieldlist').split(',')]
+
+            elif cache.get('dataview_field_list'+cachekey) and not request.GET.get('fieldreset'):#for get view, like page, order
+            
+                field_list=cache.get('dataview_field_list'+cachekey)
+
+            else:#if nothing
+                field_list=curprojfield_list
+
+            cache.set('dataview_field_list'+cachekey,field_list,3600)    
 
 
         #
@@ -270,47 +245,100 @@ class datalist(view_class):
                                                       'plates':plates,
                                                       'plates_selected':plates_selected,
                                                       'allfield_list':allfield_list,
+                                                      'projfield_list':curprojfield_list,
+                                                      'proj':self.proj,
+                                                      'field_lock':field_lock,
+                                                      'url':url,
                                                     })
+
+
+
+class save_view(view_class):#save a view
+    
+    def get(self,request):
+        
+        response='Fuck there is nothing'
+
+        query = cache.get('dataview'+self.cachekey(request)) 
+        
+        field_list = cache.get('dataview_field_list'+self.cachekey(request))
+
+        if query is not None and field_list:
+
+            
+
+            entry = views(
+                query=query,
+                field_list=pickle.dumps(field_list),
+                user_id=request.user.id,
+                proj_id=self.proj.id,
+                )
+            entry.save()
+            response=str(entry.id)
+
+        return HttpResponse(response,mimetype='text')
+
+
+
+
+class get_view(datalist): #retreive views from a view.
+    
+    def get(self,request,view_id):
+        
+        view=None
+
+        if view_id:#if there is a saved view then get the view instead
+            try:
+                view=views.objects.get(id=view_id)
+            except:
+                pass
+
+        if not view:
+            raise Http404
+        return super(get_view,self).get(request,self.get_data(view.proj_id),view.query,pickle.loads(view.field_list))
+
+
 
 
 
 
 class addtohitlist(view_class):
-    
-    def c(self,request):
+
+    def get(self,request):
         
         myjob=self.job
 
         myjob.create(request)
 
-        if cache.get('dataview'+str(self.proj.pk)):
-            
-            obj=cache.get('dataview'+str(self.proj.pk))
+        if cache.get('dataview'+self.cachekey(request)) is not None:
+
+            args=cache.get('dataview'+self.cachekey(request))
+
+            exec('obj=self.data.objects'+args)
 
             if request.method=='POST':
                 if request.POST.get('hitlist'):
                     
                     hitlist= request.POST.get('hitlist').split(',')
 
-                    obj.filter(platewell__in=hitlist).update(ishit=1)
+                    obj.filter(id__in=hitlist).update(set__hit=1)
                 
                 elif request.POST.get('hitlistrm'):
                     
                     hitlistrm= request.POST.get('hitlistrm').split(',')
 
-                    obj.filter(platewell__in=hitlistrm).update(ishit=0)
+                    obj.filter(id__in=hitlistrm).update(set__hit=0)
 
             elif request.GET.get('reset'):
 
-                obj.update(ishit=0)
+                obj.update(set__hit=0)
 
             elif request.GET.get('platewell'):
 
-                obj.filter(platewell=request.GET.get('platewell')).update(ishit=1)
+                obj.filter(id=request.GET.get('cid')).update(set__hit=1)
             
             else:
-
-                obj.update(ishit=1)
+                obj.update(set__hit=1)
         
             messages.success(request,'Hit List Updated')
             myjob.complete()
@@ -322,11 +350,21 @@ class addtohitlist(view_class):
         return redirect('view')
 
 
+
+
+
+
+
+
 class export(view_class):
-    def c(self,request):
-        if cache.get('dataview'+str(self.proj.pk)):
+    def get(self,request):
+        if cache.get('dataview'+self.cachekey(request)) is not None:
             
-            obj=cache.get('dataview'+str(self.proj.pk))
+            args=cache.get('dataview'+self.cachekey(request))
+
+            exec('obj=self.data.objects'+args)
+            
+            field_list=self.data.field_list()
 
             if request.GET.get('format')=='csv':
 
@@ -338,15 +376,16 @@ class export(view_class):
 
                 header_row=True
                 header=[]
-                for i in obj.values():
+                
+                for i in field_list:
+                    header.append(i.verbose_name)
+                writer.writerow(header)
+
+                for i in obj:
                     values=[]
-                    for key in i:
-                        if header_row:
-                            header.append(key)
-                        values.append(i[key])
-                    if header_row:
-                        writer.writerow(header)
-                        header_row=False
+                    for j in field_list:
+                        values.append(getattr(i,j.name))
+
                     writer.writerow(values)
 
                 return response

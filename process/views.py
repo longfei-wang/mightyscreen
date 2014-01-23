@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.core.context_processors import csrf
 from django.contrib import messages
-from main.models import project, data_base, score as sc#alias cause name conflict with method
+from main.models import project, score as sc#alias cause name conflict with method
 from collections import OrderedDict as od
 from process.tasks import process_score
 from process.forms import PlatesToUpdate, ScoreForm
@@ -12,21 +12,21 @@ import process.readers as readers
 from process.tasks import queue
 from process.forms import UploadFileForm
 from main.views import view_class
-from collections import OrderedDict
+from data.models import project_data_base
 #from main.utils import get_platelist
 # Create your views here.
 
 
 class upload(view_class):
 
-    def c(self,request):
+    def get(self,request):
 
         form = UploadFileForm(initial={'user':request.user.pk,'project':self.proj.pk})
     
         if request.method == 'POST':
             form = UploadFileForm(request.POST, request.FILES)
             if form.is_valid():
-                reader = readers.Envision_Grid_Reader(form.cleaned_data)#if fileformat is other than Envision need to call other reader
+                reader = readers.Envision_Grid_Reader(form.cleaned_data,self.data)#if fileformat is other than Envision need to call other reader
                 reader.parse()
                 queue(reader,'save()')#then parse_data in background
                 return render(request,'main/redirect.html',{'message':'Data submitted to queue!','dest':'index'})
@@ -38,14 +38,14 @@ class upload(view_class):
  
 class mark(view_class):
 
-    def c(self,request):
+    def get(self,request):
 
         form=PlatesToUpdate()
         
         data=self.data
 
-        welltypes=OrderedDict(data_base.schoice)
-        del welltypes['X']#no need to set compounds
+        welltypes=dict(project_data_base.wtchoice)
+	del welltypes['X']#no need to set compounds
 
         proj=self.proj
 
@@ -67,28 +67,20 @@ class mark(view_class):
 
                 if request.POST.get('reset'):
 
-                    querybase.filter(library_pointer__isnull=True).update(welltype='X') 
-                    querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=False).update(welltype='X')
-                    querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=True).update(welltype='E')
-
 
                 else:
 
                     for j in ['E','P','N','B']:#this sequence is priority low to high
 
-                        if request.POST.get(j) and len(request.POST.get(j))>1:
-                            x=request.POST.get(j).split(',')
-                            
+                        x=request.POST.get(j).split(',')
+                        
+			if len(x) > 1:    
                             myjob.update(log='updated wells: %(wells)s for welltype %(welltype)s.'%{'welltype':j,'wells':','.join(x)})
 
-                            querybase.filter(library_pointer__isnull=True,well__in=x).update(welltype=j) 
+                    	querybase.filter(well__in=x).update(set__welltype=j) 
 
-                            if j == 'E':
-                                querybase.filter(library_pointer__isnull=False,compound_pointer__isnull=True,welltype__in=['X']).update(welltype=j)
-                            elif j in ['P','N']:#controls can only in empty
-                                querybase.filter(library_pointer__isnull=False,well__in=x,compound_pointer__isnull=True).update(welltype=j)
-                            elif j == 'B':#bad well can anywhere
-                                querybase.filter(library_pointer__isnull=False,well__in=x).update(welltype=j)
+                    querybase.filter(compound__exists=True,welltype__in=['E','P','N']).update(set__welltype='X')#if it has compound reference than you have to make sure
+                #querybase.filter(compound__exists=False,welltype='X').update(set__welltype='E')
 
 
                 messages.success(request,'WellType Updated. <a href="%s" class="alert-link">Go Check Out</a>'%reverse('view'))
@@ -98,7 +90,7 @@ class mark(view_class):
         return render(request,'process/markwell.html',{'proj':proj,'welltypes':welltypes,'plates':plates,'form':form})
 
 class score(view_class):
-    def c(self,request):
+    def get(self,request):
         form=PlatesToUpdate()
 
         data=self.data
@@ -112,7 +104,7 @@ class score(view_class):
 
         field_list=['name','description','formular']
 
-        plates=get_platelist(model=data)#get list of plates
+        plates=self.plates#get list of plates
 
 
         if request.method=='POST':
@@ -122,7 +114,7 @@ class score(view_class):
                 myjob=self.job
                 myjob.create(request,log='Update plates: %s. '%form.cleaned_data['plates'])
                 
-                if process_score(data.objects.all(),proj,form.cleaned_data['plates'].split(',')):
+                if process_score(data.objects.all(),proj,form.cleaned_data['plates'].split(','),self.data):
                     
                     myjob.complete()
 

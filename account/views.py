@@ -8,6 +8,7 @@ from django.conf import settings
 from django.forms.models import modelform_factory,modelformset_factory
 from django.contrib import messages
 from django.forms import Select
+from django.core.cache import cache
 import main.utils
 import json
 import os
@@ -106,11 +107,9 @@ def projedit(request):
                                                                 })
             else:
                 form.save()
+                # dir=os.path.join(settings.BASE_DIR,'reloadmodels.py')
+                # os.system('python %s'%dir)                
                 #not sure if this is safe here. guess so. what if users submit at the same time? has to be queued
-                dir=os.path.join(settings.BASE_DIR,'manage.py')
-                os.system('python %s schemamigration data --auto'%dir)
-                os.system('python %s migrate data'%dir)
-                main.utils.flush_transaction()
 
                 return render(request,'main/redirect.html',{'message':'Project Created.','dest':'index'})
         

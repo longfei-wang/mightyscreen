@@ -18,6 +18,7 @@ from process.forms import PlatesToUpdate
 ## facilitate functions    
 class view_stat_class(view_class):
     """basic view class for stats"""
+
     def _select_plates(self,request):
     #    form=PlatesToUpdate()
         plates=self.plates
@@ -35,9 +36,13 @@ class view_stat_class(view_class):
             data_columns = []
 
         field_list = []
-        for i in data._meta.fields:
-            if i.name not in "id library library_pointer_id compound_pointer_id plate well platewell ishit welltype project submission create_date create_by":
-                field_list.append(i.name)    
+
+        for j in self.proj.readouts():
+            for i in self.proj.rep():
+                field_list.append(j+'_'+i)
+
+        for i in self.proj.scores():
+            field_list.append(i)
 
         return [plates,plates_selected,self.data,field_list,data_columns]
 
@@ -106,11 +111,11 @@ class view_stat_class(view_class):
 
 
 class details(view_class):
-    def c(self,request):
-
+    def get(self,request):
+        #raise Exception(request.GET)
         """ display detailed information of compounds, use list"""
         try:
-            cmpd = compound.objects.get(plate = request.GET.get('plate'),well=request.GET.get('well'))
+            cmpd = compound.objects.get(id=request.GET.get('compound'))
         except:
             cmpd= False
         field_list="chemical_name molecular_weight formula library_name facility_reagent_id plate well pubchem_id tpsa logp inchikey canonical_smiles".split()
@@ -121,7 +126,7 @@ class details(view_class):
 
 
 class heatmap(view_stat_class):
-    def c(self,request):
+    def get(self,request):
         """ basic function to plot heatmaps 
         """
         ### This function is still in the testing phase
@@ -163,7 +168,7 @@ class heatmap(view_stat_class):
                                                          })  
 
 class correlation(view_stat_class):
-    def c(self,request):
+    def get(self,request):
         """ basic function to plot heatmaps 
         """
         ### This function is still in the testing phase
@@ -241,7 +246,7 @@ class correlation(view_stat_class):
                                                                                                        
                                                                                                          
 class scatter(view_stat_class):
-    def c(self,request):
+    def get(self,request):
         """ basic function to plot heatmaps 
         """
         ### This function is still in the testing phase
@@ -313,7 +318,7 @@ class scatter(view_stat_class):
                                                         
 
 class histogram(view_stat_class):
-    def c(self,request):
+    def get(self,request):
         """ basic function to plot histogram 
         """
         ### This function is still in the testing phase
@@ -378,7 +383,7 @@ class histogram(view_stat_class):
 #=============================================================================
 ## stable views for compound analysis
 class dendrogram(view_stat_class):
-    def c(self,request):
+    def get(self,request):
         img_list = []
         if request.method=='POST':
              
@@ -386,24 +391,19 @@ class dendrogram(view_stat_class):
 
             distance,method,distance_y,method_y = self._dendro_para(request)
 
-            entry_list=data.objects.filter(ishit=1)
+            entry_list=data.objects.filter(hit=1)
             #entry_list = compound.objects.filter(plate = '3267')#.filter(well = 'A05')
             fp2_list = []
             plate_well_list = []
-
-            for e in entry_list[:100]:
-                if e.compound_pointer:
-                    fp2_list.append(e.compound_pointer.fp2)
+            for e in entry_list:
+                if e.compound:
+                    fp2_list.append(e.compound.fp2)
                     plate_well_list.append(str(e.plate)+'_'+e.well)  
+            
 
-                            
             c = clust.plot_dendro(fp2_list,plate_well_list,distance = distance,method = method )
             img_list.append(c)
                 
-            #    return HttpResponse(c)
-            if len(entry_list)>100:
-                messages.warning(request,'For dendrogram, hit list compounds have to be within 1 and 100. Additional Compounds will not be clustered')                           
-
 
         url_name = 'stat_dendrogram'
         return render(request,"statistics/clust.html",{'img_list':img_list,
@@ -413,7 +413,7 @@ class dendrogram(view_stat_class):
 
 class dendrogram2d(view_stat_class):
     #has bug
-    def c(self,request):
+    def get(self,request):
         img_list = []
         cmap_list = self._cmap_list()
         if request.method=='POST':
@@ -425,7 +425,10 @@ class dendrogram2d(view_stat_class):
             data=self.data
             distance,method,distance_y,method_y = self._dendro_para(request)
 
-            entry_list=data.objects.filter(ishit=1)
+        #    raise Exception(_dendro_para(request))
+
+            
+            entry_list=data.objects.filter(hit=1)#.filter(well = 'A05')
             fp2_list = []
             plate_well_list = []
             for e in entry_list[:100]:
@@ -451,7 +454,7 @@ class dendrogram2d(view_stat_class):
 ## Testing views
 
 class fingerprint_cluster(view_stat_class):
-    def c(self,request):
+    def get(self,request):
 
         entry_list = compound.objects.filter(plate = '3266')#.filter(well = 'A05')
         fp2_list = []
@@ -533,7 +536,7 @@ class fingerprint_cluster(view_stat_class):
 
 
 
-#def compound_list(request):
+#def getompound_list(request):
 #    """ display list of compounds \n
 #    This function is supposed to be used by users to select a few compounds \n
 #    And it will return this table as summary    

@@ -4,6 +4,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from library.models import library as lib, compound
+from library.models import *
 # Create your models here.
 
 #define a screening flow chart, basically list of projects with their relations. like primary screen, secondary screen.
@@ -17,14 +18,17 @@ class project_relation(models.Model):
 
 #define a screening sub project
 class project(models.Model):
+
+    rep_namespace='A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split()
+
     def __unicode__(self):
         return self.name
     def rep(self):
-        return 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split()[:self.replicate]
+        return self.rep_namespace[:self.replicate]
     def readouts(self):
-        return self.experiment.readout.all()
+        return [i[0] for i in self.experiment.readout.values_list('name')]
     def scores(self):
-        return self.score.all()
+        return [i[0] for i in self.score.values_list('name')]
 
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
@@ -131,42 +135,8 @@ class submission(models.Model):
     )
     status=models.CharField(max_length=1, choices=schoice)
 
-#Data object abstract for all screening raw data. Real table is in app:data
-#Two ways of identify compound. FaciclityID? or Plate+Well
-class data_base(models.Model):
-    def __unicode__(self):
-        return self.library+self.plate+self.well
-        
-    class Meta:
-        abstract=True
-    
-    hidden_fields=['id','library','library_pointer','create_by','compound_pointer','platewell','submission','project']
-    
-    
-    library = models.CharField(max_length=50,verbose_name='Library')
-    library_pointer=models.ForeignKey(lib,null=True,blank=True,verbose_name='Library')
-    
-    compound_pointer=models.ForeignKey(compound,null=True,blank=True)#this is the unique key to library
-
-    platewell = models.CharField(max_length=50)#using plate well as unique identifier, not good for more than one libraries
-
-    plate = models.CharField(max_length=20)
-    well = models.CharField(max_length=20)
-    
-    ishit=models.PositiveSmallIntegerField(default=0,verbose_name='hit')
-
-    schoice = (
-    ('B','bad well'),
-    ('E','empty'),
-    ('P','positive control'),
-    ('N','negative control'),
-    ('X','compound'),
-    )
-    welltype=models.CharField(max_length=1,choices=schoice,default='X')
-
-    project = models.ForeignKey('project')
-    submission=models.ForeignKey('submission')
-    create_date = models.DateTimeField()
-    create_by = models.ForeignKey(User)
-
-
+class view(Document):#save a view for sharing purpose.
+    query = StringField()
+    field_list = StringField()
+    user_id = IntField()
+    proj_id = IntField()
