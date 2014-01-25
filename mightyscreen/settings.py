@@ -30,6 +30,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
+    'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,10 +47,10 @@ INSTALLED_APPS = (
     'account',
     'statistics',
     'process',  
-    'mptt',
-    'compressor',
-    'easy_thumbnails',
-    'fiber',
+    # 'mptt',
+    # 'compressor',
+    # 'easy_thumbnails',
+    # 'fiber',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -59,8 +60,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'fiber.middleware.ObfuscateEmailAddressMiddleware',
-    'fiber.middleware.AdminPageMiddleware',
+    # 'fiber.middleware.ObfuscateEmailAddressMiddleware',
+    # 'fiber.middleware.AdminPageMiddleware',
 )
 
 ROOT_URLCONF = 'mightyscreen.urls'
@@ -73,11 +74,11 @@ WSGI_APPLICATION = 'mightyscreen.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mightyscreen',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR,'mightyscreen.db'),
     	'HOST': '',
-    	'USER' : 'test',
-    	'PASSWORD': 'test',
+    	'USER' : '',
+    	'PASSWORD': '',
     	'PORT': '',
     }
 }
@@ -123,8 +124,14 @@ BROKER_URL="django://"
 
 AUTH_PROFILE_MODULE = 'account.user_profile'
 
-import django.conf.global_settings as DEFAULT_SETTINGS
+# import django.conf.global_settings as DEFAULT_SETTINGS
 
-STATICFILES_FINDERS = DEFAULT_SETTINGS.STATICFILES_FINDERS + (
-    'compressor.finders.CompressorFinder',
-)
+# STATICFILES_FINDERS = DEFAULT_SETTINGS.STATICFILES_FINDERS + (
+#     'compressor.finders.CompressorFinder',
+# )
+
+from mongoengine import connect
+
+connect('mightyscreen')
+
+SITE_ID = 1

@@ -33,6 +33,5 @@ python-dateutil==1.5
 pytz==2013d
 scipy==0.13.2
 six==1.4.1
-tables==3.0.0
 tornado==3.1.1
 wsgiref==0.1.2
