@@ -87,12 +87,10 @@ class view_class(View):#the base view class for all
     
     def cachekey(self,request):
         """#generate unique key for cache"""
-        return request.session.session_key+str(self.proj.id)
+        return request.session._get_or_create_session_key()+str(self.proj.id)
 
     def post(self,request,*args,**kwargs):
         return self.get(request,*args,**kwargs)
-
-
 
 
 

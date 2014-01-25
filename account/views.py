@@ -1,8 +1,6 @@
 from django.shortcuts import render
 from django.core.context_processors import csrf
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login,logout
-from account.models import RegisterForm, ProjectForm
+from account.models import ProjectForm
 from main.models import project,score,experiment,readout
 from django.conf import settings
 from django.forms.models import modelform_factory,modelformset_factory
@@ -13,51 +11,7 @@ import main.utils
 import json
 import os
 # Create your views here.
-def signin(request):
-    form=AuthenticationForm()
 
-    if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
-
-        if form.is_valid():
-
-            login(request,form.get_user())
-            return render(request,'main/redirect.html',{'message':'You are logged in!','dest':'index'})
-
-    args={'form':form}
-    args.update(csrf(request))
-    return render(request,'account/login.html',args)
-
-def signup(request):
-    form=RegisterForm()
-    if request.method == 'POST':
-
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-
-            form.save()
-            return render(request,'main/redirect.html',{'message':'Congrats! You are registered!','dest':'index'})
-
-    #read user agreement
-    f=open(settings.BASE_DIR+'/README.md')
-    agreement=f.read()
-    f.close()
-
-    args={'form':form,'agreement':agreement}
-    args.update(csrf(request))
-
-    return render(request,'account/register.html',args)
-
-def logoff(request):
-    logout(request)
-    return render(request,'main/redirect.html',{'message':'You are logged out!','dest':'index'})
-
-    
-#user profile
-def profile(request):
-    user = request.user
-    profile = user.get_profile()
-    return render(request,'account/profile.html',{'user':user,'profile':profile})
 
 def jobview(request):
     proj_id=request.session.get('proj_id')

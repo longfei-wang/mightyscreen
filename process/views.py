@@ -66,7 +66,7 @@ class mark(view_class):
 
 
                 if request.POST.get('reset'):
-
+                    pass
 
                 else:
 

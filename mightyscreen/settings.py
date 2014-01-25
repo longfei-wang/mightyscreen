@@ -29,6 +29,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
+    'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,10 +46,14 @@ INSTALLED_APPS = (
     'account',
     'statistics',
     'process',  
-    'mptt',
-    'compressor',
+    #'mptt',
+    #'compressor',
     'easy_thumbnails',
-    'fiber',
+    #'fiber',
+    'userenabootstrap',
+    'userena',
+    'guardian',
+    'accounts',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -58,8 +63,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'fiber.middleware.ObfuscateEmailAddressMiddleware',
-    'fiber.middleware.AdminPageMiddleware',
+    #'fiber.middleware.ObfuscateEmailAddressMiddleware',
+    #'fiber.middleware.AdminPageMiddleware',
 )
 
 ROOT_URLCONF = 'mightyscreen.urls'
@@ -72,12 +77,8 @@ WSGI_APPLICATION = 'mightyscreen.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mightyscreen',
-    	'HOST': '',
-    	'USER' : 'test',
-    	'PASSWORD': 'test',
-    	'PORT': '',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR,'mightyscreen.db'),
     }
 }
 
@@ -120,10 +121,44 @@ import djcelery
 djcelery.setup_loader()
 BROKER_URL="django://"
 
-AUTH_PROFILE_MODULE = 'account.user_profile'
+AUTH_PROFILE_MODULE = 'accounts.usersprofile'
 
-import django.conf.global_settings as DEFAULT_SETTINGS
+# import django.conf.global_settings as DEFAULT_SETTINGS
 
-STATICFILES_FINDERS = DEFAULT_SETTINGS.STATICFILES_FINDERS + (
-    'compressor.finders.CompressorFinder',
+# STATICFILES_FINDERS = DEFAULT_SETTINGS.STATICFILES_FINDERS + (
+#     'compressor.finders.CompressorFinder',
+# )
+
+
+from mongoengine import connect
+
+connect('mightyscreen')
+
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = (
+    'userena.backends.UserenaAuthenticationBackend',
+    'guardian.backends.ObjectPermissionBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'yourgmailaccount@gmail.com'
+EMAIL_HOST_PASSWORD = 'yourgmailpassword'
+
+ANONYMOUS_USER_ID = -1
+USERENA_WITHOUT_USERNAMES = True
+
+LOGIN_REDIRECT_URL = '/accounts/%(username)s/'
+LOGIN_URL = '/accounts/signin/'
+LOGOUT_URL = '/accounts/signout/'
+
+
+#read user agreement
+f=open(BASE_DIR+'/README.md')
+AGREEMENT=f.read()
+f.close()

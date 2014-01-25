@@ -70,9 +70,9 @@
                          <span class="caret"></span>
                         </a>
                             <ul class="dropdown-menu">
-                                <li><a href="{% url "profile" %}">Profile</a></li>
+                                <li><a href="{% url 'userena_profile_detail' user.username %}">Profile</a></li>
                                 <li class="divider"></li>
-                                <li><a href="{% url "logout" %}">Logout</a></li>
+                                <li><a href="{% url 'userena_signout' %}">Logout</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -85,7 +85,7 @@
                 {% else %}
 
                     <ul class="nav navbar-nav navbar-right">
-                        <li><a href="{% url 'login' %}"><span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;&nbsp;&nbsp;</a></li>
+                        <li><a href="{% url 'userena_signin' %}"><span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;&nbsp;&nbsp;</a></li>
                     </ul>
                 {% endif %}
             </div><!--/.navbar-collapse -->
