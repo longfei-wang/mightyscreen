@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 from celery.decorators import task
 from django.contrib import messages
 from process.utils import ScoreReader
-
+from main.models import *
+import process.readers as readers
 
 @task()
 def process_score(data,proj,plates,datamodel):
@@ -39,3 +40,16 @@ def queue(d,m):
     return True
 
 
+
+@task()
+def readinback(form,proj_id,job_id):
+
+    
+	from data.models import project_data_base
+	exec('class proj_data_%s(project_data_base):pass;'%str(proj_id))
+	exec('data = proj_data_%s'%str(proj_id))
+	data.set_proj(project.objects.get(pk=proj_id))
+
+	reads=readers.reader(form=form).parse().get(job_id).save_grid(data)
+
+    

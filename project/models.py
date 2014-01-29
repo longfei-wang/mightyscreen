@@ -7,6 +7,9 @@ from main.models import project,experiment,readout,score,plate
 
 
 
+
+
+
 class ProjectForm(forms.ModelForm):#a model form for project
     def __init__(self, *args, **kwargs):
         super(ProjectForm, self).__init__(*args, **kwargs)

@@ -1,0 +1,49 @@
+<hr>
+<form role="form" class="form upload-form" enctype="multipart/form-data" method="post" action="{% url "upload" %}">
+{% csrf_token %}
+
+<input type="hidden" name="pointer" value="save">
+<input type="hidden" name="proj_id" value="{{proj_id}}">
+<input type="hidden" name="user_id" value="{{user.id}}">
+<input type="hidden" name="filename" value="{{filename}}">
+<input type="hidden" name="plate_num" value="{{plate_num}}">
+<input type="hidden" name="table_count" value="{{table_count}}">
+
+<div class="form-group">
+<label>Library</label>
+<div class="row">
+<div class='col-xs-3'>
+<select class="form-control" name="library_select">
+<option selected="selected">-----</option>
+    {% for i in library %}
+        <option value="{{ i.library_name }}">{{i.library_name}}</option>
+    {% endfor %}
+</select>
+</div>
+
+<div class='col-xs-3'>
+<input type="text" class="form-control" name="library">
+</div>
+</div>
+</div>
+
+
+<div class="form-group">
+<label>Plates</label>
+<div class="row">
+{% for i in platerange%}
+   <div class="col-xs-1"><input type="text" class="form-control" name="plate_{{i}}"></div>
+{% endfor %}
+</div>
+</div>
+
+<br>
+
+<div class="form-group">
+<button type="submit" class="btn btn-primary">Update</button>
+<button type="reset" class="btn btn-default">Clear</button>
+</div>
+
+</form>
+
+<hr>
