@@ -115,7 +115,10 @@ class details(view_class):
         #raise Exception(request.GET)
         """ display detailed information of compounds, use list"""
         try:
-            cmpd = compound.objects.get(id=request.GET.get('compound'))
+	    try:	
+	        cmpd = compound.objects.get(id=request.GET.get('compound'))
+	    except:
+            	cmpd = compound.objects.get(plate = request.GET.get('plate'),well=request.GET.get('well'))
         except:
             cmpd= False
         field_list="chemical_name molecular_weight formula library_name facility_reagent_id plate well pubchem_id tpsa logp inchikey canonical_smiles".split()
@@ -432,8 +435,8 @@ class dendrogram2d(view_stat_class):
             fp2_list = []
             plate_well_list = []
             for e in entry_list[:100]:
-                if e.compound_pointer:
-                    fp2_list.append(e.compound_pointer.fp2)
+                if e.compound:
+                    fp2_list.append(e.compound.fp2)
                     plate_well_list.append(str(e.plate)+'_'+e.well)  
             
             c = clust.plot_dendro2d(fp2_list,plate_well_list,cmap=cmap, distance = distance, method = method,distance_y = distance_y, method_y = method_y  )

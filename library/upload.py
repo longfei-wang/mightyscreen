@@ -502,7 +502,7 @@ def json_to_mongo(formated_dic_lib_file):
         com.plate= mol["Plate"]
         com.well= mol["Well"]
         com.plate_well = mol["Plate_Well"]
-        com.pubchem_cid= str(mol["PubChem_CID"]) 
+        com.pubchem_cid= mol["PubChem_CID"] 
         com.chemical_name = str(mol["Chemical_Name"])
         com.molecular_weight = mol["Molecular_Weight"]
         com.formula = mol["Formula"]
@@ -510,23 +510,28 @@ def json_to_mongo(formated_dic_lib_file):
         com.logp = mol["logP"]
         com.inchikey = mol["InChiKey"]
         com.canonical_smiles = mol["Canonical_Smiles"]
-        com.inchi = mol["InChI"]
+        com.inchi = str(mol["InChI"])
         com.fp2= mol["Fp2"]
         com.fp3 =mol["Fp3"]
         com.fp4 = mol["Fp4"]
         com.svg = mol["svg"]
         com.sdf = mol['sdf']
         try:
-            com.save()
+	    try:	
+            	com.save()
+	    except ValidationError:
+		com.pubchem_cid=" "
+		com.save()	
         except NotUniqueError:
             pass         
 
 
-def upload(json_directory = '/home/mightyscreen/iccb_parsed/parsed/'):
+def upload(json_directory = '/home/server/iccb_parsed/parsed/'):
     files = filelist(json_directory, key = 'json')
     for f in files:
+        print "currently processing "+ f
         json_to_mongo(f)
-
+        print "Finished processing "+ f
 
 #lib_to_json('10ICCBL_v2.sdf')
 

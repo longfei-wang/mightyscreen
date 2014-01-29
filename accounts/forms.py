@@ -1,6 +1,6 @@
 from django import forms
 from userena.forms import SignupForm
-
+from accounts.models import *
 
 
 class RegisterForm(SignupForm):#a extension model form based on usercreateform
