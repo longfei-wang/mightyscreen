@@ -1,5 +1,43 @@
 {% extends 'main/base.html' %}
 {% load bootstrap_tags %}
+{% load staticfiles %}
+
+{% block style %}
+<!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+<link rel="stylesheet" href="{% static 'css/jquery.fileupload.css'%}">
+
+<style type="text/css" scoped>
+
+#dropzone {
+	border:2px dotted #0B85A1;
+	padding:10px 10px 10px 10px;
+    width: 100%;
+    height: 200px;
+    line-height: 50px;
+    text-align: center;
+    font-weight: bold;
+}
+#dropzone.in {
+    width: 100%;
+    height: 200px;
+    line-height: 200px;
+    font-size: larger;
+}
+#dropzone.hover {
+    background: lawngreen;
+}
+#dropzone.fade {
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -ms-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
+    opacity: 1;
+}
+
+</style>
+
+{% endblock %}
 
 {% block content %}
 
@@ -10,31 +48,127 @@
 
 <br>
 
-<div class="well">
+<!-- <div class="well">
 <h3>Note:</h3> 
 <ul>
 <li>We will read the file according to the input sequence. For example, if you put 3266, 3264, 3265 and have 2 replicates. we will read 3266A, 3266B, 3264A, 3264B, 3265A, 3265B.</li> 
 <li>For 1536-well plate, we process it as 4 384 plates. Please put the plates in the order of top-left, top-right, bottom-left, bottom-right. </li>
 </ul>
-</div>
+</div> -->
 
 
 <div class="well">
-	<form class="form-horizontal" role="form" enctype="multipart/form-data" method="post" action="{% url 'upload' %}">
+	
+	<form class="form"  id="fileupload" role="form" enctype="multipart/form-data" method="post" action="{% url 'upload' %}">
 	   {% csrf_token %}      
-	       {{form|as_bootstrap_h}}
+	   <input type="hidden" name="pointer" value="upload">
 
+			<div id="dropzone" class="fileinput-button">
+				<input type="file" name="files[]" multiple>
+	   			<h1>Click Here or Drag file Here</h1>
 
-	  	<div class="form-group">
-	  		<div class="col-sm-offset-2 col-sm-10">
-				<input type="submit" class="btn btn-primary" value="Submit"/>
-				<input type="reset" class="btn btn-default" value="Clear"/>
+	   		</div><br>
+
+	   		<!-- The global progress bar -->
+			<div id="progress" class="progress">
+			    <div class="progress-bar progress-bar-primary"></div>
 			</div>
-		</div>
-
+			<br>
 
 	</form>
+
+<!-- The container for the uploaded files -->
+<div id="files" class="files"></div>
+
+
+
+
+
 </div>
+
+
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/jquery.ui.widget.js' %}"></script>
+<!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+<script src="{% static 'js/jquery.iframe-transport.js'%}"></script>
+<!-- The basic File Upload plugin -->
+<script src="{% static 'js/jquery.fileupload.js'%}"></script>
+
+<script>
+/*jslint unparam: true */
+/*global window, $ */
+$(function () {
+    'use strict';
+    // Change this to the location of your server-side upload handler:
+    var url =  '/process/upload/';
+    $('#fileupload').fileupload({
+        url: url,
+        dataType: 'json',
+        done: function (e, data) {
+            $.each(data.result, function (index, file) {
+                $('<p/>').text(file.name).appendTo('#files');
+                $('<p/>').html(file.form).appendTo('#files');
+            });
+        },
+        progressall: function (e, data) {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $('#progress .progress-bar').css(
+                'width',
+                progress + '%'
+            );
+        }
+    }).prop('disabled', !$.support.fileInput)
+        .parent().addClass($.support.fileInput ? undefined : 'disabled');
+});
+
+
+//This is for dropzone effect
+$(document).bind('dragover', function (e) {
+    var dropZone = $('#dropzone'),
+        timeout = window.dropZoneTimeout;
+    if (!timeout) {
+        dropZone.addClass('in');
+    } else {
+        clearTimeout(timeout);
+    }
+    var found = false,
+        node = e.target;
+    do {
+        if (node === dropZone[0]) {
+            found = true;
+            break;
+        }
+        node = node.parentNode;
+    } while (node != null);
+    if (found) {
+        dropZone.addClass('hover');
+    } else {
+        dropZone.removeClass('hover');
+    }
+    window.dropZoneTimeout = setTimeout(function () {
+        window.dropZoneTimeout = null;
+        dropZone.removeClass('in hover');
+    }, 100);
+});
+
+
+//upload forms
+// $(document).on('submit', '.upload-form', function(e) {
+//      $.ajax({
+//         url: $(this).attr('action'),
+//         type: $(this).attr('method'),
+//         data: $(this).serialize(),
+//         success: function(html) {
+//         alert('ok');
+//         }
+//     });
+//     e.preventDefault();
+// });
+
+</script>
+
 
 
 

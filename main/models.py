@@ -3,9 +3,9 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-from library.models import library as lib, compound
-from library.models import *
+from mongoengine import *
 # Create your models here.
+
 
 #define a screening flow chart, basically list of projects with their relations. like primary screen, secondary screen.
 class project_relation(models.Model):
@@ -134,6 +134,7 @@ class submission(models.Model):
     ('f','fail')
     )
     status=models.CharField(max_length=1, choices=schoice)
+
 
 class view(Document):#save a view for sharing purpose.
     query = StringField()

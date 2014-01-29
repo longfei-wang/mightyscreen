@@ -14,7 +14,7 @@ from main.models import project, view as views
 from mongoengine.queryset import Q
 from library.models import *
 from data.models import field
-import pickle
+import cPickle as pickle
 import csv
 import time
 # Create your views here.
@@ -255,7 +255,7 @@ class save_view(view_class):#save a view
     
     def get(self,request):
         
-        response='Fuck there is nothing'
+        response='there is nothing'
 
         query = cache.get('dataview'+self.cachekey(request)) 
         
@@ -294,9 +294,6 @@ class get_view(datalist): #retreive views from a view.
         if not view:
             raise Http404
         return super(get_view,self).get(request,self.get_data(view.proj_id),view.query,pickle.loads(view.field_list))
-
-
-
 
 
 

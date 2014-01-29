@@ -1,0 +1,19 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<META HTTP-EQUIV="refresh" CONTENT="20">
+
+<div class="well">
+<h1>Please wait while the job is running.</h1>
+
+<a href="javascript:history.go(0)" class="pull-right"><span class="glyphicon glyphicon-refresh"></span></a>
+
+
+<div id="progress" class="progress">
+
+    <div class="progress-bar progress-bar-primary" style="width:{{job.sub.progress}}%"></div>
+
+</div>
+
+</div>
+{% endblock %}
