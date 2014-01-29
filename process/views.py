@@ -1,5 +1,4 @@
-from django.shortcuts import render,redirect
-from django.http import HttpResponse,Http404
+from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.core.context_processors import csrf
 from django.contrib import messages
@@ -10,63 +9,29 @@ from process.forms import PlatesToUpdate, ScoreForm
 from django.db.models import Count
 from main.utils import get_platelist,job
 import process.readers as readers
-from process.tasks import readinback
+from process.tasks import queue
 from process.forms import UploadFileForm
 from main.views import view_class
 from data.models import project_data_base
-from process.models import *
-import logging,sys
-import simplejson as json
-from mongoengine.django.storage import GridFSStorage
-
-
+#from main.utils import get_platelist
 # Create your views here.
 
 
 class upload(view_class):
 
-
-
-    def post(self,request):#handle which one to call based on pointer
-        options = {'upload':self.upload,
-                   'save':self.save,
-                    }
-        
-        return options[request.POST.get("pointer")](request)
-
-    def upload(self,request):
-
-        datafile = request.FILES[u'files[]']
-        fs = GridFSStorage()
-        filename = fs.save(datafile.name,datafile)
-
-        #generating json response array
-        result = []
-        result.append({'name':datafile.name, 
-                       'size':datafile.size, 
-                       'form':readers.reader(datafile=fs.open(filename),proj_id=self.proj.id).parse().render(filename=filename,request=request)#dont's know how to reset file iterator..
-                       })
-        response_data = json.dumps(result)
-
-  
-        #print >>sys.stderr, 'uploaded', HttpResponse(response_data, content_type='application/json')
-
-        return HttpResponse(response_data, content_type='application/json')
-
-
-    def save(self,request):
-
-        job_id=self.job.create(request,'upload')
-
-        readinback.delay(request.POST,self.proj.id,job_id)
-
-        return redirect('job',job_id)
-
-
     def get(self,request):
 
         form = UploadFileForm(initial={'user':request.user.pk,'project':self.proj.pk})
     
+        if request.method == 'POST':
+            form = UploadFileForm(request.POST, request.FILES)
+            if form.is_valid():
+                reader = readers.Envision_Grid_Reader(form.cleaned_data,self.data)#if fileformat is other than Envision need to call other reader
+                reader.parse()
+                queue(reader,'save()')#then parse_data in background
+                return render(request,'main/redirect.html',{'message':'Data submitted to queue!','dest':'index'})
+            else:
+                messages.warning(request,'Submission is rejected by the server. Note: for data security, upload can only be done for authenticated users.')       
                 
         return render(request,'process/upload.html', {'form':form})
 
@@ -123,7 +88,6 @@ class mark(view_class):
                 myjob.complete()
 
         return render(request,'process/markwell.html',{'proj':proj,'welltypes':welltypes,'plates':plates,'form':form})
-
 
 class score(view_class):
     def get(self,request):
