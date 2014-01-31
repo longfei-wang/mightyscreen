@@ -1,73 +1,85 @@
 from django.contrib.auth.models import User
 from collections import defaultdict
 from library.models import library, compound
-#from astropy.table import Table
 import pandas as pd
+import cPickle as pickle
+import simplejson as json
 import datetime as dt
-
+from django.template import RequestContext
+from django.template.loader import get_template
+from django.core.context_processors import csrf
 from main.models import project, submission
+from mongoengine.django.storage import GridFSStorage
+from library.models import *
+from main.utils import job as jobclass
 
-class rawdatafile():#a base class for all file format
-    def __init__(self,formdata,data):
-        """formdata is the django UploadFileForm in main.models
-        pandas is used to parse the datafile"""   
+class reader(jobclass):#a base class for all file format
+    
+    table_reg=dict()   
+
+    def __init__(self,**kwargs):
         
-        self.library=formdata['library']
+        if 'datafile' in kwargs:
+            
+            self.read_file(kwargs['datafile'])                   
+        
+        if 'proj_id' in kwargs:
+            self.p=project.objects.get(pk=kwargs['proj_id'])
+            self.readout=self.p.experiment.readout
+            self.readout_num=self.readout.count()
 
-        self.formdata=formdata
-        self.data=data#the project model/table to work on
-        self.proj_id=formdata['project']
-        self.plates=formdata['plates'].split(',')
-        self.plates_num=len(self.plates)
-        self.p=project.objects.get(pk=formdata['project'])
-        self.replicate=self.p.rep()
-        self.readout=self.p.experiment.readout
-        self.readout_num=self.readout.count()
-        self.replicate_num=len(self.replicate)
-        self.map=defaultdict(lambda: defaultdict(dict))
-        self.datetime=dt.datetime.now()
-        self.row=self.p.plate.row()
-        self.col=self.p.plate.col()
-        self.read_file()
-        self.wells=self.p.plate.numofwells
-        self.table_reg=dict()
+        if 'form' in kwargs:
+            form = kwargs['form']
+            filename = form.get('filename')
+            fs = GridFSStorage()
+            self.read_file(fs.open(filename))
+            self.proj_id=form.get('proj_id')
+            self.user=User.objects.get(id=form.get('user_id'))
+            self.p=project.objects.get(pk=self.proj_id)
+            self.readout=self.p.experiment.readout
+            self.readout_num=self.readout.count()
+            self.replicate=self.p.rep()
+            self.replicate_num=len(self.replicate)
+            self.row=self.p.plate.row()
+            self.col=self.p.plate.col()
+            self.wells=self.p.plate.numofwells
+            self.datetime=dt.datetime.now()
+            self.map=defaultdict(lambda: defaultdict(dict))
+            self.library=form.get('library')
+            self.table_count=form.get('table_count')
+            self.plates_num=0
+            self.plates=[]
+            for i in range(1,int(form.get('plate_num'))+1):
+                if form.get('plate_'+str(i)):
+                    self.plates.append(form.get('plate_'+str(i)))
+                    self.plates_num+=1
 
 
-    def read_file(self):
-        filetype=self.formdata['datafile'].name.split(".")[-1]
+    def parse(self,*args,**kwargs):
+        """Determine the data type (list or grid) 
+        scan the datafile
+        generate forms based on that"""
+
+        if self.is_list():
+            return self.parse_list(*args,**kwargs)
+        else:
+            return self.parse_grid(*args,**kwargs)
+
+
+    def read_file(self,datafile):
+        
+        filetype=datafile.name.split(".")[-1]
 
         if filetype=='csv':
-            self.rawdata=pd.read_csv(self.formdata['datafile'],header=None).fillna('').values
-        #self.rawdata=pd.read_csv(formdata['datafile'],header=None).values.astype(str)
+            self.rawdata=pd.read_csv(datafile,header=None).fillna('').values
+        else:
+            raise Exception('Unsupported File Type!')
     
 
-    def open_job_entry(self):
-        """if everything is ready, create a pending job entry."""
-        if self.p and self.rawdata.any():
-            self.sub=submission(
-                comments=self.formdata['comments'],
-                jobtype='upload',
-                project=project.objects.get(pk=self.formdata['project']),
-                submit_by=User.objects.get(pk=self.formdata['user']),
-                submit_time=self.datetime,
-                log="plates in queue: %s"%self.formdata['plates'],
-                status='p')
-            self.sub.save()
+    def is_list(self):
+        if '' not in self.rawdata[0]:
+            return True
 
-    def update_job_status(self,log='',progress=0):
-        """update logs and progress"""
-        self.sub.log+=log#';plate: %s uploaded'%self.plates[pla]
-        #self.sub.progress=progress
-        self.sub.save()
-
-    def close_job_entry(self):
-        self.sub.status='c'
-        self.sub.save()
-
-    def report_job_fail(self):
-        self.sub.status='f'
-        self.sub.save()
-    
     def is_table(self,row):#tell if within +- 2 row current posistion is a table, if so return the dimension of this table
         start=0
         for i in range(row-2,row+3):
@@ -91,14 +103,20 @@ class rawdatafile():#a base class for all file format
         return self.rawdata[10]
 
 
+    def parse_list(self):
+        return self
 
 
 
-class Envision_Grid_Reader(rawdatafile):
+    def parse_grid(self):
+        """# process the data define where table are, also check if file is legit"""
+        
+        self.row=self.p.plate.row()
+        self.col=self.p.plate.col()
+        self.replicate=self.p.rep()
+        self.replicate_num=len(self.replicate)
+        self.wells=self.p.plate.numofwells
 
-# process the data define where table are, also check if file is legit
-# a.experiment.readout.all(), a.experiment.readout.count(), a.experiment.readout.get(name='FP').keywords
-    def parse(self):
         n=0
         self.table_count=0
         for row in self.rawdata:#read through whole file and find out all the tables
@@ -111,7 +129,31 @@ class Envision_Grid_Reader(rawdatafile):
                             self.table_reg[result['start']]=m.name
                             self.table_count+=1
 
-        return self.table_reg
+
+
+
+        return self
+
+    def render(self,filename,request):
+
+        if self.wells=='1536':
+            self.plates_num =  self.table_count * 4 / (self.replicate_num * self.readout_num)
+        else:
+            self.plates_num =  self.table_count / (self.replicate_num * self.readout_num)
+
+        #return a html form that ask for all the information we need
+        response = get_template('process/griduploadform.html').render(
+                    RequestContext(request,{
+                    'library':library.objects.all(),
+                    'platerange': range(1,self.plates_num+1),
+                    'filename':filename,
+                    'proj_id':self.p.id,
+                    'plate_num':self.plates_num,
+                    'table_count':self.table_count,
+                    })
+                    )
+
+        return response
         
     def map_table(self):
         #creat pointers that point at each table
@@ -162,16 +204,18 @@ class Envision_Grid_Reader(rawdatafile):
                 self.map[plate_count+1][replicate_count][self.table_reg[i]]=[i,2]
                 self.map[plate_count+2][replicate_count][self.table_reg[i]]=[i+1,1]
                 self.map[plate_count+3][replicate_count][self.table_reg[i]]=[i+1,2]
+
         return self.map
 
-    #save tables into database row by row, might take some time.
-    def save(self):
-
+    
+    def save_grid(self,data):
+        """#save tables into database row by row, might take some time."""
+        
         self.map_table()
 
-        self.open_job_entry()
+        if not self.sub:
+            return
         
-        data=self.data
 
 
         for pla in range(self.plates_num):            
@@ -182,7 +226,6 @@ class Envision_Grid_Reader(rawdatafile):
 
                     platewell=self.plates[pla]+self.row[row]+self.col[col]
                     
-
                     try:#check if this well has coresponding compound in our library
                         cmpd=compound.objects.get(plate_well = platewell,library_name=self.library)
                     except:
@@ -205,10 +248,9 @@ class Envision_Grid_Reader(rawdatafile):
                     for i in self.readout.all():
                         readout=[] 
                         for rep in range(self.replicate_num):#all the readouts
-                    
-                        
-                            y=self.map[pla][rep][i.name][0]
-                            x=self.map[pla][rep][i.name][1]
+                      
+                            y=int(self.map[pla][rep][i.name][0])
+                            x=int(self.map[pla][rep][i.name][1])
 
                             if self.wells==384:
                                 readout.append(float(self.rawdata[row+y][col+x]))
@@ -219,7 +261,9 @@ class Envision_Grid_Reader(rawdatafile):
                         entry.readout[i.name]=readout
                     entry.save()
                             
-            self.update_job_status(';plate: %s uploaded'%self.plates[pla])
+            self.update((range(self.plates_num).index(pla)+1)/self.plates_num*100,';plate: %s uploaded'%self.plates[pla])
 
-        self.close_job_entry()
-        return 'uploaded'
+        self.complete()
+        
+        return self
+
