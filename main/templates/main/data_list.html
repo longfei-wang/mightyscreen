@@ -1,5 +1,21 @@
 {% extends 'main/base.html' %}
 {% load filters %}
+
+{% block style %}
+
+<style type="text/css" scoped>
+
+.data {
+    white-space: nowrap;
+    font-size:12px;
+}
+
+</style>
+
+{% endblock %}
+
+
+
 {% block content %}
 
 {% if entry_list %}
@@ -13,73 +29,28 @@
 {% endif %}
 
 
-<form enctype="multipart/form-data" method="post" class="form-inline" role="form" action="{{url}}">
+<form enctype="multipart/form-data" method="post" class="form" role="form" action="{{url}}">
 {% csrf_token %}
 
 <div class="well">
 
     <input type="hidden" name="plates" id="selector-target">
+
+
+
     <div class="form-group">
+
+    <div class="input-group">
+      <span class="input-group-btn">
         <input type="submit" value="Update" class="btn btn-primary">
-    </div>
-    <div class="form-group">
-        <select name="field" class="form-control">
-            {% for i in projfield_list %}
-                <option value="{{i.path}}">{{ i.verbose_name }}</option>
-            {% endfor %}
-        </select>
-
-
-        <select name="sign" class="form-control">
-                <option value="exact">=</option>
-                <option value="gt">></option>
-                <option value="gte">>=</option>
-                <option value="lt"><</option>
-                <option value="lte">>=</option>
-                <option value="iexact">like</option>
-                <option value="icontains">contain</option>
-        </select>
+      </span>
+        <input type="text" name="querytext" id="query" class="form-control">
     </div>
 
-    <div class="form-group"> 
-        <input type="text" name="querytext" id="query1" class="form-control">
-    </div>
 
-    (
-
-    <div class="form-group">
-        <select name="joint" class="form-control">
-                 <option value=""></option>
-                <option value="&">AND</option>
-                <option value="|">OR</option>
-                <option value="&~">NOT</option>
-        </select>
-        
-
-        <select name="field2" class="form-control">
-            {% for i in projfield_list %}
-                <option value="{{i.path}}">{{ i.verbose_name }}</option>
-            {% endfor %}
-        </select>
-
-        <select name="sign2" class="form-control">
-                <option value="exact">=</option>
-                <option value="gt">></option>
-                <option value="gte">>=</option>
-                <option value="lt"><</option>
-                <option value="lte">>=</option>
-                <option value="iexact">like</option>
-                <option value="icontains">contain</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <input type="text" name="querytext2"  class="form-control">
 
     </div>
-    )
-
 </div>
-
 
 {% if not field_lock %}
     <div class="panel" id="accordion"><!-- The field selector -->
@@ -118,20 +89,6 @@
 {% if entry_list %}
 
 <div>
-
-
-<ul class="pagination"><!-- Pages -->
-    <li class="{{pbutton_attr}}"><a href='?page=1'>First</a></li>
-    <li class="{{pbutton_attr}}"><a href='?page={{prev_page}}'>Prev</a></li>
-    {% for i in pages %}
-    <li class="{% if i == curr_page %}active{% endif %}"><a href='?page={{i}}'>{{i}}</a></li>
-    {% endfor %}
-    <li class="{{pbutton_attr}}"><a href='?page={{next_page}}'>Next</a></li>
-    <li class="{{pbutton_attr}}"><a href='?page={{last_page}}'>Last</a></li>
-</ul>
-
-
-
 
 
 {% if not field_lock %}
@@ -200,7 +157,7 @@
 
 </div>
 
-<table class="table table-striped table-hover table-condensed table-responsive" id="list">
+<table class="data table table-hover table-condensed table-responsive" id="list">
 
     <tr>
         <td><input type="checkbox" id="checkall"></td><td></td>

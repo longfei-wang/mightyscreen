@@ -13,47 +13,95 @@ from mongoengine.django.storage import GridFSStorage
 from library.models import *
 from main.utils import job as jobclass
 
-class reader(jobclass):#a base class for all file format
+fs = GridFSStorage()
+
+class reader(object):#a base class for all file format
     
-    table_reg=dict()   
+    table_reg=dict()
+    job=jobclass()
+    param=dict()
+    map=defaultdict(lambda: defaultdict(dict))
 
     def __init__(self,**kwargs):
         
+        if 'param' in kwargs:# this is for celery passing params to restore object
+
+            self.param=kwargs['param']
+
         if 'datafile' in kwargs:
             
-            self.read_file(kwargs['datafile'])                   
+            datafile=kwargs['datafile']
+
+            #save the file to gridfs temporarily
+            self.param['filename'] = fs.save(datafile.name,datafile)  
+    
         
         if 'proj_id' in kwargs:
-            self.p=project.objects.get(pk=kwargs['proj_id'])
-            self.readout=self.p.experiment.readout
-            self.readout_num=self.readout.count()
+            
+            self.param['proj_id']=kwargs['proj_id']
+            
 
         if 'form' in kwargs:
+            #get the form 
             form = kwargs['form']
-            filename = form.get('filename')
-            fs = GridFSStorage()
-            self.read_file(fs.open(filename))
-            self.proj_id=form.get('proj_id')
-            self.user=User.objects.get(id=form.get('user_id'))
-            self.p=project.objects.get(pk=self.proj_id)
-            self.readout=self.p.experiment.readout
-            self.readout_num=self.readout.count()
-            self.replicate=self.p.rep()
-            self.replicate_num=len(self.replicate)
-            self.row=self.p.plate.row()
-            self.col=self.p.plate.col()
-            self.wells=self.p.plate.numofwells
-            self.datetime=dt.datetime.now()
-            self.map=defaultdict(lambda: defaultdict(dict))
-            self.library=form.get('library')
-            self.table_count=form.get('table_count')
-            self.plates_num=0
-            self.plates=[]
+
+            self.param['proj_id']=form.get('proj_id')
+            self.param['filename'] = form.get('filename')
+            self.param['user_id']=form.get('user_id')
+            self.param['library']=form.get('library')
+            self.param['table_count']=form.get('table_count')
+            #what plates to update
+            plates_num=0
+            plates=[]
+            
             for i in range(1,int(form.get('plate_num'))+1):
                 if form.get('plate_'+str(i)):
-                    self.plates.append(form.get('plate_'+str(i)))
-                    self.plates_num+=1
+                    plates.append(form.get('plate_'+str(i)))
+                    plates_num+=1
 
+            self.param['plates_num']=plates_num
+            self.param['plates']=plates
+
+        self.read_param()
+
+
+    def read_param(self):
+        
+        self.proj_id=self.param['proj_id']
+        self.p=project.objects.get(pk=self.proj_id)
+
+
+        self.readout=self.p.experiment.readout
+        self.readout_num=self.readout.count()
+        self.replicate=self.p.rep()
+        self.replicate_num=len(self.replicate)
+        self.row=self.p.plate.row()
+        self.col=self.p.plate.col()
+        self.wells=self.p.plate.numofwells
+        self.datetime=dt.datetime.now()
+
+        self.read_file()
+
+        if 'user_id'in self.param:
+            self.user = User.objects.get(id=self.param['user_id'])
+        
+        if 'job_id' in self.param:
+            self.job.get(self.param['job_id'])
+
+        if 'plates_num' in self.param:
+            self.plates_num=self.param['plates_num']
+
+        if 'plates' in self.param:
+            self.plates=self.param['plates']
+
+    def get_data(self):
+        
+        from data.models import project_data_base
+        exec('class proj_data_%s(project_data_base):pass;'%str(self.proj_id))
+        exec('data = proj_data_%s'%str(self.proj_id))
+        data.set_proj(project.objects.get(pk=self.proj_id))
+        
+        return data
 
     def parse(self,*args,**kwargs):
         """Determine the data type (list or grid) 
@@ -66,14 +114,15 @@ class reader(jobclass):#a base class for all file format
             return self.parse_grid(*args,**kwargs)
 
 
-    def read_file(self,datafile):
+    def read_file(self):
         
-        filetype=datafile.name.split(".")[-1]
+        filetype=self.param['filename'].split(".")[-1]
+        datafile = fs.open(self.param['filename'])
 
         if filetype=='csv':
             self.rawdata=pd.read_csv(datafile,header=None).fillna('').values
         else:
-            raise Exception('Unsupported File Type!')
+            raise Exception('Unsupported File Type!')  
     
 
     def is_list(self):
@@ -111,11 +160,6 @@ class reader(jobclass):#a base class for all file format
     def parse_grid(self):
         """# process the data define where table are, also check if file is legit"""
         
-        self.row=self.p.plate.row()
-        self.col=self.p.plate.col()
-        self.replicate=self.p.rep()
-        self.replicate_num=len(self.replicate)
-        self.wells=self.p.plate.numofwells
 
         n=0
         self.table_count=0
@@ -130,11 +174,9 @@ class reader(jobclass):#a base class for all file format
                             self.table_count+=1
 
 
-
-
         return self
 
-    def render(self,filename,request):
+    def render(self,request):
 
         if self.wells=='1536':
             self.plates_num =  self.table_count * 4 / (self.replicate_num * self.readout_num)
@@ -146,7 +188,7 @@ class reader(jobclass):#a base class for all file format
                     RequestContext(request,{
                     'library':library.objects.all(),
                     'platerange': range(1,self.plates_num+1),
-                    'filename':filename,
+                    'filename':self.param['filename'],
                     'proj_id':self.p.id,
                     'plate_num':self.plates_num,
                     'table_count':self.table_count,
@@ -165,7 +207,7 @@ class reader(jobclass):#a base class for all file format
         if self.wells==384:
             
             if self.table_count < self.replicate_num*self.plates_num*self.readout_num:
-                return False#raise exception might be good
+                raise Exception('not enough talbes')#raise exception might be good
             
             for i in sorted(self.table_reg):#go over each replicate and plate
                 if self.table_reg[i] not in readout_list:
@@ -208,15 +250,15 @@ class reader(jobclass):#a base class for all file format
         return self.map
 
     
-    def save_grid(self,data):
+    def save(self):
         """#save tables into database row by row, might take some time."""
         
         self.map_table()
 
-        if not self.sub:
-            return
-        
+        data=self.get_data()
 
+        if not self.job.sub:
+            self.create_job()
 
         for pla in range(self.plates_num):            
 
@@ -227,22 +269,22 @@ class reader(jobclass):#a base class for all file format
                     platewell=self.plates[pla]+self.row[row]+self.col[col]
                     
                     try:#check if this well has coresponding compound in our library
-                        cmpd=compound.objects.get(plate_well = platewell,library_name=self.library)
+                        cmpd=compound.objects.get(plate_well = platewell,library_name=self.param['library'])
                     except:
                         cmpd=None
                     
 
                     #update_or_create: if same well already exists, it will be over written.
                     entry, created=data.objects.get_or_create(
-                    library = self.library,
+                    library = self.param['library'],
                     platewell=platewell,
                     )
 
                     entry.plate = self.plates[pla]
                     entry.well=self.row[row]+self.col[col]
-                    entry.submission=self.sub.pk
+                    entry.submission=self.job.sub.pk
                     entry.create_date=self.datetime
-                    entry.create_by=self.sub.submit_by.pk
+                    entry.create_by=self.user.pk
                     entry.compound=cmpd
 
                     for i in self.readout.all():
@@ -261,9 +303,14 @@ class reader(jobclass):#a base class for all file format
                         entry.readout[i.name]=readout
                     entry.save()
                             
-            self.update((range(self.plates_num).index(pla)+1)/self.plates_num*100,';plate: %s uploaded'%self.plates[pla])
+            self.job.update((range(self.plates_num).index(pla)+1)/self.plates_num*100,';plate: %s uploaded'%self.plates[pla])
 
-        self.complete()
+        self.job.complete()
         
         return self
 
+    def create_job(self):
+
+        self.param['job_id']=self.job.create(jobtype='upload',proj=self.p,user=self.user)
+
+        return self

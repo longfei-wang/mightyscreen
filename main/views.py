@@ -216,15 +216,15 @@ class datalist(view_class):
             current_page=1
             
 
-        p = Paginator(entry_list,100) #pages
+        p = Paginator(entry_list,50) #pages
 
         page_range = range(int(current_page)-5,int(current_page)+5)
         
         if int(current_page)-5 < 1:
-            page_range = range(1,min(int(current_page)+10,p.num_pages)+1)
+            page_range = range(1,min(10,p.num_pages)+1)
         else:
             if int(current_page)+5 > p.num_pages:
-                page_range = range(max(int(current_page)-10,1),p.num_pages+1)
+                page_range = range(max(int(p.num_pages)-10,1),p.num_pages+1)
             
         pb_attr='disabled' if len(page_range) < 2 else ''
 
@@ -352,6 +352,7 @@ class addtohitlist(view_class):
 
 
 class export(view_class):
+    
     def get(self,request):
         if cache.get('dataview'+self.cachekey(request)) is not None:
             

@@ -17,7 +17,6 @@ from data.models import project_data_base
 from process.models import *
 import logging,sys
 import simplejson as json
-from mongoengine.django.storage import GridFSStorage
 
 
 # Create your views here.
@@ -36,19 +35,16 @@ class upload(view_class):
 
     def upload(self,request):
 
-        datafile = request.FILES[u'files[]']
-        fs = GridFSStorage()
-        filename = fs.save(datafile.name,datafile)
+        datafile=request.FILES[u'files[]']
 
         #generating json response array
         result = []
         result.append({'name':datafile.name, 
                        'size':datafile.size, 
-                       'form':readers.reader(datafile=fs.open(filename),proj_id=self.proj.id).parse().render(filename=filename,request=request)#dont's know how to reset file iterator..
+                       'form':readers.reader(datafile=datafile,proj_id=self.proj.id).parse().render(request=request)#dont's know how to reset file iterator..
                        })
         response_data = json.dumps(result)
 
-  
         #print >>sys.stderr, 'uploaded', HttpResponse(response_data, content_type='application/json')
 
         return HttpResponse(response_data, content_type='application/json')
@@ -56,11 +52,11 @@ class upload(view_class):
 
     def save(self,request):
 
-        job_id=self.job.create(request,'upload')
+        tmpreader = readers.reader(form=request.POST).create_job()
 
-        readinback.delay(request.POST,self.proj.id,job_id)
+        readinback.delay(tmpreader.param)
 
-        return redirect('job',job_id)
+        return redirect('job',tmpreader.param['job_id'])
 
 
     def get(self,request):
@@ -161,3 +157,5 @@ class score(view_class):
                             'field_list':field_list,
                             'form':form,
                             'table_success_list':table_success_list})
+
+
