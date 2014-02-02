@@ -293,7 +293,7 @@ class get_view(datalist): #retreive views from a view.
 
         if not view:
             raise Http404
-        return super(get_view,self).get(request,self.get_data(view.proj_id),view.query,pickle.loads(view.field_list))
+        return super(get_view,self).get(request,self.get_data(view.proj_id),view.query,pickle.loads(str(view.field_list)))
 
 
 

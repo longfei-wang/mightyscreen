@@ -296,9 +296,9 @@ $(".fieldcheckbox").change(function(){
 //save current view
 $("#id_share_view").click(function(){
 
-    $.get("/main/save_view/",
+    $.get("/main/saveview/",
         function(data){
-            alert(data);
+            alert("http://mightyscreen:8000/main/getview/"+data);
         });
     
     //alert(plate+well);

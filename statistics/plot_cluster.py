@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 
 # To used as a stand alone scripts called by statistics views 
+import matplotlib
+matplotlib.use('Agg')
+
 import scipy
 import pylab, scipy.optimize,numpy, scipy.stats
 
 import scipy.cluster.hierarchy as sch
 ## need to install fastcluster
-try:
-    import fastcluster as fch
-except:
-    import scipy.cluster.hierarchy as fch
+import fastcluster as fch
 
 import StringIO
 

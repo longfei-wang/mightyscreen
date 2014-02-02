@@ -3,6 +3,9 @@
 
 # To used as a stand alone scripts called by statistics views 
 
+import matplotlib
+matplotlib.use('Agg')
+
 import pylab, scipy.optimize,numpy, scipy.stats
 import itertools
 
@@ -193,10 +196,10 @@ def plot_scatter(data_list,plate_well_list,well_type_list, plate_number = 1, sor
     well_types = []
     for x,y,w,gid in itertools.izip(xs,ys,well_type_list,patch_id):
         if w not in well_types:
-            pylab.scatter(x,y, s=60, c = color_dict[w][1], gid = gid, label = color_dict[w][0].title())
+            pylab.plot(x,y,'o', markersize=8, color = color_dict[w][1], gid = gid, label = color_dict[w][0].title())
             well_types.append(w)
         else:
-            pylab.scatter(x,y, s=60, c = color_dict[w][1], gid = gid)  
+            pylab.plot(x,y,'o', markersize=8, color = color_dict[w][1], gid = gid)  
     
     ## Plot legend
     # Shink current axis by 20%
@@ -244,10 +247,12 @@ def plot_linearfit(data_a,data_b,plate_well_list, plate_number,well_type_list,la
     well_types = []
     for x,y,w,id in itertools.izip(xs,ys,well_type_list,patch_id):
         if w not in well_types:
-            pylab.scatter(x,y, s=60, c = color_dict[w][1], gid = id, label = color_dict[w][0].title())
+            #pylab.scatter(x,y, s=60, c = color_dict[w][1], gid = id, label = color_dict[w][0].title())
+            pylab.plot(x,y,'o', markersize=8, color = color_dict[w][1], gid = id, label = color_dict[w][0].title())
             well_types.append(w)
         else:
-            pylab.scatter(x,y, s=60, c = color_dict[w][1], gid = id)  
+           # pylab.scatter(x,y, s=60, c = color_dict[w][1], gid = id)  
+            pylab.plot(x,y,'o', markersize=8, color = color_dict[w][1], gid = id)  
     
     ## Plot legend
     # Shink current axis by 20%
@@ -367,7 +372,8 @@ def plot_heatmap(well, intensity,plate_well_list, plate_number = 1, cmap = 'jet_
 #        tooltip_id.append(('tooltip_ax_%d'%plate_well_list[n]))
 
     for x,y,id in itertools.izip(xs_column,ys_row_inverse,patch_id):    
-        pylab.scatter(x,y, s=100,alpha = 0.01, c= 'w', gid = id)
+       # pylab.scatter(x,y, s=100,alpha = 0.01, c= 'w', gid = id)
+        pylab.plot(x,y,'o', markersize=10, color = 'w', gid = id, alpha=0.01)  
     
 #    for tooltip, x, y, id  in itertools.izip(tooltips, xs_column, ys_row_inverse, tooltip_id):
 #        ax1.annotate(

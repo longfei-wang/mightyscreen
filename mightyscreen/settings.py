@@ -46,10 +46,10 @@ INSTALLED_APPS = (
     'project',
     'statistics',
     'process',  
-    #'mptt',
-    #'compressor',
+    'mptt',
+    'compressor',
     'easy_thumbnails',
-    #'fiber',
+    'fiber',
     'userenabootstrap',
     'userena',
     'guardian',
@@ -63,8 +63,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #'fiber.middleware.ObfuscateEmailAddressMiddleware',
-    #'fiber.middleware.AdminPageMiddleware',
+    'fiber.middleware.ObfuscateEmailAddressMiddleware',
+    'fiber.middleware.AdminPageMiddleware',
 )
 
 ROOT_URLCONF = 'mightyscreen.urls'
@@ -77,8 +77,10 @@ WSGI_APPLICATION = 'mightyscreen.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR,'mightyscreen.db'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'mightyscreen',
+	'USER': 'mightyscreen',
+	'PASSWORD': 'ms2014',
     }
 }
 
@@ -130,11 +132,11 @@ CELERY_TASK_SERIALIZER='json'
 
 AUTH_PROFILE_MODULE = 'accounts.usersprofile'
 
-# import django.conf.global_settings as DEFAULT_SETTINGS
+import django.conf.global_settings as DEFAULT_SETTINGS
 
-# STATICFILES_FINDERS = DEFAULT_SETTINGS.STATICFILES_FINDERS + (
-#     'compressor.finders.CompressorFinder',
-# )
+STATICFILES_FINDERS = DEFAULT_SETTINGS.STATICFILES_FINDERS + (
+    'compressor.finders.CompressorFinder',
+)
 
 
 from mongoengine import connect
@@ -149,13 +151,13 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'yourgmailaccount@gmail.com'
-EMAIL_HOST_PASSWORD = 'yourgmailpassword'
+EMAIL_HOST_USER = 'mightyscreen@gmail.com'
+EMAIL_HOST_PASSWORD = 'wlfyqwlfyq'
 
 ANONYMOUS_USER_ID = -1
 USERENA_WITHOUT_USERNAMES = True

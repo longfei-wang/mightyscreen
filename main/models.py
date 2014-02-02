@@ -110,7 +110,7 @@ class plate(models.Model):
 #job list/track table
 class submission(models.Model):
     def __unicode__(self):
-        return self.pk
+        return str(self.pk)
     def log_to_html(self):
         log=[]
         for i in self.log.split('.'):
