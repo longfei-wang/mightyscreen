@@ -108,8 +108,24 @@ $(function () {
         dataType: 'json',
         done: function (e, data) {
             $.each(data.result, function (index, file) {
-                $('<p/>').text(file.name).appendTo('#files');
+                $('<p/>').html('<strong>['+file.name+']</strong>    size: '+file.size+' byte').appendTo('#files');
                 $('<p/>').html(file.form).appendTo('#files');
+
+                //input a plate autogenerate next plates
+                // $('.plate_input').each(function(){
+                //     $(this).change(function(){
+                //         num = $(this).prop('placeholder')+1;
+                //         plate = $(this).val()+1;
+                //         $('.plate_input[placeholder="'+num+'"]').val(plate);
+                //     });
+                // });
+
+                //select library auto fill in library_name 
+                $('#library_selector').change(function(){
+                    $('#library_text').val($(this).val());
+                });
+
+
             });
         },
         progressall: function (e, data) {
@@ -152,6 +168,8 @@ $(document).bind('dragover', function (e) {
         dropZone.removeClass('in hover');
     }, 100);
 });
+
+
 
 
 //upload forms

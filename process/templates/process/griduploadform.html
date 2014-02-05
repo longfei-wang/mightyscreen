@@ -13,8 +13,8 @@
 <label>Library</label>
 <div class="row">
 <div class='col-xs-3'>
-<select class="form-control" name="library_select">
-<option selected="selected">-----</option>
+<select class="form-control" name="library_select" id="library_selector">
+<option selected="selected" value="">-----</option>
     {% for i in library %}
         <option value="{{ i.library_name }}">{{i.library_name}}</option>
     {% endfor %}
@@ -22,19 +22,22 @@
 </div>
 
 <div class='col-xs-3'>
-<input type="text" class="form-control" name="library">
+<input type="text" class="form-control" name="library" required="true" id="library_text">
 </div>
+
 </div>
+<p class="help-block">Please select library from the dropdown. Or input the library name if not in the box</p>
 </div>
 
 
 <div class="form-group">
-<label>Plates</label>
+<label>Plates:</label>
 <div class="row">
 {% for i in platerange%}
-   <div class="col-xs-1"><input type="text" class="form-control" name="plate_{{i}}"></div>
+   <div class="col-xs-1"><input type="text" class="form-control plate_input" name="plate_{{i}}" placeholder="{{i}}"></div>
 {% endfor %}
 </div>
+<p class="help-block">Found {{plate_num}} plates in your file. Please fill in the names of these plates.</p>
 </div>
 
 <br>

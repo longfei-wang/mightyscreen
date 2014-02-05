@@ -355,10 +355,6 @@ class addtohitlist(view_class):
 
 
 
-
-
-
-
 class export(view_class):
     
     def get(self,request):
