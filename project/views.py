@@ -124,22 +124,10 @@ class filternedit(view_class):
             formset=formsetobject(request.POST)
 
             if formset.is_valid():
-                
 
                 #check if you are the creater of this entry, otherwise no permission!
                 
-                forms = formset.save(commit=False)
-
-                banlist=[]
-                for i in formset.changed_objects:
-                    if 'create_by' in i[1]:
-                        banlist.append(i[0])
-
-                for i in forms:
-                    if i.create_by==request.user and i not in banlist:
-                        i.save()
-                    else:
-                        messages.error(request,"You can't either change user or change other user's setting")
+                forms = formset.save()
                 
                 messages.success(request,'Entry Updated!')
         else:
