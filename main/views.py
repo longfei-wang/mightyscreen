@@ -101,6 +101,14 @@ class index(view_class):
         return render(request, "main/index.html")
 
 
+class table(view_class):
+    
+    def get(self,request):
+
+        data = self.data
+        raise Exception(data.objects.all().to_json())
+
+
 
 class datalist(view_class):
 
@@ -398,7 +406,7 @@ class export(view_class):
 
             elif  request.GET.get('format')=='json':
 
-                data = serializers.serialize("json", obj)
+                data = obj.to_json()
                 
                 response = HttpResponse(mimetype='application/json')
                 response['Content-Disposition'] = 'attachment;filename="export.json"'

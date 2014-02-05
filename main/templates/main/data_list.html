@@ -29,27 +29,72 @@
 {% endif %}
 
 
-<form enctype="multipart/form-data" method="post" class="form" role="form" action="{{url}}">
+<form enctype="multipart/form-data" method="post" class="form-inline" role="form" action="{{url}}">
 {% csrf_token %}
 
 <div class="well">
 
     <input type="hidden" name="plates" id="selector-target">
 
+   <div class="form-group">
+        <input type="submit" value="Update" class="btn btn-primary">
+    </div>
+    <div class="form-group">
+        <select name="field" class="form-control">
+            {% for i in projfield_list %}
+                <option value="{{i.path}}">{{ i.verbose_name }}</option>
+            {% endfor %}
+        </select>
 
+
+        <select name="sign" class="form-control">
+                <option value="exact">=</option>
+                <option value="gt">></option>
+                <option value="gte">>=</option>
+                <option value="lt"><</option>
+                <option value="lte">>=</option>
+                <option value="iexact">like</option>
+                <option value="icontains">contain</option>
+        </select>
+    </div>
+
+    <div class="form-group"> 
+        <input type="text" name="querytext" id="query1" class="form-control">
+    </div>
+
+    (
 
     <div class="form-group">
+        <select name="joint" class="form-control">
+                 <option value=""></option>
+                <option value="&">AND</option>
+                <option value="|">OR</option>
+                <option value="&~">NOT</option>
+        </select>
+        
 
-    <div class="input-group">
-      <span class="input-group-btn">
-        <input type="submit" value="Update" class="btn btn-primary">
-      </span>
-        <input type="text" name="querytext" id="query" class="form-control">
+        <select name="field2" class="form-control">
+            {% for i in projfield_list %}
+                <option value="{{i.path}}">{{ i.verbose_name }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="sign2" class="form-control">
+                <option value="exact">=</option>
+                <option value="gt">></option>
+                <option value="gte">>=</option>
+                <option value="lt"><</option>
+                <option value="lte">>=</option>
+                <option value="iexact">like</option>
+                <option value="icontains">contain</option>
+        </select>
     </div>
-
-
+    <div class="form-group">
+        <input type="text" name="querytext2"  class="form-control">
 
     </div>
+    )
+
 </div>
 
 {% if not field_lock %}
@@ -130,7 +175,7 @@
   </button>
   <ul class="dropdown-menu pull-right" role="menu">
     <li><a href="{% url 'export' %}?format=csv" target="_blank">To CSV</a></li>
-    <li><a href="{% url 'export' %}?format=xml" target="_blank">To XML</a></li>
+    <!-- <li><a href="{% url 'export' %}?format=xml" target="_blank">To XML</a></li> -->
     <li><a href="{% url 'export' %}?format=json" target="_blank">To Json</a></li>
   </ul>
 </div>

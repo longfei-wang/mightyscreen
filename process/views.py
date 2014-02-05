@@ -61,10 +61,7 @@ class upload(view_class):
 
     def get(self,request):
 
-        form = UploadFileForm(initial={'user':request.user.pk,'project':self.proj.pk})
-    
-                
-        return render(request,'process/upload.html', {'form':form})
+        return render(request,'process/upload.html')
 
  
 class mark(view_class):
