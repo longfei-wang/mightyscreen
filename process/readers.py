@@ -117,10 +117,10 @@ class reader(object):#a base class for all file format
     def read_file(self):
         
         filetype=self.param['filename'].split(".")[-1]
-        datafile = fs.open(self.param['filename'])
+        self.datafile = fs.open(self.param['filename'])
 
         if filetype=='csv':
-            self.rawdata=pd.read_csv(datafile,header=None).fillna('').values
+            self.rawdata=pd.read_csv(self.datafile,header=None).fillna('').values
         else:
             raise Exception('Unsupported File Type!')  
     
@@ -306,6 +306,8 @@ class reader(object):#a base class for all file format
             self.job.update((range(self.plates_num).index(pla)+1)/self.plates_num*100,';plate: %s uploaded'%self.plates[pla])
 
         self.job.complete()
+
+        fs.delete(self.param['filename'])#if save is successfull delete the file in fs
         
         return self
 
