@@ -1,49 +1,3 @@
-{% extends 'main/base.html' %}
-{% load staticfiles %}
-
-
-{% block content %}
-<!-- <META HTTP-EQUIV="refresh" CONTENT="20">
-
-<div class="well">
-<h1>Please wait while the job is running.</h1>
-
-<a href="javascript:history.go(0)" class="pull-right"><span class="glyphicon glyphicon-refresh"></span></a>
-
-
-<div id="progress" class="progress">
-
-    <div class="progress-bar progress-bar-primary" style="width:{{job.sub.progress}}%"></div>
-
-</div>
-
-</div> -->
-
-
-    <h1>Bulk Account Update</h1>
-    <div class="explanation"><h3>Create and update many accounts at once.</h3></div>
-
-    <div id="task_progress">
-        <p class="loading">Updating user accounts in bulk</p>
-        <p class="loading progress_percentage"></p>
-        <p class="loading progress_estimate">
-            Waiting for an available bulk update worker.
-            This might take several minutes if many other people are running reports
-            or performing uploads.
-        </p>
-    </div>
-
-    <table id="upload_success_results" style="display: none; width: 100%"></table>
-    <table id="csv_validation_errors" style="display: none; width: 100%"></table>
-
-
-{% endblock %}
-
-{% block script %}
-<script src="{% static 'js/celery.js' %}"></script>
-
-
-<script>
 $(document).ready(function () {
     var $progress_container = $('.progress_container');
     var $time_remaining = $progress_container.find('.time_remaining');
@@ -52,7 +6,6 @@ $(document).ready(function () {
         task_id: '5a3ad9a2-e1c6-448e-b8a4-917bea4fa3d5',
         check_interval: 5000,
         on_success: function (task) {
-        	alert(task.id);
             $('.loading').hide();
             var total_time =  task.result.total_time;
             var url = task.result.url
@@ -92,6 +45,4 @@ $(document).ready(function () {
         }
     });
 });
-</script>
 
-{% endblock %}

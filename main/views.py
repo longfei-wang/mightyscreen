@@ -176,7 +176,7 @@ class datalist(view_class):
             entry_list=querybase
             messages.warning(request,'A Internal Error Occured. Your list will be reset.')
             
-        cache.set('dataview'+cachekey,args,3600)
+        cache.set('dataview'+cachekey,args,0)
 
         #
         #Decide fields to display
@@ -211,7 +211,7 @@ class datalist(view_class):
             else:#if nothing
                 field_list=curprojfield_list
 
-            cache.set('dataview_field_list'+cachekey,field_list,3600)    
+            cache.set('dataview_field_list'+cachekey,field_list,0)    
 
 
         #

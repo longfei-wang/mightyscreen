@@ -37,11 +37,15 @@ class upload(view_class):
 
         datafile=request.FILES[u'files[]']
 
+        try:
+            form = readers.reader(datafile=datafile,proj_id=self.proj.id).parse().render(request=request)
+        except Exception,e:
+            form = '<div class="alert alert-danger">%s</div>'%e
         #generating json response array
         result = []
         result.append({'name':datafile.name, 
                        'size':datafile.size, 
-                       'form':readers.reader(datafile=datafile,proj_id=self.proj.id).parse().render(request=request)#dont's know how to reset file iterator..
+                       'form':form,#dont's know how to reset file iterator..
                        })
         response_data = json.dumps(result)
 

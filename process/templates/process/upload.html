@@ -15,12 +15,12 @@
     height: 200px;
     line-height: 50px;
     text-align: center;
-    font-weight: bold;
+
 }
 #dropzone.in {
     width: 100%;
     height: 200px;
-    line-height: 200px;
+    line-height: 100px;
     font-size: larger;
 }
 #dropzone.hover {
@@ -48,13 +48,7 @@
 
 <br>
 
-<!-- <div class="well">
-<h3>Note:</h3> 
-<ul>
-<li>We will read the file according to the input sequence. For example, if you put 3266, 3264, 3265 and have 2 replicates. we will read 3266A, 3266B, 3264A, 3264B, 3265A, 3265B.</li> 
-<li>For 1536-well plate, we process it as 4 384 plates. Please put the plates in the order of top-left, top-right, bottom-left, bottom-right. </li>
-</ul>
-</div> -->
+
 
 
 <div class="well">
@@ -66,6 +60,7 @@
 			<div id="dropzone" class="fileinput-button">
 				<input type="file" name="files[]" multiple>
 	   			<h1>Click Here or Drag file Here</h1>
+                <p>Currently only support CSV file.</p>
 
 	   		</div><br>
 
