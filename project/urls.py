@@ -13,8 +13,7 @@ urlpatterns = patterns('',
     url(r'^projselect/', views.projselect.as_view(), name='projselect'),
     url(r'^projedit/', views.projedit.as_view(), name='projedit'),
     url(r'^jobview/', views.joblist.as_view(), name='jobview'),
-    #url(r'^job/(\d+)', views.job.as_view(), name='job'),
-    url(r'^job/', TemplateView.as_view(template_name="project/job.html"), name='job'),
+    url(r'^job/(.+)', views.job.as_view(), name='job'),
     url(r'^filternedit/', views.filternedit.as_view(), name='filternedit'),
     )
 

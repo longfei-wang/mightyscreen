@@ -29,9 +29,7 @@ class job(view_class): #a view that display all the running jobs
         if not job_id:
             raise Http404
 
-        return render(request,'project/job.html',{'job':self.job.get(job_id)})
-
-
+        return render(request,'project/job.html',{'job_id':job_id})
 
 
 #view and manage projects

@@ -10,15 +10,14 @@ from django.template.loader import get_template
 from django.core.context_processors import csrf
 from main.models import project, submission
 from mongoengine.django.storage import GridFSStorage
+from jobtastic import JobtasticTask
 from library.models import *
-from main.utils import job as jobclass
 
 fs = GridFSStorage()
 
-class reader(object):#a base class for all file format
+class reader():#a base class for all file format
     
     table_reg=dict()
-    job=jobclass()
     param=dict()
     map=defaultdict(lambda: defaultdict(dict))
 
@@ -84,9 +83,6 @@ class reader(object):#a base class for all file format
 
         if 'user_id'in self.param:
             self.user = User.objects.get(id=self.param['user_id'])
-        
-        if 'job_id' in self.param:
-            self.job.get(self.param['job_id'])
 
         if 'plates_num' in self.param:
             self.plates_num=self.param['plates_num']
@@ -250,15 +246,14 @@ class reader(object):#a base class for all file format
         return self.map
 
     
-    def save(self):
+    def save(self,job):
         """#save tables into database row by row, might take some time."""
-        
+
         self.map_table()
 
         data=self.get_data()
 
-        if not self.job.sub:
-            self.create_job()
+        results=[]
 
         for pla in range(self.plates_num):            
 
@@ -282,7 +277,6 @@ class reader(object):#a base class for all file format
 
                     entry.plate = self.plates[pla]
                     entry.well=self.row[row]+self.col[col]
-                    entry.submission=self.job.sub.pk
                     entry.create_date=self.datetime
                     entry.create_by=self.user.pk
                     entry.compound=cmpd
@@ -303,16 +297,11 @@ class reader(object):#a base class for all file format
                         entry.readout[i.name]=readout
                     entry.save()
                             
-            self.job.update((range(self.plates_num).index(pla)+1)/self.plates_num*100,';plate: %s uploaded'%self.plates[pla])
-
-        self.job.complete()
+            
+            job.update_progress((range(self.plates_num).index(pla)+1),self.plates_num)
+            
+            results.append(self.plates[pla])
 
         fs.delete(self.param['filename'])#if save is successfull delete the file in fs
         
-        return self
-
-    def create_job(self):
-
-        self.param['job_id']=self.job.create(jobtype='upload',proj=self.p,user=self.user)
-
-        return self
+        return results
