@@ -10,7 +10,10 @@ import pylab, scipy.optimize,numpy, scipy.stats
 
 import scipy.cluster.hierarchy as sch
 ## need to install fastcluster
-import fastcluster as fch
+try:
+    import fastcluster as fch
+except:
+    import scipy.cluster.hierarchy as fch
 
 import StringIO
 

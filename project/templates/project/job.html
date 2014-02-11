@@ -3,38 +3,28 @@
 
 
 {% block content %}
-<!-- <META HTTP-EQUIV="refresh" CONTENT="20">
-
-<div class="well">
-<h1>Please wait while the job is running.</h1>
-
-<a href="javascript:history.go(0)" class="pull-right"><span class="glyphicon glyphicon-refresh"></span></a>
 
 
-<div id="progress" class="progress">
 
-    <div class="progress-bar progress-bar-primary" style="width:{{job.sub.progress}}%"></div>
-
-</div>
-
-</div> -->
-
-
-    <h1>Bulk Account Update</h1>
-    <div class="explanation"><h3>Create and update many accounts at once.</h3></div>
+    <h1>Please wait while the job is running.</h1>
+<!--     <div class="explanation"><h3>Job status</h3></div> -->
 
     <div id="task_progress">
-        <p class="loading">Updating user accounts in bulk</p>
-        <p class="loading progress_percentage"></p>
-        <p class="loading progress_estimate">
-            Waiting for an available bulk update worker.
-            This might take several minutes if many other people are running reports
-            or performing uploads.
-        </p>
+        
+        <p class="loading">Job Running....</p>
+        
+        <div class="progress" id="progress_container">
+
+    		<div class="progress-bar progress-bar-primary" id="progress"></div>
+
+		</div>
+        
+        <div class="results"></div>
+
     </div>
 
-    <table id="upload_success_results" style="display: none; width: 100%"></table>
-    <table id="csv_validation_errors" style="display: none; width: 100%"></table>
+
+
 
 
 {% endblock %}
@@ -45,49 +35,42 @@
 
 <script>
 $(document).ready(function () {
-    var $progress_container = $('.progress_container');
-    var $time_remaining = $progress_container.find('.time_remaining');
-    var $progress_bar = $progress_container.find('.progress .bar');
+
+    var $progress_bar = $('#progress');
+
     $('.loading').djcelery({
-        task_id: '5a3ad9a2-e1c6-448e-b8a4-917bea4fa3d5',
-        check_interval: 5000,
+        task_id: '{{job_id}}',
+        check_interval: 1000,
         on_success: function (task) {
-        	alert(task.id);
+
             $('.loading').hide();
-            var total_time =  task.result.total_time;
-            var url = task.result.url
-            $time_remaining.html('Took ' + total_time + ' seconds to complete.');
-            $progress_container.find('.progress').addClass('hidden');
+            $('#progress_container').hide();
+
             var msg;
             if (task.result === null) {
                 msg = '<p>No files were modified during the given date range</p>';
             } else {
-                msg = '<p>Your download is ready</p><p><a href="' + url + '">Download Here</a></p>';
+                msg = '<p>Your job is Done</p><p>Updated plates:' + task.result + '</p>';
             }
-            $time_remaining.after(msg);
+            $('.results').html(msg);
+
         },
         on_failure: function (task) {
             $('.loading').hide();
-            var msg = '<p class="error">There was an error generating your download.</p>';
-            $('.results > h4').after(msg);
+            var msg = '<p class="error">job failed.</p>';
+            $('.results').html(msg);
         },
         on_error: function () {
             $('.loading').hide();
-            var msg = '<p class="error">There was an error generating your download.</p>';
-            $('.results > h4').after(msg);
+            var msg = '<p class="error">There was an error from the job.</p>';
+            $('.results').html(msg);
         },
         on_other: function(task_result) {
             if (task_result.status == 'PROGRESS') {
-
                 // Set the percentage
                 var percent = task_result.result.progress_percent;
                 $progress_bar.css('width', percent + '%');
 
-                // Set time remaining
-                time_remaining = task_result.result.time_remaining;
-                if (time_remaining > 0) {
-                    $time_remaining.html('Approximate time left: ' + Math.round(time_remaining) + ' seconds');
-                }
             }
         }
     });

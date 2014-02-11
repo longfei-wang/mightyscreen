@@ -10,7 +10,7 @@ from process.forms import PlatesToUpdate, ScoreForm
 from django.db.models import Count
 from main.utils import get_platelist,job
 import process.readers as readers
-from process.tasks import readinback
+from process.tasks import savethefile
 from process.forms import UploadFileForm
 from main.views import view_class
 from data.models import project_data_base
@@ -56,11 +56,11 @@ class upload(view_class):
 
     def save(self,request):
 
-        tmpreader = readers.reader(form=request.POST).create_job()
+        this_reader = readers.reader(form=request.POST)
 
-        readinback.delay(tmpreader.param)
+        result = savethefile.delay_or_fail(param=this_reader.param)
 
-        return redirect('job',tmpreader.param['job_id'])
+        return redirect('job',result.task_id)
 
 
     def get(self,request):
