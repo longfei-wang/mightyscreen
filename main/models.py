@@ -60,7 +60,7 @@ class score(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
     #isfilter=models.BooleanField()#define if this is a filter
-    formular = models.TextField()
+    formular = models.CharField(max_length=200)
     create_by = models.ForeignKey(User)
 
 #since differnet experiment has different readouts, this is a table define specific readout of a experiment
@@ -69,7 +69,7 @@ class readout(models.Model):
         return self.name        
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
-    keywords = models.TextField()
+    keywords = models.CharField(max_length=200,verbose_name='identifier')
     create_by = models.ForeignKey(User)
 
 #the format of the file user upload.

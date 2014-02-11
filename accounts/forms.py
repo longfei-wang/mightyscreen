@@ -40,10 +40,11 @@ class RegisterForm(SignupForm):#a extension model form based on usercreateform
         new_user.last_name = self.cleaned_data['last_name']
         new_user.save()
 
-        profile = usersprofile(user=new_user, affiliation=self.cleaned_data['affiliation'], 
-            position=self.cleaned_data['position'])
-        profile.save()
+        profile,created = usersprofile.objects.get_or_create(user=new_user)
+	profile.affiliation=self.cleaned_data['affiliation']
+	profile.position=self.cleaned_data['position']
+	profile.save()
 
         # Userena expects to get the new user from this form, so return the new
         # user.
-        return new_user, profile
+        return new_user

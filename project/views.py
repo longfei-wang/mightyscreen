@@ -117,21 +117,28 @@ class filternedit(view_class):
         entry_list=obj.objects.all()
         jsonstring = json.dumps(list(entry_list.values('id','name')))
 
-        formsetobject=modelformset_factory(obj,max_num=1,widgets={'create_by':Select(attrs={'readonly':True})})
+        formsetobject=modelformset_factory(obj,max_num=1,can_delete=True,widgets={'create_by':Select(attrs={'readonly':True})})
 
         if request.POST.get('ispost'):#submitting the form
 
             formset=formsetobject(request.POST)
-
-            for form in formset.forms:
+				
+	    flag=True
+            for form in formset.forms:#check each of the form is correct
                 if form.is_valid():
-                    if form.cleaned_data['create_by']==request.user:
-                        form.save()
-                    else:
-                        messages.error(request,"You can't either change user or change other user's setting")
+                    if form.cleaned_data['create_by']!=request.user:
+                        flag=False
+		    if u'DELETE' in form.changed_data:
+			
+		    	raise Exception(form.instance.project_set.all())
+	    
+	    if flag:#if every form is alright save formset
+		formset.save()
+		messages.success(request,'Entry Updated!')		
+	    else:
+		messages.error(request,"You can't either change user or change other user's setting")
 
                 
-                messages.success(request,'Entry Updated!')
         else:
 
             formset=formsetobject(queryset=obj.objects.filter(

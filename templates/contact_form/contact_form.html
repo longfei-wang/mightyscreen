@@ -1,0 +1,32 @@
+{% extends 'main/base.html' %}
+{% load bootstrap_tags %}
+{% load filters %}
+{% block content %}
+
+
+<div class="well">
+<form class="form-horizontal" role="form" enctype="multipart/form-data" method="post" action="{% url 'contact_form' %}">
+{% csrf_token %}
+<input type="hidden" id="id_email_address" name="email_address" value="{{user.email}}">
+{{form|as_bootstrap_h}}
+
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-primary">Send</button>
+            <button type="reset" class="btn btn-default">Clear</button>
+        </div>
+    </div>
+
+</form>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+$("#id_name").val("{{user.username}}");
+$("#id_email").val($("#id_email_address").val());
+</script>
+{% endblock %}

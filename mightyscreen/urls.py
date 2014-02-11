@@ -23,4 +23,5 @@ urlpatterns = patterns('',
     url(r'^password/reset/done/$',auth_views.password_reset_done,{'template_name': 'userena/password_reset_done.html'},name='password_reset_done'),
     url(r'^accounts/signup/$','userena.views.signup',{'signup_form': RegisterForm,'extra_context':{'agreement':settings.AGREEMENT}}),
     url(r'^accounts/', include('userena.urls')),
+    url(r'^contact/', include('contact_form.urls')),
 )

@@ -117,10 +117,9 @@ class reader(object):#a base class for all file format
     def read_file(self):
         
         filetype=self.param['filename'].split(".")[-1]
-        self.datafile = fs.open(self.param['filename'])
-
+        datafile = fs.open(self.param['filename'])
         if filetype=='csv':
-            self.rawdata=pd.read_csv(self.datafile,header=None).fillna('').values
+            self.rawdata=pd.read_csv(datafile,header=None).fillna('').values
         else:
             raise Exception('Unsupported File Type!')  
     
@@ -153,6 +152,7 @@ class reader(object):#a base class for all file format
 
 
     def parse_list(self):
+	raise Exception('List file not supported yet')
         return self
 
 

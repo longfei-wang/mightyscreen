@@ -97,7 +97,7 @@ class view_class(View):#the base view class for all
 class index(view_class):
 
     def get(self,request):
-
+	
         return render(request, "main/index.html")
 
 
