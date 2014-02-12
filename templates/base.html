@@ -60,7 +60,7 @@
                     {% endif %}
 
                     <li><a href="{% url 'documents' %}">Documents</a></li>
-                    <li><a href="https://github.com/longfei-wang/mightyscreen/issues">Contact Us</a></li>
+                    <li><a href="{% url 'contact_form' %}">Contact Us</a></li>
 
                 </ul>
 
@@ -171,7 +171,10 @@ $("#plate-selector").change(function(){
 });
 
 //to disable readonly select box. 
+
 $("select[readonly] > option:not([selected])").prop('disabled',true)
+
+
 
 </script>
 {% block script %}

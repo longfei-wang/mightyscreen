@@ -10,6 +10,7 @@ from django.core import serializers
 from main.utils import get_platelist, job
 from library.models import compound
 from django.views.generic.base import View
+from django.conf import settings
 from main.models import project, view as views
 from mongoengine.queryset import Q
 from library.models import *
@@ -55,7 +56,7 @@ class view_class(View):#the base view class for all
         """get current project"""
         if not self.project:
             if not 'proj' in request.session:
-                self.project=project.objects.get(pk=1)
+                self.project=project.objects.get(pk=settings.DEMO_PROJECT)
             else:
                 self.project=project.objects.get(pk=request.session['proj_id'])
 
@@ -97,8 +98,11 @@ class view_class(View):#the base view class for all
 class index(view_class):
 
     def get(self,request):
+
         data=project
         return render(request, "main/index.html",{'data':data.objects.all()})
+
+
 
 
 class table(view_class):

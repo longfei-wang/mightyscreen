@@ -1,0 +1,24 @@
+{% extends 'userena/base_userena_profile.html' %}
+{% load i18n bootstrap %}
+
+{% block title %}{% trans "Change email address" %}{% endblock %}
+
+{% block profile_sidenav %}
+    <li><a href="{% url 'userena_profile_detail' user.username %}"><span>{% trans 'View profile' %}</span></a></li>
+    <li><a href="{% url 'userena_profile_edit' user.username %}">{% trans "Edit profile" %}</a></li>
+    <li><a href="{% url 'userena_password_change' user.username %}">{% trans "Change password" %}</a></li>
+{% endblock %}
+
+{% block profile_content %}
+<form action="" method="post" class="form-horizontal well">
+  {% csrf_token %}
+  <fieldset>
+    <legend>{% trans "Change email address" %}</legend>
+    {{ form|bootstrap }}
+  </fieldset>
+   <div class="form-actions">
+       <input type="submit" class="btn btn-primary" value="{% trans "Change email" %}" />
+       <button class="btn">{% trans "Cancel" %}</button>
+   </div>
+</form>
+{% endblock %}

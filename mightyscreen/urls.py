@@ -20,9 +20,11 @@ urlpatterns = patterns('',
     #url(r'^documents/', 'fiber.views.page',name='documents'),
     url(r'^$', index.as_view(), name='documents'),
     url(r'^media/(?P<path>.*)$','django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes':False}),
-    
+    url(r'^static/(?P<path>.*)$','django.views.static.serve', {'document_root': settings.STATIC_ROOT, 'show_indexes':False}),    
     url(r'^password/reset/done/$',auth_views.password_reset_done,{'template_name': 'userena/password_reset_done.html'},name='password_reset_done'),
     url(r'^accounts/signup/$','userena.views.signup',{'signup_form': RegisterForm,'extra_context':{'agreement':settings.AGREEMENT}}),
     url(r'^accounts/', include('userena.urls')),
     url(r'^task/', include('djcelery.urls')),
+    url(r'^contact/', include('contact_form.urls')),
 )
+

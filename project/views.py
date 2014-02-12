@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from django.core.context_processors import csrf
 from django.http import HttpResponse,Http404
 from project.models import ProjectForm
-from main.models import project,score,experiment,readout
+from main.models import *
 from django.conf import settings
 from django.forms.models import modelform_factory,modelformset_factory
 from django.contrib import messages
@@ -36,7 +36,7 @@ class job(view_class): #a view that display all the running jobs
 class projects(view_class):
 
     def get(self,request):
-        field_list=['name','description','agreement','experiment','plate','replicate','leader']
+        field_list=['name','description','plate','replicate','leader']
         return render(request,'project/projectlist.html',{'field_list':field_list})
 
 #to select working project
@@ -66,7 +66,7 @@ class projedit(view_class):
                 form=ProjectForm(request.POST)
             if form.is_valid():
 
-                if request.POST.get('proj_id') and [i for i in ['experiment','plate','replicate','leader','name'] if i in form.changed_data] and not request.POST.get('warning_fields') :
+                if request.POST.get('proj_id') and [i for i in ['readout','plate','replicate','leader','name'] if i in form.changed_data] and not request.POST.get('warning_fields') :
                     warning_fields=', '.join(form.changed_data)#pop the warning message
                     return render(request,'project/projectedit.html',{'form':form,
                                                                     'proj_id':request.POST.get('proj_id'),
@@ -74,9 +74,7 @@ class projedit(view_class):
                                                                     })
                 else:
                     form.save()
-                    # dir=os.path.join(settings.BASE_DIR,'reloadmodels.py')
-                    # os.system('python %s'%dir)                
-                    #not sure if this is safe here. guess so. what if users submit at the same time? has to be queued
+
 
                     return render(request,'main/redirect.html',{'message':'Project Created.','dest':'index'})
             
@@ -98,40 +96,52 @@ class projedit(view_class):
 class filternedit(view_class):
     def get(self,request):
 
+        edit='score'
+        obj=score
 
         if request.GET.get('edit'):
             edit=request.GET.get('edit')
         
             if edit=='score':
                 obj=score
-            elif edit=='experiment':
-                obj=experiment
+                
             elif edit=='readout':
                 obj=readout
-        else:
-            obj=score
-            edit='score'
+            
+            else:
+                edit='score'
+            
+            
 
-        entry_list=obj.objects.all()
+        entry_list=obj.objects.filter(create_by=request.user)
         jsonstring = json.dumps(list(entry_list.values('id','name')))
 
-        formsetobject=modelformset_factory(obj,max_num=1,widgets={'create_by':Select(attrs={'readonly':True})})
+        formsetobject=modelformset_factory(obj,max_num=1,can_delete=True,widgets={'create_by':Select(attrs={'readonly':True})})
 
         if request.POST.get('ispost'):#submitting the form
 
             formset=formsetobject(request.POST)
-
-            for form in formset.forms:
+				
+    	    flag=True
+            for form in formset.forms:#check each of the form is correct
                 if form.is_valid():
-                    if form.cleaned_data['create_by']==request.user:
-                        form.save()
-                    else:
-                        messages.error(request,"You can't either change user or change other user's setting")
+                    if form.cleaned_data['create_by']!=request.user:
+                        flag=False
+		    
+            if u'DELETE' in form.changed_data and form.instance.project_set.all():
 
-                
-                messages.success(request,'Entry Updated!')
+                flag=False
+    	    
+    	    if flag:#if every form is alright save formset
+
+        		formset.save()
+        		messages.success(request,'Entry Updated!')		
+
+            else:
+
+                messages.error(request,"You are not allowed to change this")
+
         else:
-
             formset=formsetobject(queryset=obj.objects.filter(
                         pk__in=map(int,request.POST.getlist('selection'))
                         ),initial=[{'create_by':request.user}])

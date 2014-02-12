@@ -26,57 +26,81 @@ class project(models.Model):
     def rep(self):
         return self.rep_namespace[:self.replicate]
     def readouts(self):
-        return [i[0] for i in self.experiment.readout.values_list('name')]
+        return [i[0] for i in self.readout.values_list('name')]
     def scores(self):
         return [i[0] for i in self.score.values_list('name')]
 
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
-    agreement = models.CharField(max_length=50,blank=True)
-    experiment = models.ForeignKey('experiment')
-    plate = models.ForeignKey('plate')
+    
+    primary_key = models.CharField(max_length=100,default='platewell')
+    plate = models.ForeignKey('plate',null=True,blank=True)
     replicate = models.PositiveSmallIntegerField(verbose_name='num of replicates')
-    score = models.ManyToManyField('score',blank=True)
-    leader = models.ForeignKey(User,related_name='leader')
-    user = models.ManyToManyField(User)
+
+    readout = models.ManyToManyField('readout',null=True,blank=True)
+    score = models.ManyToManyField('score',null=True,blank=True)
+    
+    leader = models.ForeignKey(User,related_name='proj_leader')
+    user = models.ManyToManyField(User,null=True,blank=True)
     deleted = models.BooleanField(default=False)
    
-#define a experiemnt
-class experiment(models.Model):
-    def __unicode__(self):
-        return self.name        
-    
-    name = models.CharField(max_length=50)
-    description =  models.TextField(blank=True)
-    readout = models.ManyToManyField('readout')
-    create_by = models.ForeignKey(User)
 
-
-
-#since differnet experiment has different readouts, this is a table define specific readout of a experiment
+# this is a table define score function of a experiment
 class score(models.Model):
     def __unicode__(self):
-        return self.name        
+        return self.name
+
+    def __init__(self,*args,**kwargs):
+        super(score,self).__init__(*args,**kwargs)
+        if self.template:
+            self.formula = self.template.formula
+
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
-    #isfilter=models.BooleanField()#define if this is a filter
-    formular = models.TextField()
+    
+    isfilter=models.BooleanField(default=False,verbose_name='This is a filter')#define if this is a filter
+    
+    key = models.CharField(max_length=100,verbose_name='Input Vars')
+    template=models.ForeignKey('score_template',null=True,blank=True)
+    formula = models.CharField(max_length=200,blank=True)
+    
+
     create_by = models.ForeignKey(User)
+
+# score template
+class score_template(models.Model):
+    def __unicode__(self):
+        return self.name+':'+self.description
+
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True)
+    formula = models.CharField(max_length=200)
+
 
 #since differnet experiment has different readouts, this is a table define specific readout of a experiment
 class readout(models.Model):
     def __unicode__(self):
-        return self.name        
+        return self.name
+    
+    def __init__(self,*args,**kwargs):
+        super(readout,self).__init__(*args,**kwargs)
+        if self.template:
+            self.identifier=self.template.identifier
+
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
-    keywords = models.TextField()
+    template=models.ForeignKey('readout_template',null=True,blank=True)
+    identifier = models.CharField(max_length=200,blank=True)
     create_by = models.ForeignKey(User)
 
-#the format of the file user upload.
-class fileformat(models.Model):
+
+#readout template
+class readout_template(models.Model):
     def __unicode__(self):
-        return self.name
+        return self.name+':'+self.description
     name = models.CharField(max_length=50)
+    description = models.TextField(blank=True)
+    identifier = models.CharField(max_length=200)
 
 
 #All the plate types.

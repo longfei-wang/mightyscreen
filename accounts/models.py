@@ -9,7 +9,7 @@ class usersprofile (UserenaBaseProfile):
     def __unicode__(self):
         return self.user.username
     
-    user = models.OneToOneField(User,related_name='usersprofile')
+    user = models.OneToOneField(User,related_name='user_profile')
     
     affiliation = models.CharField(max_length=100)
     position = models.CharField(max_length=50)

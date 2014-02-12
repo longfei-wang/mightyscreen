@@ -2,11 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-from main.models import project,experiment,readout,score,plate
+from main.models import project,readout,score,plate
 # Create your models here.
-
-
-
 
 
 
@@ -16,7 +13,7 @@ class ProjectForm(forms.ModelForm):#a model form for project
         instance = getattr(self, 'instance', None)
         if instance:
             if instance.pk:#make sure when edit a existing entry you don't mess around with certain fields
-                for i in 'name replicate leader experiment plate leader'.split():
+                for i in 'name readout replicate plate leader'.split():
                         self.fields[i].widget.attrs['readonly'] = True
                     # for i in 'experiment plate leader'.split():#select box also need disabled
                     #     self.fields[i].widget.attrs['disabled'] = 'disabled'
@@ -25,4 +22,4 @@ class ProjectForm(forms.ModelForm):#a model form for project
                 
     class Meta:
         model=project
-        fields='name description agreement experiment plate replicate score leader user'.split()
+        fields='name description plate readout replicate score leader user'.split()

@@ -50,11 +50,11 @@ INSTALLED_APPS = (
     #'compressor',
     'easy_thumbnails',
     #'fiber',
-    'userenabootstrap',
     'userena',
     'guardian',
     'accounts',
     'django_tables2',
+    'contact_form',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -101,9 +101,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "static"),
+   os.path.join(BASE_DIR, "static"),
 )
 
+#STATIC_ROOT = os.path.join(BASE_DIR,"static")
 
 STATIC_URL = '/static/'
 
@@ -150,6 +151,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
+#email setup
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_USE_TLS = True
@@ -157,6 +159,12 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'mightyscreen@gmail.com'
 EMAIL_HOST_PASSWORD = 'wlfyqwlfyq'
+
+#for the contact form
+DEFAULT_FROM_EMAIL=EMAIL_HOST_USER
+MANAGERS=[('admin',DEFAULT_FROM_EMAIL),
+
+	]
 
 ANONYMOUS_USER_ID = -1
 USERENA_WITHOUT_USERNAMES = True
@@ -170,3 +178,8 @@ LOGOUT_URL = '/accounts/signout/'
 f=open(BASE_DIR+'/README.md')
 AGREEMENT=f.read()
 f.close()
+
+#define which project is the demo project
+DEMO_PROJECT=1
+
+#FORCE_SCRIPT_NAME='/mightyscreen'
