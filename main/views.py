@@ -99,8 +99,7 @@ class index(view_class):
 
     def get(self,request):
 
-        data=project
-        return render(request, "main/index.html",{'data':data.objects.all()})
+        return render(request, "main/index.html")
 
 
 
