@@ -6,7 +6,7 @@ from django.contrib import messages
 from main.models import project, score as sc#alias cause name conflict with method
 from collections import OrderedDict as od
 from process.tasks import process_score
-from process.forms import PlatesToUpdate, ScoreForm
+from process.forms import PlatesToUpdate
 from django.db.models import Count
 from main.utils import get_platelist,job
 import process.readers as readers
@@ -37,8 +37,9 @@ class upload(view_class):
 
         datafile=request.FILES[u'files[]']
 
+        form = readers.reader(datafile=datafile,proj_id=self.proj.id).parse().render(request=request)
         try:
-            form = readers.reader(datafile=datafile,proj_id=self.proj.id).parse().render(request=request)
+            pass
         except Exception,e:
             form = '<div class="alert alert-danger">%s</div>'%e
         #generating json response array

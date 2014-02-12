@@ -1,5 +1,7 @@
 {% extends 'main/base.html' %}
-{% load fiber_tags %}
+
+{% load render_table from django_tables2 %}
+
 
 {% block content %}
     <!-- Main jumbotron for a primary marketing message or call to action -->
@@ -11,4 +13,8 @@
         <p><a href="{% url 'documents' %}" class="btn btn-primary btn-lg" role="button">Learn more &raquo;</a></p>
       </div>
     </div>
+
+
+    {% render_table data %}
+    
 {% endblock %}

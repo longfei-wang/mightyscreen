@@ -46,13 +46,14 @@ INSTALLED_APPS = (
     'project',
     'statistics',
     'process',  
-    'mptt',
-    'compressor',
+    #'mptt',
+    #'compressor',
     'easy_thumbnails',
-    'fiber',
+    #'fiber',
     'userena',
     'guardian',
     'accounts',
+    'django_tables2',
     'contact_form',
 )
 
@@ -63,8 +64,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'fiber.middleware.ObfuscateEmailAddressMiddleware',
-    'fiber.middleware.AdminPageMiddleware',
+    #'fiber.middleware.ObfuscateEmailAddressMiddleware',
+    #'fiber.middleware.AdminPageMiddleware',
 )
 
 ROOT_URLCONF = 'mightyscreen.urls'
@@ -77,10 +78,8 @@ WSGI_APPLICATION = 'mightyscreen.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mightyscreen',
-	'USER': 'mightyscreen',
-	'PASSWORD': 'ms2014',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'mightyscreen.db'),
     }
 }
 
@@ -101,13 +100,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-#STATICFILES_DIRS = (
-#    os.path.join(BASE_DIR, "static"),
-#)
+STATICFILES_DIRS = (
+   os.path.join(BASE_DIR, "static"),
+)
 
-STATIC_ROOT = os.path.join(BASE_DIR,"static")
+#STATIC_ROOT = os.path.join(BASE_DIR,"static")
 
-STATIC_URL = '/mightyscreen/static/'
+STATIC_URL = '/static/'
 
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 
@@ -181,6 +180,6 @@ AGREEMENT=f.read()
 f.close()
 
 #define which project is the demo project
-DEMO_PROJECT=3
+DEMO_PROJECT=1
 
-FORCE_SCRIPT_NAME='/mightyscreen'
+#FORCE_SCRIPT_NAME='/mightyscreen'
