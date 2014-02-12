@@ -46,14 +46,15 @@ INSTALLED_APPS = (
     'project',
     'statistics',
     'process',  
-    'mptt',
-    'compressor',
+    #'mptt',
+    #'compressor',
     'easy_thumbnails',
-    'fiber',
+    #'fiber',
     'userenabootstrap',
     'userena',
     'guardian',
     'accounts',
+    'django_tables2',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -63,8 +64,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'fiber.middleware.ObfuscateEmailAddressMiddleware',
-    'fiber.middleware.AdminPageMiddleware',
+    #'fiber.middleware.ObfuscateEmailAddressMiddleware',
+    #'fiber.middleware.AdminPageMiddleware',
 )
 
 ROOT_URLCONF = 'mightyscreen.urls'
@@ -77,10 +78,8 @@ WSGI_APPLICATION = 'mightyscreen.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mightyscreen',
-	'USER': 'mightyscreen',
-	'PASSWORD': 'ms2014',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'mightyscreen.db'),
     }
 }
 
