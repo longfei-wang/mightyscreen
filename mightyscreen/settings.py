@@ -107,7 +107,7 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR,"static")
 
-STATIC_URL = '/mightyscreen/static/'
+STATIC_URL = '/static/'
 
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 
@@ -183,4 +183,4 @@ f.close()
 #define which project is the demo project
 DEMO_PROJECT=3
 
-FORCE_SCRIPT_NAME='/mightyscreen'
+#FORCE_SCRIPT_NAME='/mightyscreen'

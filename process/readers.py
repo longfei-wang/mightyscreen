@@ -70,7 +70,7 @@ class reader():#a base class for all file format
         self.p=project.objects.get(pk=self.proj_id)
 
 
-        self.readout=self.p.experiment.readout
+        self.readout=self.p.readout
         self.readout_num=self.readout.count()
         self.replicate=self.p.rep()
         self.replicate_num=len(self.replicate)
@@ -112,11 +112,12 @@ class reader():#a base class for all file format
 
     def read_file(self):
         
-        filetype=self.param['filename'].split(".")[-1]
-        datafile = fs.open(self.param['filename'])
+	filename=self.param['filename']
+        filetype=filename.split(".")[-1]
+        datafile = fs.open(filename)
         if filetype=='csv':
             self.rawdata=pd.read_csv(datafile,header=None).fillna('').values
-        else:
+	else:
             raise Exception('Unsupported File Type!')  
     
 
@@ -162,7 +163,7 @@ class reader():#a base class for all file format
         for row in self.rawdata:#read through whole file and find out all the tables
             n+=1
             for m in self.readout.all():
-                if m.keywords in row[0]:
+                if m.identifier in row[0]:
                     result=self.is_table(n)
                     if result:
                         if result['x']>=len(self.col) and result['y']>=len(self.row):
@@ -173,8 +174,8 @@ class reader():#a base class for all file format
         return self
 
     def render(self,request):
-
-        if self.wells=='1536':
+        if self.wells==1536:
+	    #raise Exception(self.table_count)
             self.plates_num =  self.table_count * 4 / (self.replicate_num * self.readout_num)
         else:
             self.plates_num =  self.table_count / (self.replicate_num * self.readout_num)

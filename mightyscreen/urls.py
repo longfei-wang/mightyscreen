@@ -24,5 +24,6 @@ urlpatterns = patterns('',
     url(r'^accounts/signup/$','userena.views.signup',{'signup_form': RegisterForm,'extra_context':{'agreement':settings.AGREEMENT}}),
     url(r'^accounts/', include('userena.urls')),
     url(r'^contact/', include('contact_form.urls')),
+    url(r'^task/',include('djcelery.urls')),
 )
 

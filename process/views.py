@@ -21,6 +21,8 @@ import simplejson as json
 
 # Create your views here.
 
+logging.basicConfig(level=logging.DEBUG)
+
 
 class upload(view_class):
 
@@ -37,10 +39,10 @@ class upload(view_class):
 
         datafile=request.FILES[u'files[]']
 
-        form = readers.reader(datafile=datafile,proj_id=self.proj.id).parse().render(request=request)
         try:
-            pass
+            form = readers.reader(datafile=datafile,proj_id=self.proj.id).parse().render(request=request)
         except Exception,e:
+	    logging.exception(e)
             form = '<div class="alert alert-danger">%s</div>'%e
         #generating json response array
         result = []

@@ -128,7 +128,6 @@ class datalist(view_class):
         plates_selected=[]
         quoted_fields=['plate','well']#this is for the crappy quote/unquote requirement of mongoengine
         
-
         #
         #Perform all the Query
         #
@@ -179,7 +178,7 @@ class datalist(view_class):
             entry_list=querybase
             messages.warning(request,'A Internal Error Occured. Your list will be reset.')
             
-        cache.set('dataview'+cachekey,args,0)
+        cache.set('dataview'+cachekey,args,None)
 
         #
         #Decide fields to display
@@ -214,7 +213,7 @@ class datalist(view_class):
             else:#if nothing
                 field_list=curprojfield_list
 
-            cache.set('dataview_field_list'+cachekey,field_list,0)    
+            cache.set('dataview_field_list'+cachekey,field_list,None)    
 
 
         #
@@ -269,12 +268,9 @@ class save_view(view_class):#save a view
         response='there is nothing'
 
         query = cache.get('dataview'+self.cachekey(request)) 
-        
         field_list = cache.get('dataview_field_list'+self.cachekey(request))
 
         if query is not None and field_list:
-
-            
 
             entry = views(
                 query=query,

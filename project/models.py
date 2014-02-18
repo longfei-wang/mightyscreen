@@ -13,7 +13,7 @@ class ProjectForm(forms.ModelForm):#a model form for project
         instance = getattr(self, 'instance', None)
         if instance:
             if instance.pk:#make sure when edit a existing entry you don't mess around with certain fields
-                for i in 'name readout replicate plate leader'.split():
+                for i in 'name replicate plate leader'.split():
                         self.fields[i].widget.attrs['readonly'] = True
                     # for i in 'experiment plate leader'.split():#select box also need disabled
                     #     self.fields[i].widget.attrs['disabled'] = 'disabled'
