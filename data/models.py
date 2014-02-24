@@ -40,7 +40,8 @@ class project_data_base(Document):
                 else:#if there is no replicate then no A B suffix
 
                     try:
-                        setattr(self,j,self.readout[j])
+                        setattr(self,j,self.readout[j][0])
+
                     except:
                         setattr(self,j,None)
 
@@ -63,7 +64,9 @@ class project_data_base(Document):
                     x.append(field(j+'_'+i,j+'_'+i,'readout__'+j+'__'+str(n)))
                     n+=1
             else:
-                x.append(field(j,j,'readout__'+j))
+
+                x.append(field(j,j,'readout__'+j+'__0'))
+
 
         for k in self.scores:
             x.append(field(k,k,'score__'+k))

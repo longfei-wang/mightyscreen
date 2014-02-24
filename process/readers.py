@@ -438,7 +438,7 @@ class reader():#a base class for all file format
             for i in self.readout.all():
                 if i.name in self.col_names:
                     #print >>sys.stderr, i.name,self.col_names 
-                    entry.readout[i.name]=row[self.col_names.index(i.name)]
+                    entry.readout[i.name]=[row[self.col_names.index(i.name)]]
 
             entry.save()
 
