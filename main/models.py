@@ -35,7 +35,7 @@ class project(models.Model):
     
     primary_key = models.CharField(max_length=100,default='platewell')
     plate = models.ForeignKey('plate',null=True,blank=True)
-    replicate = models.PositiveSmallIntegerField(verbose_name='num of replicates')
+    replicate = models.PositiveSmallIntegerField(verbose_name='num of replicates',default=1)
 
     readout = models.ManyToManyField('readout',null=True,blank=True)
     score = models.ManyToManyField('score',null=True,blank=True)

@@ -1,0 +1,70 @@
+<hr>
+
+
+<div class="well">
+<h3>Note:</h3> 
+<ul>
+<li>We will only read columns that is defined in project/readouts.</li> 
+</ul>
+</div>
+
+
+<form role="form" class="form upload-form" enctype="multipart/form-data" method="post" action="{% url "upload" %}">
+{% csrf_token %}
+
+<input type="hidden" name="pointer" value="save">
+<input type="hidden" name="proj_id" value="{{proj_id}}">
+<input type="hidden" name="user_id" value="{{user.id}}">
+<input type="hidden" name="filename" value="{{filename}}">
+
+
+<div class="form-group">
+<label>Library</label>
+<div class="row">
+<div class='col-xs-3'>
+<select class="form-control" name="library_select" id="library_selector">
+<option selected="selected" value="">-----</option>
+    {% for i in library %}
+        <option value="{{ i.library_name }}">{{i.library_name}}</option>
+    {% endfor %}
+</select>
+</div>
+
+<div class='col-xs-3'>
+<input type="text" class="form-control" name="library" required="true" id="library_text">
+</div>
+
+</div>
+<p class="help-block">Please select library from the dropdown. Or input the library name if not in the box</p>
+</div>
+
+
+<div class="form-group">
+<label>Primary Key</label>
+<div class="row">
+<div class='col-xs-3'>
+<select class="form-control" name="primary_key">
+<!-- <option selected="selected" value="">-----</option> -->
+    {% for i in cols %}
+        <option value="{{ i }}">{{i}}</option>
+    {% endfor %}
+</select>
+</div>
+
+
+</div>
+<p class="help-block">Please select the primary key for your list</p>
+</div>
+
+
+
+<br>
+
+<div class="form-group">
+<button type="submit" class="btn btn-primary">Update</button>
+<button type="reset" class="btn btn-default">Clear</button>
+</div>
+
+</form>
+
+<hr>

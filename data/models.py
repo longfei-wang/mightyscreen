@@ -16,8 +16,8 @@ class project_data_base(Document):
 
     meta={'abstract':True}
     
-    hidden_fields=['id','create_by','platewell','submission','readout','score']#obsolete
-    visible_fields=['plate','well','create_date','welltype','hit']
+    hidden_fields=['id','create_by','submission','readout','score']#obsolete
+    visible_fields=['platewell','plate','well','create_date','welltype','hit']
     
     def __init__(self,*args,**kwargs):
  
@@ -27,13 +27,22 @@ class project_data_base(Document):
             
                         
             for j in self.readouts:
-                n=0
-                for i in self.reps:
-                    try:#if not exist then None
-                        setattr(self,j+'_'+i,self.readout[j][n])
+
+                if len(self.reps)>1:
+                    n=0
+                    for i in self.reps:
+                        try:#if not exist then None
+                            setattr(self,j+'_'+i,self.readout[j][n])
+                        except:
+                            setattr(self,j+'_'+i,None)
+                        n+=1
+
+                else:#if there is no replicate then no A B suffix
+
+                    try:
+                        setattr(self,j,self.readout[j])
                     except:
-                        setattr(self,j+'_'+i,None)
-                    n+=1
+                        setattr(self,j,None)
 
             for k in self.scores:
                 try:
@@ -48,10 +57,13 @@ class project_data_base(Document):
         x = [field(i,self._fields[i].verbose_name if self._fields[i].verbose_name else i,i) for i in self.visible_fields]#get all field we can display
         
         for j in self.readouts:
-            n=0
-            for i in self.reps:
-                x.append(field(j+'_'+i,j+'_'+i,'readout__'+j+'__'+str(n)))
-                n+=1
+            if len(self.reps)>1:
+                n=0
+                for i in self.reps:
+                    x.append(field(j+'_'+i,j+'_'+i,'readout__'+j+'__'+str(n)))
+                    n+=1
+            else:
+                x.append(field(j,j,'readout__'+j))
 
         for k in self.scores:
             x.append(field(k,k,'score__'+k))

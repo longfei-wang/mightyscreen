@@ -12,6 +12,7 @@ from main.models import project, submission
 from mongoengine.django.storage import GridFSStorage
 from jobtastic import JobtasticTask
 from library.models import *
+import sys
 
 fs = GridFSStorage()
 
@@ -49,17 +50,19 @@ class reader():#a base class for all file format
             self.param['user_id']=form.get('user_id')
             self.param['library']=form.get('library')
             self.param['table_count']=form.get('table_count')
+            self.param['primary_key']=form.get('primary_key')
             #what plates to update
             plates_num=0
             plates=[]
             
-            for i in range(1,int(form.get('plate_num'))+1):
-                if form.get('plate_'+str(i)):
-                    plates.append(form.get('plate_'+str(i)))
-                    plates_num+=1
+            if form.get('plate_num'):
+                for i in range(1,int(form.get('plate_num'))+1):
+                    if form.get('plate_'+str(i)):
+                        plates.append(form.get('plate_'+str(i)))
+                        plates_num+=1
 
-            self.param['plates_num']=plates_num
-            self.param['plates']=plates
+                self.param['plates_num']=plates_num
+                self.param['plates']=plates
 
         self.read_param()
 
@@ -72,11 +75,16 @@ class reader():#a base class for all file format
 
         self.readout=self.p.readout
         self.readout_num=self.readout.count()
-        self.replicate=self.p.rep()
-        self.replicate_num=len(self.replicate)
-        self.row=self.p.plate.row()
-        self.col=self.p.plate.col()
-        self.wells=self.p.plate.numofwells
+
+        try:#list file no need for these
+            self.replicate=self.p.rep()
+            self.replicate_num=len(self.replicate)
+            self.row=self.p.plate.row()
+            self.col=self.p.plate.col()
+            self.wells=self.p.plate.numofwells
+        except:
+            pass
+
         self.datetime=dt.datetime.now()
 
         self.read_file()
@@ -98,16 +106,6 @@ class reader():#a base class for all file format
         data.set_proj(project.objects.get(pk=self.proj_id))
         
         return data
-
-    def parse(self,*args,**kwargs):
-        """Determine the data type (list or grid) 
-        scan the datafile
-        generate forms based on that"""
-
-        if self.is_list():
-            return self.parse_list(*args,**kwargs)
-        else:
-            return self.parse_grid(*args,**kwargs)
 
 
     def read_file(self):
@@ -148,8 +146,38 @@ class reader():#a base class for all file format
         return self.rawdata[10]
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def parse(self,*args,**kwargs):
+        """Determine the data type (list or grid) 
+        scan the datafile
+        generate forms based on that"""
+
+        if self.is_list():
+            return self.parse_list(*args,**kwargs)
+        else:
+            return self.parse_grid(*args,**kwargs)
+
+
     def parse_list(self):
-	raise Exception('List file not supported yet')
+        """process a list file"""
+
+        self.col_names=list()
+
+        for col in self.rawdata[0]:
+            self.col_names.append(col)
+
         return self
 
 
@@ -173,7 +201,33 @@ class reader():#a base class for all file format
 
         return self
 
-    def render(self,request):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    def render(self,*args,**wargs):
+
+        if self.is_list():
+            return self.render_list(*args,**wargs)
+        else:
+            return self.render_grid(*args,**wargs)
+
+
+    def render_grid(self,request):
         if self.wells==1536:
 	    #raise Exception(self.table_count)
             self.plates_num =  self.table_count * 4 / (self.replicate_num * self.readout_num)
@@ -193,7 +247,31 @@ class reader():#a base class for all file format
                     )
 
         return response
-        
+    
+    def render_list(self,request):
+        response = get_template('process/listuploadform.html').render(
+                    RequestContext(request,{
+                    'library':library.objects.all(),
+                    'filename':self.param['filename'],
+                    'proj_id':self.p.id,
+                    'cols':self.col_names,
+                    })
+                        ) 
+        return response
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def map_table(self):
         #creat pointers that point at each table
 
@@ -246,8 +324,30 @@ class reader():#a base class for all file format
 
         return self.map
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
-    def save(self,job):
+    def save(self,*args,**wargs):
+
+        if self.is_list():
+            return self.save_list(*args,**wargs)
+        else:
+            return self.save_grid(*args,**wargs)
+
+    def save_grid(self,job):
         """#save tables into database row by row, might take some time."""
 
         self.map_table()
@@ -306,3 +406,44 @@ class reader():#a base class for all file format
         fs.delete(self.param['filename'])#if save is successfull delete the file in fs
         
         return results
+
+    def save_list(self,job):
+
+        data=self.get_data()
+        num_rows=len(self.rawdata)
+        cur_row=0
+
+        for row in self.rawdata[1:]:
+            
+            cur_row+=1
+
+            platewell = row[self.col_names.index(self.param['primary_key'])]
+
+            try:#check if this well has coresponding compound in our library
+                cmpd=compound.objects.get(plate_well = platewell,library_name=self.param['library'])
+            except:
+                cmpd=None
+
+            entry, created = data.objects.get_or_create(
+                library=self.param['library'],
+                platewell=platewell,
+                )
+
+            entry.create_date=self.datetime
+            entry.create_by=self.user.pk
+            entry.compound=cmpd
+        
+            readout=[]
+
+            for i in self.readout.all():
+                if i.name in self.col_names:
+                    #print >>sys.stderr, i.name,self.col_names 
+                    entry.readout[i.name]=row[self.col_names.index(i.name)]
+
+            entry.save()
+
+            job.update_progress(cur_row,num_rows)
+
+        fs.delete(self.param['filename'])#if save is successfull delete the file in fs
+
+        return num_rows-1

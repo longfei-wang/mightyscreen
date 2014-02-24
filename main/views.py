@@ -21,16 +21,6 @@ import time
 # Create your views here.
 
 
-class field_list_class():#template variable containter for field_list
-    def __init__(self,name,verbose_name):
-        self.name=name
-        self.verbose_name=verbose_name
-    def __eq__(self,other):
-        return self.name==other.name
-    def __ne__(self,other):
-        return not self.__eq__(other)
-
-
 class view_class(View):#the base view class for all
     
     job_obj=None
@@ -376,6 +366,7 @@ class export(view_class):
                 header_row=True
                 header=[]
                 
+
                 for i in field_list:
                     header.append(i.verbose_name)
                 writer.writerow(header)
