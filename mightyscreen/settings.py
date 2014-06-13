@@ -180,6 +180,12 @@ f=open(BASE_DIR+'/README.md')
 AGREEMENT=f.read()
 f.close()
 
+#for matplotlib
+#import tempfile
+#os.environ['MPLCONFIGDIR'] = tempfile.mkdtemp()
+
+os.environ['MPLCONFIGDIR']='/tmp/MPLCONFIGDIR'
+
 #define which project is the demo project
 DEMO_PROJECT=3
 

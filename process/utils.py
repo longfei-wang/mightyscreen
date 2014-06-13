@@ -8,7 +8,7 @@ class ScoreReader():
 	def __init__(self,proj,data):
 		self.data=data
 		self.proj=proj
-		self.readout=proj.experiment.readout.all()
+		self.readout=proj.readout.all()
 		self.rep=self.proj.rep()
 		self.dict={#except from col and rep name all should be lowercase
 		'neg':'N',

@@ -22,7 +22,7 @@ def process_score(data,proj,plates,datamodel):
 			#calculate score based on user's equation for each well.	
 			for h in proj.score.all():
 
-				score=x.parse(l,h.formular)
+				score=x.parse(l,h.formula)
 
 				
 				exec ('l.score["%(name)s"]=%(value)s'%{'name':h.name,'value':score})
