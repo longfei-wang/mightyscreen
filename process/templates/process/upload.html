@@ -52,7 +52,7 @@
 
 
 <div class="well">
-	
+<a class="btn btn-primary btn-block" href="{% url 'view' %}">Load Demo</a><hr>	
 	<form class="form"  id="fileupload" role="form" enctype="multipart/form-data" method="post" action="{% url 'upload' %}">
 	   {% csrf_token %}      
 	   <input type="hidden" name="pointer" value="upload">

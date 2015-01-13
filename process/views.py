@@ -21,7 +21,6 @@ import simplejson as json
 
 # Create your views here.
 
-logging.basicConfig(level=logging.DEBUG)
 
 
 class upload(view_class):
