@@ -12,11 +12,12 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'n+&v$xnl)&ri&!#*z^a4jn%s6ms8n$o=ap%-&re+f^f5vn6ryo'
+SECRET_KEY = 'gl=^$l1e&ya7qbznhg(#x*w9$f+^_kv(_q9c_k&oshpb%@6qf2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -35,20 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'bootstrapforms',
-    'main',
-    'south',
     'library',
-    'djcelery',
-    'kombu.transport.django',
-    'data',
-    'account',
-    'statistics',
-    'process',  
-    'mptt',
-    'compressor',
-    'easy_thumbnails',
-    'fiber',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -58,8 +46,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'fiber.middleware.ObfuscateEmailAddressMiddleware',
-    'fiber.middleware.AdminPageMiddleware',
 )
 
 ROOT_URLCONF = 'mightyscreen.urls'
@@ -69,17 +55,26 @@ WSGI_APPLICATION = 'mightyscreen.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mightyscreen',
-    	'HOST': '',
-    	'USER' : 'test',
-    	'PASSWORD': 'test',
-    	'PORT': '',
+if os.environ['HOST'] != 'mightyscreen':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'mightyscreen',
+            'HOST': '',
+            'USER' : 'test',
+            'PASSWORD': 'test',
+            'PORT': '',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'mightyscreen',
+            'USER': 'mightyscreen',
+            'PASSWORD': 'ms2014',
+        }
+    }
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
@@ -97,33 +92,5 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 STATIC_URL = '/static/'
-
-TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
-
-TEMPLATE_CONTEXT_PROCESSORS=("django.contrib.auth.context_processors.auth",
-"django.core.context_processors.debug",
-"django.core.context_processors.i18n",
-"django.core.context_processors.media",
-"django.core.context_processors.static",
-"django.core.context_processors.tz",
-"django.core.context_processors.request",
-"django.contrib.messages.context_processors.messages",
-"django.core.context_processors.request")
-
-MEDIA_ROOT =os.path.join(BASE_DIR,'media')
-MEDIA_URL = '/media/'
-
-
-import djcelery
-djcelery.setup_loader()
-BROKER_URL="django://"
-
-AUTH_PROFILE_MODULE = 'account.user_profile'
-
-import django.conf.global_settings as DEFAULT_SETTINGS
-
-STATICFILES_FINDERS = DEFAULT_SETTINGS.STATICFILES_FINDERS + (
-    'compressor.finders.CompressorFinder',
-)
