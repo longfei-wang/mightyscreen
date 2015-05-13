@@ -56,7 +56,25 @@ WSGI_APPLICATION = 'mightyscreen.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
-if os.environ['HOST'] != 'mightyscreen':
+if 'COMPUTERNAME' in os.environ.keys():
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'mightyscreen',
+            'USER': 'root',
+            'PASSWORD': '',
+        }
+    } 
+elif 'HOST' in os.environ.keys() and os.environ['HOST'] == 'mightyscreen':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'mightyscreen',
+            'USER': 'mightyscreen',
+            'PASSWORD': 'ms2014',
+        }
+    }
+else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -65,15 +83,6 @@ if os.environ['HOST'] != 'mightyscreen':
             'USER' : 'test',
             'PASSWORD': 'test',
             'PORT': '',
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'mightyscreen',
-            'USER': 'mightyscreen',
-            'PASSWORD': 'ms2014',
         }
     }
 
