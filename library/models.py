@@ -41,7 +41,6 @@ class compound(models.Model):
     sdf = models.TextField()
 
 
-    
 class sub_library(models.Model):
     def __unicode__(self):
         return self.sub_library_name 
@@ -55,3 +54,14 @@ class library(models.Model):
     library_name = models.CharField(max_length = 30)
     number_of_sub_librarys = models.IntegerField(default=0)
     number_of_compounds = models.IntegerField(default=0)
+
+#Serializer for REST framework
+
+from rest_framework import serializers
+
+class compound_serializer (serializers.ModelSerializer):
+    library_name = serializers.StringRelatedField()
+    sub_library_name = serializers.StringRelatedField()
+    class Meta:
+        model = compound
+
