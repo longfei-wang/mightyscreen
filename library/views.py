@@ -40,7 +40,7 @@ def json_plate_query(request,plate):
 	given plate and return the small molecule list in json
 	rest_framework
 	"""
-	plate = compound.objects.filter(plate=plate).values('plate_well','library_name')
+	plate = compound.objects.filter(plate=plate).values('plate_well','library_name__library_name')
 	if len(plate) == 0:
 		return HttpResponse(status =404)
 

@@ -22,10 +22,10 @@ class compound(models.Model):
     library_name = models.ForeignKey('library')
     sub_library_name = models.ForeignKey('sub_library')
     facility_reagent_id = models.CharField(max_length = 30)
-    plate = models.IntegerField(default=0)
+    plate = models.IntegerField()
     well = models.CharField(max_length = 20)
     plate_well = models.CharField(max_length = 20)
-    pubchem_cid = models.IntegerField(default=0)
+    pubchem_cid = models.IntegerField(null=True)
     chemical_name = models.TextField()
     molecular_weight = models.DecimalField(max_digits=10, decimal_places=5)
     formula = models.CharField(max_length = 30)
@@ -62,6 +62,8 @@ from rest_framework import serializers
 class compound_serializer (serializers.ModelSerializer):
     library_name = serializers.StringRelatedField()
     sub_library_name = serializers.StringRelatedField()
+
     class Meta:
         model = compound
-
+        fields = 'library_name sub_library_name facility_reagent_id plate well plate_well pubchem_cid chemical_name molecular_weight formula tpsa logp inchikey canonical_smiles inchi svg'.split()
+        
