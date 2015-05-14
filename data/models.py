@@ -1,30 +1,105 @@
 from django.db import models
-from main.models import data_base,project
+from django.contrib.auth.models import User
+
 # Create your models here.
 
-#automatically generate data model(table) for each project with their specific readouts
-#figured that the table would be too big to store all the data. 
-#A HTS project can easily have millions of entries. Better handle project seperately
-
-try:#preventing syncdb crash when project don't exist
-    proj=project.objects.all()
-    num=proj.count()
-except:
-    proj=None
-
-if proj:
-    for i in proj:
-        n=''
-        for j in i.experiment.readout.all():
-                for h in i.rep():
-
-                    n+='%(readout)s_%(rep)s=models.FloatField(null=True);'%{'readout':j,'rep':h}
+#Data object abstract for all screening raw data. Real table is in app:data
+#Two ways of identify compound. FaciclityID? or Plate+Well
+class data_base(models.Model):
+    
+    def __unicode__(self):
+    
+        return self.library+self.plate_well
         
-        for l in i.score.all():
-            
-            n+=l.name+'=models.FloatField(null=True);'
-        
-        #raise Exception(n)
-        exec ('class proj_'+str(i.pk)+'(data_base):'+n)
+    class Meta:
+
+        abstract=True
+    
+    library = models.CharField(max_length=50,verbose_name='Library')
+
+    plate_well = models.CharField(max_length=50)#using plate well as unique identifier, not good for more than one libraries
+
+    plate = models.CharField(max_length=20)
+
+    well = models.CharField(max_length=20)
+    
+    hit=models.PositiveSmallIntegerField(default=0,verbose_name='hit')
+
+    schoice = (
+    ('B','bad well'),
+    ('E','empty'),
+    ('P','positive control'),
+    ('N','negative control'),
+    ('X','compound'),
+    )
+    
+    welltype=models.CharField(max_length=1,choices=schoice,default='X')
+
+    project_id = models.CharField(max_length=50,verbose_name='Library')
+    
+    create_date = models.DateTimeField()
+    
+    create_by = models.ForeignKey(User)
 
 
+#############################################################################################
+
+#function to create a dynamic model
+def create_model(name, fields=None, app_label='', module='', options=None, admin_opts=None):
+    """
+    Create specified model
+    """
+    class Meta:
+        # Using type('Meta', ...) gives a dictproxy error during model creation
+        pass
+
+    if app_label:
+        # app_label must be set using the Meta inner class
+        setattr(Meta, 'app_label', app_label)
+
+    # Update Meta with any options that were provided
+    if options is not None:
+        for key, value in options.iteritems():
+            setattr(Meta, key, value)
+
+    # Set up a dictionary to simulate declarations within a class
+    attrs = {'__module__': module, 'Meta': Meta}
+
+    # Add in any fields that were provided
+    if fields:
+        attrs.update(fields)
+
+    # Create the class, which automatically triggers ModelBase processing
+    model = type(name, (models.Model,), attrs)
+
+    # Create an Admin class if admin options were provided
+    if admin_opts is not None:
+        class Admin(admin.ModelAdmin):
+            pass
+        for key, value in admin_opts:
+            setattr(Admin, key, value)
+        admin.site.register(model, Admin)
+
+    return model
+
+
+#function to create the table.
+def install(model):
+    from django.core.management import sql, color
+    from django.db import connection
+
+    # Standard syncdb expects models to be in reliable locations,
+    # so dynamic models need to bypass django.core.management.syncdb.
+    # On the plus side, this allows individual models to be installed
+    # without installing the entire project structure.
+    # On the other hand, this means that things like relationships and
+    # indexes will have to be handled manually.
+    # This installs only the basic table definition.
+
+    # disable terminal colors in the sql statements
+    style = color.no_style()
+
+    cursor = connection.cursor()
+    statements, pending = sql.sql_model_create(model, style)
+    for sql in statements:
+        cursor.execute(sql)

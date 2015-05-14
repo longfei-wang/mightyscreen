@@ -1,7 +1,0 @@
-modified from
-
-github.com/pinax/django-forms-bootstrap
-
-Simple Twitter Bootstrap filter for Django forms. Extracted from the bootstrap theme for Pinax.
-
-Django Forms Bootstrap is released under the MIT license. It does not include any styles or scripts from the Twitter Bootstrap project.
