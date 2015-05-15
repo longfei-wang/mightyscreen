@@ -1,7 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# Create your models here.
+#Create your models here.
+
+
+class csv_file(models.Model):
+
+	create_by = models.ForeignKey(User,null=True,blank=True)
+
+	create_date = models.DateTimeField(auto_now_add = True, blank = True)
+
+	project_id = models.CharField(max_length=50,verbose_name='Project ID',null=True,blank=True)
+
+	session_id = models.CharField(max_length=50,verbose_name='Session ID',null=True,blank=True)
+
+	raw_csv_file = models.FileField(null=True)
+
+	cleaned_csv_file = models.FileField(null=True,blank=True)
+
 
 #Data object abstract for all screening raw data. Real table is in app:data
 #Two ways of identify compound. FaciclityID? or Plate+Well
@@ -23,7 +39,7 @@ class data_base(models.Model):
 
     well = models.CharField(max_length=20)
     
-    hit=models.PositiveSmallIntegerField(default=0,verbose_name='hit')
+    hit=models.PositiveSmallIntegerField(default=0,verbose_name='Hit')
 
     schoice = (
     ('B','bad well'),
@@ -35,11 +51,11 @@ class data_base(models.Model):
     
     welltype=models.CharField(max_length=1,choices=schoice,default='X')
 
-    project_id = models.CharField(max_length=50,verbose_name='Library')
+    project_id = models.CharField(max_length=50,verbose_name='Project ID')
     
-    create_date = models.DateTimeField()
+    create_date = models.DateTimeField(auto_now_add = True, blank = True)
     
-    create_by = models.ForeignKey(User)
+    create_by = models.ForeignKey(User,null=True,blank=True)
 
 
 #############################################################################################

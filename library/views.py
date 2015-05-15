@@ -24,6 +24,7 @@ def json_compound_query(request,plate_well):
 	given platewell and library name return the small molecule data in json
 	rest_framework
 	"""
+	print request.user.pk
 	try:
 		cmpd = compound.objects.get(plate_well=plate_well)
 	except compound.DoesNotExist:
@@ -40,7 +41,7 @@ def json_plate_query(request,plate):
 	given plate and return the small molecule list in json
 	rest_framework
 	"""
-	plate = compound.objects.filter(plate=plate).values('plate_well','library_name__library_name')
+	plate = compound.objects.filter(plate=plate).values('plate_well','library_name')
 	if len(plate) == 0:
 		return HttpResponse(status =404)
 

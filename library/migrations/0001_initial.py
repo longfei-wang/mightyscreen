@@ -15,10 +15,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('facility_reagent_id', models.CharField(max_length=30)),
-                ('plate', models.IntegerField(default=0)),
+                ('plate', models.IntegerField()),
                 ('well', models.CharField(max_length=20)),
                 ('plate_well', models.CharField(max_length=20)),
-                ('pubchem_cid', models.IntegerField(default=0)),
+                ('pubchem_cid', models.IntegerField(null=True)),
                 ('chemical_name', models.TextField()),
                 ('molecular_weight', models.DecimalField(max_digits=10, decimal_places=5)),
                 ('formula', models.CharField(max_length=30)),
@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
             name='library',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('library_name', models.CharField(max_length=30)),
+                ('library_name', models.CharField(unique=True, max_length=30)),
                 ('number_of_sub_librarys', models.IntegerField(default=0)),
                 ('number_of_compounds', models.IntegerField(default=0)),
             ],
@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
             name='sub_library',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('sub_library_name', models.CharField(max_length=30)),
+                ('sub_library_name', models.CharField(unique=True, max_length=30)),
                 ('number_of_compounds', models.IntegerField(default=0)),
                 ('super_library', models.ForeignKey(to='library.library')),
             ],
