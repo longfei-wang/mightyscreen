@@ -1,22 +1,25 @@
 from django.db import models
 from django.contrib.auth.models import User
+import uuid
 
 #Create your models here.
 
 
 class csv_file(models.Model):
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-	create_by = models.ForeignKey(User,null=True,blank=True)
+    create_by = models.ForeignKey(User,null=True,blank=True)
 
-	create_date = models.DateTimeField(auto_now_add = True, blank = True)
+    create_date = models.DateTimeField(auto_now_add = True, blank = True)
 
-	project_id = models.CharField(max_length=50,verbose_name='Project ID',null=True,blank=True)
+    project_id = models.CharField(max_length=50,verbose_name='Project ID',blank=True)
 
-	session_id = models.CharField(max_length=50,verbose_name='Session ID',null=True,blank=True)
+    session_id = models.CharField(max_length=50,verbose_name='Session ID',blank=True)
 
-	raw_csv_file = models.FileField(null=True)
+    raw_csv_file = models.FileField(null=True,upload_to='CSV')
 
-	cleaned_csv_file = models.FileField(null=True,blank=True)
+    cleaned_csv_file = models.FileField(null=True,blank=True,upload_to='CSV')
 
 
 #Data object abstract for all screening raw data. Real table is in app:data
@@ -56,6 +59,7 @@ class data_base(models.Model):
     create_date = models.DateTimeField(auto_now_add = True, blank = True)
     
     create_by = models.ForeignKey(User,null=True,blank=True)
+
 
 
 #############################################################################################
@@ -119,3 +123,21 @@ def install(model):
     statements, pending = sql.sql_model_create(model, style)
     for sql in statements:
         cursor.execute(sql)
+
+
+#Serializer for REST framework
+
+from rest_framework import serializers
+
+class csv_file_serializer(serializers.ModelSerializer):
+    create_by = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username',
+    )
+    
+    class Meta:
+        model = csv_file
+        fields = 'id create_by project_id session_id raw_csv_file'.split()
+        read_only_fields = 'id project_id session_id'.split()
+        write_only_fields = 'raw_csv_file'.split()
+        

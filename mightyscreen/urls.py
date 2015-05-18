@@ -10,4 +10,5 @@ urlpatterns = patterns('',
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include('library.urls')),
+    url(r'^api/', include('data.urls')),
 )

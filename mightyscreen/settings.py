@@ -101,6 +101,12 @@ USE_L10N = True
 USE_TZ = True
 
 
+#Upload files
+
+MEDIA_ROOT =os.path.join(BASE_DIR,'media')
+MEDIA_URL = '/media/'
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
@@ -110,7 +116,11 @@ STATIC_URL = '/static/'
 
 #rest framework authentication
 REST_FRAMEWORK = {
+    # 'DEFAULT_RENDERER_CLASSES': (
+    #     'rest_framework.renderers.JSONRenderer',
+    # ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
     )
 }
+
