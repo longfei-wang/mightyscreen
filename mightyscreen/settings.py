@@ -100,7 +100,8 @@ USE_L10N = True
 
 USE_TZ = True
 
-
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 #Upload files
 
 MEDIA_ROOT =os.path.join(BASE_DIR,'media')
