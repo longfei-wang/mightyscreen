@@ -85,9 +85,18 @@ def checklist(inputfile=None):
 		wellIndex = header.index('well')
 
 		titles = [i for i in header if i not in "plate well".split()]
+
+		line = 1
+
 		for row in reader:
+			
+			line += 1
+
 			if len(row) != numCol:
-				return {"failed":"Bad CSV format"}
+				return {"failed":"Bad CSV format",
+						"header":header,
+						"row":row,
+						"line":line}
 
 			if row[plateIndex] not in plates:
 				plates.append(row[plateIndex])

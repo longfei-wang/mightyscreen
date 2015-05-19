@@ -35,21 +35,21 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		outputfile.open(mode='w')
 
 		results = grid2list(inputfile,outputfile)
-
-		inputfile.close()
-		outputfile.close()
-
+		
 		if 'is_list' in results.keys():
 			
 			inputfile.open(mode='rb')
 
 			results = checklist(inputfile)
-			
-			inputfile.close()
 
-			outputfile = inputfile
+			inputfile.open(mode='rb')
+
+			outputfile = ContentFile(inputfile.read())
 
 		file_instance.cleaned_csv_file.save(os.path.join('CSV',pk+'.csv'),outputfile)
+
+		inputfile.close()
+		outputfile.close()
 
 		return Response(results)
 
@@ -62,13 +62,5 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 	
 	def perform_create(self,serializer): #called when upload a file
 		
-		if not self.request.session.exists(self.request.session.session_key):
-		
-			self.request.session.create() 
-		
-		serializer.save(create_by=None if self.request.user.is_anonymous() else self.request.user,
-						session_id=self.request.session.session_key,
-						project_id=self.request.session.get('project_id',''))
-
-
+		serializer.save(project=find_or_create_project(self.request))
 
