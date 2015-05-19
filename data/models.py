@@ -9,13 +9,9 @@ class csv_file(models.Model):
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    create_by = models.ForeignKey(User,null=True,blank=True)
-
     create_date = models.DateTimeField(auto_now_add = True, blank = True)
 
-    project_id = models.CharField(max_length=50,verbose_name='Project ID',blank=True)
-
-    session_id = models.CharField(max_length=50,verbose_name='Session ID',blank=True)
+    project = models.ForeignKey(project,null=True,blank=True)
 
     raw_csv_file = models.FileField(null=True,upload_to='CSV')
 
@@ -54,76 +50,28 @@ class data_base(models.Model):
     
     welltype=models.CharField(max_length=1,choices=schoice,default='X')
 
-    project_id = models.CharField(max_length=50,verbose_name='Project ID')
+    project = models.ForeignKey(project)
     
     create_date = models.DateTimeField(auto_now_add = True, blank = True)
     
     create_by = models.ForeignKey(User,null=True,blank=True)
 
 
+class project(models.Model):
 
-#############################################################################################
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-#function to create a dynamic model
-def create_model(name, fields=None, app_label='', module='', options=None, admin_opts=None):
-    """
-    Create specified model
-    """
-    class Meta:
-        # Using type('Meta', ...) gives a dictproxy error during model creation
-        pass
+	name = models.CharField(max_length=10,verbose_name='Project Name')
 
-    if app_label:
-        # app_label must be set using the Meta inner class
-        setattr(Meta, 'app_label', app_label)
+	memo = models.TextField(blank=True)
 
-    # Update Meta with any options that were provided
-    if options is not None:
-        for key, value in options.iteritems():
-            setattr(Meta, key, value)
+	user = models.ForeignKey(User,null=True,blank=True)
 
-    # Set up a dictionary to simulate declarations within a class
-    attrs = {'__module__': module, 'Meta': Meta}
+	session = models.CharField(max_length=50,verbose_name='Session Key',blank=True)
 
-    # Add in any fields that were provided
-    if fields:
-        attrs.update(fields)
+	meta = models.TextField(blank=True)#this stores a dictionary of the meta data of this project.
 
-    # Create the class, which automatically triggers ModelBase processing
-    model = type(name, (models.Model,), attrs)
-
-    # Create an Admin class if admin options were provided
-    if admin_opts is not None:
-        class Admin(admin.ModelAdmin):
-            pass
-        for key, value in admin_opts:
-            setattr(Admin, key, value)
-        admin.site.register(model, Admin)
-
-    return model
-
-
-#function to create the table.
-def install(model):
-    from django.core.management import sql, color
-    from django.db import connection
-
-    # Standard syncdb expects models to be in reliable locations,
-    # so dynamic models need to bypass django.core.management.syncdb.
-    # On the plus side, this allows individual models to be installed
-    # without installing the entire project structure.
-    # On the other hand, this means that things like relationships and
-    # indexes will have to be handled manually.
-    # This installs only the basic table definition.
-
-    # disable terminal colors in the sql statements
-    style = color.no_style()
-
-    cursor = connection.cursor()
-    statements, pending = sql.sql_model_create(model, style)
-    for sql in statements:
-        cursor.execute(sql)
-
+	create_date = models.DateTimeField(auto_now_add = True, blank = True)
 
 #Serializer for REST framework
 

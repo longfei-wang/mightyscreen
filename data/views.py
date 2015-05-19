@@ -22,12 +22,17 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 
 	@detail_route(methods=['GET'])
 	def clean(self,request,pk=None): #The function to convert raw csv file to list csv file
-		
+		"""
+		inputfile is a grid file/list file
+		outputfile is a list file
+		"""
 		file_instance = get_object_or_404(csv_file,pk=pk)
-		file_instance.cleaned_csv_file.save(os.path.join('CSV',pk+'.csv'),file_instance.raw_csv_file)
 
 		inputfile = file_instance.raw_csv_file
-		outputfile = file_instance.cleaned_csv_file
+		outputfile = ContentFile('')#file_instance.cleaned_csv_file
+
+		inputfile.open(mode='rb')
+		outputfile.open(mode='w')
 
 		results = grid2list(inputfile,outputfile)
 
@@ -35,17 +40,24 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		outputfile.close()
 
 		if 'is_list' in results.keys():
+			
+			inputfile.open(mode='rb')
 
-			listfile = file_instance.cleaned_csv_file
+			results = checklist(inputfile)
 			
-			results = checklist(listfile)
-			
-			listfile.close()
+			inputfile.close()
+
+			outputfile = inputfile
+
+		file_instance.cleaned_csv_file.save(os.path.join('CSV',pk+'.csv'),outputfile)
 
 		return Response(results)
 
-	@detail_route(methods=['GET'])
+	@detail_route(methods=['POST'])
 	def parse(self,request,pk=None): #The function to parse list csv file to database
+		"""
+		take the list file and convert it to a format that can be used by front end.
+		"""
 		return Response("parse called")
 	
 	def perform_create(self,serializer): #called when upload a file

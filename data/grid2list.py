@@ -63,6 +63,7 @@ def checklist(inputfile=None):
 	"""
 	if inputfile==None: return {"failed":"inputfile is None"}
 
+	inputfile.seek(0)
 
 	titles = []
 	plates = []
@@ -123,6 +124,9 @@ def grid2list(inputfile=None,outputfile=None):
 	both files are python file handlers
 	"""
 	if (inputfile==None or outputfile==None): return {"failed":"inputfile or outputfile is None"}
+
+	inputfile.seek(0)
+	outputfile.seek(0)
 
 	plate_id = 0
 	title = ''
