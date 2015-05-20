@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block css %}
+
+<link href="{% static "css/fileinput.min.css" %}" rel="stylesheet" type="text/css">
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<input id="input-700" name="raw_csv_file" type="file" multiple class="file-loading">
+
+{% endblock %}
+
+
+
+
+
+{% block script %}
+
+<script src="{% static "js/fileinput.min.js" %}"></script>
+<script>
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+$("#input-700").fileinput({
+    uploadUrl: "{% url 'index' %}api/file/", // server upload action
+    //uploadAsync: true,
+});
+
+$('#input-700').on('filepreupload', function(event, data) {
+	data.jqXHR.setRequestHeader("X-CSRFToken",csrftoken) //csrf token
+});
+
+$('#input-700').on('fileuploaded', function(event, data) {
+    var response = data.response;
+    console.log(response);
+});
+
+
+
+</script>
+{% endblock %}

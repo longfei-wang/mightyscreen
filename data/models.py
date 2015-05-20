@@ -100,17 +100,16 @@ class data_base(models.Model):
 
 class data(data_base):
 
-	readout1 = models.DecimalField(null=True,blank=True)
-	readout2 = models.DecimalField(null=True,blank=True)
-	readout3 = models.DecimalField(null=True,blank=True)
-	readout4 = models.DecimalField(null=True,blank=True)
-	readout5 = models.DecimalField(null=True,blank=True)
-	readout6 = models.DecimalField(null=True,blank=True)
-	readout7 = models.DecimalField(null=True,blank=True)
-	readout8 = models.DecimalField(null=True,blank=True)
-	readout9 = models.DecimalField(null=True,blank=True)
-	readout10 = models.DecimalField(null=True,blank=True)
-
+	readout1 = models.FloatField(null=True,blank=True)
+	readout2 = models.FloatField(null=True,blank=True)
+	readout3 = models.FloatField(null=True,blank=True)
+	readout4 = models.FloatField(null=True,blank=True)
+	readout5 = models.FloatField(null=True,blank=True)
+	readout6 = models.FloatField(null=True,blank=True)
+	readout7 = models.FloatField(null=True,blank=True)
+	readout8 = models.FloatField(null=True,blank=True)
+	readout9 = models.FloatField(null=True,blank=True)
+    
 
 #Serializer for REST framework
 

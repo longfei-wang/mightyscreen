@@ -12,6 +12,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
     <link href="{% static "css/main.css" %}" rel="stylesheet" type="text/css">
+    
+    {% block css %}
+
+    {% endblock %}
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -161,19 +165,11 @@
 
 <script src="{% static "js/jquery.min.js" %}"></script>
 <script src="{% static "js/bootstrap.min.js" %}"></script>
-<script>
+<script src="{% static "js/d3.min.js" %}"></script>
 
-//for plate selector module under menu
-$("#plate-selector").change(function(){
-    $("#selector-target").val($(this).val());
-});
-
-//to disable readonly select box. 
-$("select[readonly] > option:not([selected])").prop('disabled',true)
-
-</script>
 {% block script %}
-{% endblock %}
-</body>
 
+{% endblock %}
+
+</body>
 </html>
