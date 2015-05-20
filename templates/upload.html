@@ -43,7 +43,7 @@ function getCookie(name) {
 var csrftoken = getCookie('csrftoken');
 
 $("#input-700").fileinput({
-    uploadUrl: "{% url 'index' %}api/file/", // server upload action
+    uploadUrl: "{% url 'csv_file-list' %}", // server upload action
     //uploadAsync: true,
 });
 
@@ -53,9 +53,7 @@ $('#input-700').on('filepreupload', function(event, data) {
 
 $('#input-700').on('fileuploaded', function(event, data) {
     var response = data.response;
-    console.log(response);
 });
-
 
 
 </script>
