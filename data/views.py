@@ -35,7 +35,7 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		outputfile.open(mode='w')
 
 		results = grid2list(inputfile,outputfile)
-		
+
 		if 'is_list' in results.keys():
 			
 			inputfile.open(mode='rb')
@@ -58,6 +58,111 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		"""
 		take the list file and convert it to a format that can be used by front end.
 		"""
+
+		def file2dict(csvfile,plates,readouts):
+			"""
+			convert a list file to a dict that has platewell as key. Readouts are arrays.
+			"""
+			import csv
+
+			sample = csvfile.read(1024)
+			csvfile.seek(0)
+
+			dialect = csv.Sniffer().sniff(sample)
+			reader = csv.DictReader(csvfile, dialect=dialect)
+
+			content = {}
+
+			for row in reader:
+
+				plateNum = plates[row['plate']]
+				wellNum = row['well']
+
+				if (plateNum+wellNum) in content.keys():
+				
+					for k,v in readouts.iteritems():
+						content[plateNum+wellNum][v] += [row[k]]
+
+				else:
+
+					content[plateNum+wellNum] = {
+						'plate':plateNum,
+						'well':wellNum,
+					}
+
+					for k,v in readouts.iteritems():
+						content[plateNum+wellNum][v] = [row[k]]
+
+			return content
+
+		def dict2object(d,project):
+			"""
+			convert a dict that has platewell as key, to data objects
+			"""
+			l = []
+			meta = {}
+			for k,v in d.iteritems():
+
+				counter = 1
+				
+				dataDict = {
+					'library': 'ICCB',
+					'project': project,
+					'plate_well': k,
+					'plate': v['plate'],
+					'well': v['well']
+				}
+				
+				for r in readouts.values():
+					
+					for i,item in enumerate(v[r]):
+						if counter not in meta:
+							meta[str(counter)] = r + str(i+1)
+						dataDict['readout'+str(counter)] = item
+						counter += 1
+
+				l.append(data(**dataDict))
+
+			return l,meta
+
+
+
+		file_instance = get_object_or_404(csv_file,pk=pk)
+
+		project =find_or_create_project(request)
+
+		d = request.POST
+
+
+		plates = {}
+		readouts = {}
+		
+
+		for i,item in enumerate(d.getlist('oreadouts[]')):
+			if d.getlist('readouts[]')[i]:
+				readouts[item] = d.getlist('readouts[]')[i]
+
+
+		for i,item in enumerate(d.getlist('oplates[]')):
+			plates[item] = d.getlist('plates[]')[i]
+
+		f = file_instance.cleaned_csv_file
+		f.open(mode='rb')
+
+		#check if plate already exists in database if so delete
+		data.objects.filter(plate__in=set(plates.values())).delete()
+
+		#raise Exception(a)
+
+		dataList, meta = dict2object(file2dict(f,plates,readouts),project)
+
+		#bulk create data. This is much faster than 1 by 1
+		data.objects.bulk_create(dataList)
+
+		#update the meta data of this project
+		project.meta = meta
+		project.save()
+
 		return Response("parse called")
 	
 	def perform_create(self,serializer): #called when upload a file

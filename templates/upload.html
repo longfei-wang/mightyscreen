@@ -13,6 +13,9 @@
 
 <input id="input-700" name="raw_csv_file" type="file" multiple class="file-loading">
 
+<div id="clean"></div>
+
+<div id="parse"></div>
 {% endblock %}
 
 
@@ -42,19 +45,106 @@ function getCookie(name) {
 
 var csrftoken = getCookie('csrftoken');
 
-$("#input-700").fileinput({
-    uploadUrl: "{% url 'csv_file-list' %}", // server upload action
-    //uploadAsync: true,
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
 });
 
-$('#input-700').on('filepreupload', function(event, data) {
-	data.jqXHR.setRequestHeader("X-CSRFToken",csrftoken) //csrf token
-});
 
-$('#input-700').on('fileuploaded', function(event, data) {
-    var response = data.response;
-});
+function updateParse(d,fid) {
+    var form = d3.select('#parse')
+    .append('div')
+    .attr('class','parseform')
 
+    var plateform = form
+        .append('div')
+        .attr('class','plateform form-group');
+
+    plateform.append('label')
+        .text('Rename Plates: '+d.plates.join(','));
+
+    plateform.append('input')
+        .attr('class','form-control')
+        .attr('name',fid+'plates')
+        .attr('value',d.plates.join(','));
+
+    var readoutform = form.selectAll('.readoutform')
+        .data(d.titles)
+        .enter()
+        .append('div')
+        .attr('class','readoutform form-group');
+
+    readoutform.append('label')
+        .text(function(d,i){return 'Rename readout'+(i+1)+': '+d;});
+
+    readoutform.append('input')
+        .attr('class','form-control')
+        .attr('name',fid+'readout[]')
+        .attr('value',function(d){return d.replace(/\s+/g, '').substring(0,20);});
+
+    form.append('button')
+        .attr('class','btn btn-default')
+        .text('Confirm and Submit')
+        .on('click',function(){
+            //array of old/new plate numbers and readouts
+            var data = {oplates: d.plates,
+                oreadouts: d.titles,
+                plates: $('input[name="' + fid +'plates"]').val().split(','),
+                readouts: d3.selectAll('input[name="' + fid +'readout[]"]')[0].map(function(d){ return d.value;}), //!!
+                }
+            console.log(data)
+            $.post(
+                "{% url 'csv_file-list' %}"+fid+"/parse/",
+                data,   
+                function(d){alert(d);}
+            );
+        });
+
+}
+
+function updateClean(filename,fid,pid) {
+    //Create a button to call the clean method of file on server
+    d3.select('#clean')
+    .append('button')
+    .attr('class','btn btn-default')
+    .text("Click to process "+filename)
+    .on("click",function(){
+        $.get("{% url 'csv_file-list' %}"+fid+"/clean/",function(d){
+            updateParse(d,fid);
+        });
+    });
+}
+
+function init() {
+    
+
+
+    $("#input-700").fileinput({
+        uploadUrl: "{% url 'csv_file-list' %}", // server upload action
+        uploadAsync: true,
+        maxFileCount: 1,
+    });
+
+    $('#input-700').on('filepreupload', function(event, data) {
+    	data.jqXHR.setRequestHeader("X-CSRFToken",csrftoken) //csrf token
+    });
+
+    $('#input-700').on('fileuploaded', function(event, data) {
+        var response = data.response;
+        updateClean(data.files[0].name,data.response.id,data.response.project);
+    });
+
+}
+
+init();
 
 </script>
 {% endblock %}

@@ -1,8 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
-import uuid
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+import uuid, os
 
 #Create your models here.
+
 
 class project(models.Model):
 
@@ -14,8 +17,6 @@ class project(models.Model):
 
 	user = models.ForeignKey(User,null=True,blank=True)
 
-	session = models.CharField(max_length=50,verbose_name='Session Key',blank=True)
-
 	meta = models.TextField(blank=True)#this stores a dictionary of the meta data of this project.
 
 	create_date = models.DateTimeField(auto_now_add = True, blank = True)
@@ -26,25 +27,46 @@ def find_or_create_project(request):
 	find the project instance based on request
 	if can't find any, create one and return the new project
 	"""
-	if not request.session.exists(request.session.session_key):#make sure session key is not None
-	
-		request.session.create()
 
 	if project.objects.filter(id=request.session.get('project', None)).exists(): #if cannot find project
 			
 		p = project.objects.get(id=request.session.get('project', None))
 
-	elif project.objects.filter(session=request.session.session_key).exists(): #if cannot find session
-
-		p = project.objects.get(session=request.session.session_key)
-
 	else:
 
 		p = project(user=None if request.user.is_anonymous() else request.user, #anonymouse user cannot be saved as a user object
-					session=request.session.session_key)
+					)
+
 		p.save()
 
+		request.session['project'] = p.id.hex #set the session project keyword
+
 	return p
+
+
+
+#overwrite class from pytoolbox
+class OverwriteMixin(object):
+    """Update get_available_name to remove any previously stored file (if any) before returning the name."""
+
+    def get_available_name(self, name):
+        self.delete(name)
+        return name
+
+
+
+class OverwriteFileSystemStorage(OverwriteMixin, FileSystemStorage):
+	"""A file-system based storage that let overwrite files with the same name."""
+
+
+
+def get_file_name(instance,filename):
+	"""
+	This convert a filename to a unique filename
+	"""
+	return os.path.join(settings.CSV_FILE_DIR,uuid.uuid4().hex+'.csv')
+
+
 
 class csv_file(models.Model):
     
@@ -54,9 +76,35 @@ class csv_file(models.Model):
 
     project = models.ForeignKey('project',null=True,blank=True)
 
-    raw_csv_file = models.FileField(null=True,upload_to='CSV')
+    raw_csv_file = models.FileField(null=True,upload_to=get_file_name)
 
-    cleaned_csv_file = models.FileField(null=True,blank=True,upload_to='CSV')
+    cleaned_csv_file = models.FileField(null=True,blank=True,upload_to=settings.CSV_FILE_DIR,storage=OverwriteFileSystemStorage())
+
+
+#Serializer for REST framework
+from rest_framework import serializers
+
+class csv_file_serializer(serializers.ModelSerializer):
+
+    
+    class Meta:
+        model = csv_file
+        fields = 'id project raw_csv_file'.split()
+        read_only_fields = 'id project'.split()
+        write_only_fields = 'raw_csv_file'.split()
+
+# Receive the pre_delete signal and delete the file associated with the model instance.
+from django.db.models.signals import pre_delete
+from django.dispatch.dispatcher import receiver
+
+@receiver(pre_delete, sender=csv_file)
+def csv_file_delete(sender, instance, **kwargs):
+	"""
+	make sure when csv_file model is deleted the files get deleted too.
+	"""
+	# Pass false so FileField doesn't save the model.
+	instance.raw_csv_file.delete(False)
+	instance.cleaned_csv_file.delete(False)
 
 
 #Data object abstract for all screening raw data. Real table is in app:data
@@ -70,12 +118,14 @@ class data_base(models.Model):
     class Meta:
 
         abstract=True
+        unique_together = ('plate_well','project')
+        index_together = ['plate_well','project']
     
     library = models.CharField(max_length=50,verbose_name='Library')
 
     plate_well = models.CharField(max_length=50)#using plate well as unique identifier, not good for more than one libraries
 
-    plate = models.CharField(max_length=20)
+    plate = models.IntegerField()
 
     well = models.CharField(max_length=20)
     
@@ -89,13 +139,11 @@ class data_base(models.Model):
     ('X','compound'),
     )
     
-    welltype=models.CharField(max_length=1,choices=schoice,default='X')
+    welltype=models.CharField(max_length=1,choices=schoice,default='E')
 
     project = models.ForeignKey(project)
     
     create_date = models.DateTimeField(auto_now_add = True, blank = True)
-    
-    create_by = models.ForeignKey(User,null=True,blank=True)
 
 
 class data(data_base):
@@ -109,18 +157,11 @@ class data(data_base):
 	readout7 = models.FloatField(null=True,blank=True)
 	readout8 = models.FloatField(null=True,blank=True)
 	readout9 = models.FloatField(null=True,blank=True)
-    
-
-#Serializer for REST framework
-
-from rest_framework import serializers
-
-class csv_file_serializer(serializers.ModelSerializer):
+	readout10 = models.FloatField(null=True,blank=True)
+	readout11 = models.FloatField(null=True,blank=True)
+	readout12 = models.FloatField(null=True,blank=True)
 
     
-    class Meta:
-        model = csv_file
-        fields = 'id project raw_csv_file'.split()
-        read_only_fields = 'id project'.split()
-        write_only_fields = 'raw_csv_file'.split()
+
+
         
