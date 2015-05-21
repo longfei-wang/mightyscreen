@@ -8,7 +8,7 @@ from rest_framework import routers
 
 router = routers.DefaultRouter()
 router.register(r'file', views.FileViewSet)
-
+router.register(r'data', views.DataViewSet)
 
 urlpatterns = patterns('',
     )

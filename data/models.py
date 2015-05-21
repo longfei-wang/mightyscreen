@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
+from rest_framework import serializers
 import uuid, os
 
 #Create your models here.
@@ -82,7 +83,7 @@ class csv_file(models.Model):
 
 
 #Serializer for REST framework
-from rest_framework import serializers
+
 
 class csv_file_serializer(serializers.ModelSerializer):
 
@@ -162,6 +163,9 @@ class data(data_base):
 	readout12 = models.FloatField(null=True,blank=True)
 
     
+#the serializer for data
+class data_serializer(serializers.ModelSerializer):
 
-
-        
+    class Meta:
+        model = data
+        #fields = 'plate_well plate well hit welltype create_date readout1 readout2 readout3 readout4 readout5'.split()

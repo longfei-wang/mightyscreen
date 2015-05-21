@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework import generics
 from rest_framework import mixins
 from rest_framework import viewsets
-from rest_framework.decorators import api_view, detail_route
+from rest_framework.decorators import api_view, detail_route, list_route
 from rest_framework.response import Response
 from django.core.files.base import ContentFile
 from data.models import *
@@ -12,6 +12,16 @@ from data.grid2list import grid2list, checklist
 import os
 # Create your views here.
 
+class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
+	"""
+	populate data based on 
+	"""
+	queryset = data.objects.all()
+	serializer_class = data_serializer
+	
+	def list(self,request):
+		s = self.serializer_class(self.queryset,many=True)
+		return Response(s.data)
 
 class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.GenericViewSet):
 	"""
@@ -151,8 +161,6 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 
 		#check if plate already exists in database if so delete
 		data.objects.filter(plate__in=set(plates.values())).delete()
-
-		#raise Exception(a)
 
 		dataList, meta = dict2object(file2dict(f,plates,readouts),project)
 
