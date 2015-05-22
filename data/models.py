@@ -164,8 +164,17 @@ class data(data_base):
 
     
 #the serializer for data
-class data_serializer(serializers.ModelSerializer):
+class DataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = data
         #fields = 'plate_well plate well hit welltype create_date readout1 readout2 readout3 readout4 readout5'.split()
+
+
+import django_filters
+
+#filter class for data
+class DataFilter(django_filters.FilterSet):
+    class Meta:
+        model = data
+        fields = ['plate']
