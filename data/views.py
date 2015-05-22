@@ -6,22 +6,22 @@ from rest_framework.decorators import api_view, detail_route, list_route
 from rest_framework.response import Response
 from django.core.files.base import ContentFile
 from data.models import *
-
-
 from data.grid2list import grid2list, checklist
 import os
 # Create your views here.
 
 class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 	"""
-	populate data based on 
+	populate data based on query
 	"""
 	queryset = data.objects.all()
-	serializer_class = data_serializer
-	
-	def list(self,request):
-		s = self.serializer_class(self.queryset,many=True)
-		return Response(s.data)
+	serializer_class = DataSerializer
+	filter_class = DataFilter
+
+	def get_queryset(self):
+		p = get_object_or_404(project,id=self.request.session.get('project',None))
+		return data.objects.filter(project=p)
+
 
 class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.GenericViewSet):
 	"""
