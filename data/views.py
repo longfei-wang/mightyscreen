@@ -1,7 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from rest_framework import generics
-from rest_framework import mixins
-from rest_framework import viewsets
+from rest_framework import generics, mixins, viewsets
 from rest_framework.decorators import api_view, detail_route, list_route
 from rest_framework.response import Response
 from django.core.files.base import ContentFile
@@ -17,6 +15,7 @@ class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 	queryset = data.objects.all()
 	serializer_class = DataSerializer
 	filter_class = DataFilter
+	search_fields = ('plate_well', 'plate', 'well')
 
 	def get_queryset(self):
 		p = get_object_or_404(project,id=self.request.session.get('project',None))

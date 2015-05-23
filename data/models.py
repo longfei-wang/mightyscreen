@@ -177,4 +177,5 @@ import django_filters
 class DataFilter(django_filters.FilterSet):
     class Meta:
         model = data
-        fields = ['plate']
+        fields = 'plate well hit plate_well welltype readout1 readout2 readout3 readout4 \
+        readout5 readout6 readout7 readout8 readout9 readout10 readout11 readout12'.split()
