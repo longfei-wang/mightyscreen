@@ -18,65 +18,13 @@
 
 
 {% block script %}
-<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="{% static "tablevis.js" %}"></script>
 
 <script>
-var update_table = function(data) {
- 	//start drawing the table
-	var rows = tbody.selectAll("tr.row").data(data);
 
-	rows.enter()
-		.append("tr")
-		.attr("class", "row");
-	rows.exit().remove();
-	
-	var cells = rows.selectAll("td")
-		.data(function(row){
-		return columns.map(function(c, i) {
-			return c == 'gdp' ? d3.format(".1s")(row[c]) : 
-			(c=='population' ? d3.format(",")(row[c]) : row[c]);
-		});
-	});
+var MyEventHandler = new Object();
 
-	cells.enter().append("td")
-	cells.text(function(d) {return d; });
-	cells.exit().remove();
-}
-
-var draw_table = function(data) {
-	//draw table head
-	var columns = Object.keys(data[0]);
-
-	var table = d3.select("#tableview").append("table"),
-		thead = table.append("thead")
-			.attr("class", "thead");
-
-	tbody = table.append("tbody");
-	table.append("caption")
-	.html("World Countries Ranking");
-
-	var sortorder = -1;
-
-		thead.append("tr").selectAll("th")
-		.data(columns)
-		.enter()
-		.append("th")
-		.text(function(d) { return d; });
-		//.on("click", function(header, i) {
-
-		// sortorder = - sortorder;
-		// tbody.selectAll("tr").sort(function(a, b) {
-		// 		//sort function that use name as secondary sort.
-		// 		return sortorder * (a[header] == b[header] ? d3.descending(a['name'],b['name'])  : d3.descending(a[header], b[header]));
-		// 	});
-		// });
-	update_table(data);
-}
-
-
-d3.json('{% url "data-list" %}', function(data){
-	draw_table(data.results);
-});
+var tableview =new TableVis(d3.select("#tableview"), '{% url "data-list" %}', MyEventHandler);
 
 </script>
 

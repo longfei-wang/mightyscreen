@@ -168,7 +168,7 @@ class DataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = data
-        #fields = 'plate_well plate well hit welltype create_date readout1 readout2 readout3 readout4 readout5'.split()
+        fields = 'plate_well plate well hit welltype create_date readout1 readout2 readout3 readout4 readout5'.split()
 
 
 import django_filters
