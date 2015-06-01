@@ -6,6 +6,8 @@ from django.core.files.base import ContentFile
 from data.models import *
 from data.grid2list import grid2list, checklist
 import os
+from sets import Set
+from django.db.models import Count
 # Create your views here.
 
 class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
@@ -16,10 +18,38 @@ class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 	serializer_class = DataSerializer
 	filter_class = DataFilter
 	search_fields = ('plate_well', 'plate', 'well')
+	lookup_field='plate'
+	project=None
+	plate_list=[]
 
 	def get_queryset(self):
-		p = get_object_or_404(project,id=self.request.session.get('project',None))
-		return data.objects.filter(project=p)
+
+		self.project = get_object_or_404(project,id=self.request.session.get('project',None))
+		
+		pdata = data.objects.filter(project=self.project)
+
+		for i in list(pdata.order_by('-create_date','plate').values('plate','create_date').annotate(x=Count('plate'))):
+			self.plate_list.append(i['plate'])
+		
+		return pdata
+
+	@list_route()
+	def all(self,request):
+		"""
+		list view for plateview
+		"""
+		query = self.get_queryset();
+		plate = self.request.GET.get('plate',None)
+
+		if plate:
+			query = query.filter(plate=plate)
+
+		serializer = self.get_serializer(query,many=True)
+		return Response({
+			'plate_list':self.plate_list,
+			'meta':self.project.meta,
+			'results':serializer.data})
+
 
 
 class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.GenericViewSet):

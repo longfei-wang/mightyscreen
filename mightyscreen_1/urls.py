@@ -16,7 +16,6 @@ urlpatterns = patterns('',
     url(r'^admin/fiber/', include('fiber.admin_urls')),
     url(r'^jsi18n/$', 'django.views.i18n.javascript_catalog', {'packages': ('fiber',),}),
     url(r'^documents/', 'fiber.views.page',name='documents'),
-
-
+    
     url(r'^media/(?P<path>.*)$','django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes':False}),
 )

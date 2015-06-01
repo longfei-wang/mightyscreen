@@ -41,7 +41,9 @@
 
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="{% url "index" %}">Home</a></li>
+                    <li><a href="{% url "uploadview" %}">Upload</a></li>
+                    <li><a href="{% url "tableview" %}">TableView</a></li>
+                    <li><a href="{% url "plateview" %}">PlateView</a></li>
                     {% if user.is_authenticated %}
                     <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
@@ -58,7 +60,6 @@
                             {% endfor %}                            
                         </ul>
                     </li>
-                    <li><a href="">Jobs</a></li>
                     {% endif %}
 
                     <li><a href="">Documents</a></li>
@@ -98,42 +99,11 @@
 
 
 <!-- row of columns -->
-<div class="wrapper">
+<div class="wrapper container-fluid">
 
     <div class="row">
 
-        <div class="col-lg-3 col-md-3 col-sm-12">
-            <div class="well sidebar-nav">
-
-                    <ul class="nav nav-pills nav-stacked">
-                        
-                        <li><a href="">Process</a></li>
-                        <li><a href="">Evaluate</a></li>
-                        <li><a href="">List</a></li>
-                        <li><a href="">Plot</a> </li>
-                    </ul>
-
-            </div>
-
-            {% if plates %}
-            <div class="well"><!-- plate selector -->
-                <form role="form" class="form-horizontal">
-                <div class="form-group">
-                <label class="col-sm-3 control-label">Plates</label>
-                    <div class="col-sm-9">
-                        <select multiple id="plate-selector" class="form-control" size={{plates|length}}>
-                        {% for i in plates %}
-
-                            <option {% if i in plates_selected %}selected="selected"{% endif %} value="{{i}}">{{i}}</option>    
-                        {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                </form>
-            </div>
-            {% endif %}
-        </div>
-        <div class="col-lg-9 col-md-9 col-sm-12">
+        <div class="col-lg-12 col-md-12 col-sm-12">
                 {# all messages will be displayed here #}
                 {% if messages %}
                     {% for message in messages %}

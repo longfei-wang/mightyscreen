@@ -47,7 +47,7 @@ TableVis.prototype.initVis = function(){
     var table = this.parentElement.append("table")
             .attr("class","table");
     
-    table.append("caption").html("World Countries Ranking");
+    table.append("caption").html('TableView');
 
     this.thead = table.append("thead")
             .attr("class", "thead")
