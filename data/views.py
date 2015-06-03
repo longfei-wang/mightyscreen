@@ -22,14 +22,15 @@ class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 	project=None
 	plate_list=[]
 
+
 	def get_queryset(self):
 
 		self.project = get_object_or_404(project,id=self.request.session.get('project',None))
 		
 		pdata = data.objects.filter(project=self.project)
 
-		for i in list(pdata.order_by('-create_date','plate').values('plate','create_date').annotate(x=Count('plate'))):
-			self.plate_list.append(i['plate'])
+		self.plate_list = [ i['plate'] for i in \
+		list(pdata.order_by('-create_date','plate').values('plate','create_date').annotate(x=Count('plate'))) ]
 		
 		return pdata
 
@@ -39,14 +40,16 @@ class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 		list view for plateview
 		"""
 		query = self.get_queryset();
-		plate = self.request.GET.get('plate',None)
+		plate = self.request.GET.get('plate', (None if self.plate_list == [] else self.plate_list[0]))
 
 		if plate:
 			query = query.filter(plate=plate)
 
+
 		serializer = self.get_serializer(query,many=True)
 		return Response({
 			'plate_list':self.plate_list,
+			'plate':plate,
 			'meta':self.project.meta,
 			'results':serializer.data})
 

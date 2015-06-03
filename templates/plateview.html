@@ -80,8 +80,7 @@
 
 
             // variables keeping global knowledge of the data
-            var allData = [];
-            var groupedData = []; //grouped data is all data aggregated on plate number
+            var thisData = [];
             var platelist = [];
             //define what readouts we are looking for.
             var channels = ["fpA","fpB","fiA","fiB"];
@@ -231,42 +230,34 @@
 
                 if (!error) {
 
-                    platelist = _allData.plate_list;
+                    thisData.plateList = _allData.plate_list;
 
-                    channels = d3.range(1,12).map(function(d){ return _allData.meta[d]; })
+                    thisData.channels = d3.range(1,12).map(function(d){ return _allData.meta[d]; })
                                 .filter(function(d){ return d != null; });
                     
+                    thisData.curPlate = _allData.plate;
 
-                    allData = _allData.map(function (d) {
+                    thisData.results = _allData.results.map(function (d) {
                     
-
                         var res = {
-                            platewell: d.platewell,
+                            platewell: d.plate_well,
                             plate:d.plate,
                             well:d.well,
                             welltype:d.welltype,
-                            chemical_name: d.chemical_name,
-                            fpA: parseFloat(d.fpA),
-                            fpB: parseFloat(d.fpB),
-                            fiA: parseFloat(d.fiA),
-                            fiB: parseFloat(d.fiB),
-                            inchikey: d.inchikey,
-                            logp: parseFloat(d.logp),
-                            mw: parseFloat(d.molecular_weight),
                         };
 
+                        channels.map(function(c,i){
+                            res[c] = parseFloat(d["readout"+(i+1)]);
+                        });
+
                         // clean up svg make it symbol and set the id to be 'sym'+platewell suppose to be unique
-                        res.svg = d.svg ? "<symbol id='sym" + d.platewell + "'" + d.svg.split("<svg")[2].split("</svg>")[0]+"</symbol>" : "";
+                        //res.svg = d.svg ? "<symbol id='sym" + d.platewell + "'" + d.svg.split("<svg")[2].split("</svg>")[0]+"</symbol>" : "";
 
                         return res;
                     });
                     
                     //aggregate data based on plate number
-                    groupedData = d3.nest()
-                    .key(function(d) {return d.plate;})
-                    .rollup(function(d) {return d;})
-                    .entries(allData);
-
+                    console.log(_allData);
                     initVis();
                 }
             }
