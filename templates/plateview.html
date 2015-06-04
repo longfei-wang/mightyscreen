@@ -83,11 +83,7 @@
             var thisData = [];
             var platelist = [];
             //define what readouts we are looking for.
-            var channels = ["fpA","fpB","fiA","fiB"];
-            //channel are readouts selected for visualization  
-            var channel_1  = channels[0];
-            var channel_2  = channels[1];
-            var channel_3  = channels[2];
+            var channels = []; 
 
             //brushed region
             var brush = {};
@@ -129,33 +125,33 @@
 
 
                 //set the default
-                d3.select("#select1").node().value = channel_1;
-                d3.select("#select2").node().value = channel_2;
-                d3.select("#select3").node().value = channel_3;
+                d3.select("#select1").node().value = channels[0];
+                d3.select("#select2").node().value = channels[1];
+                d3.select("#select3").node().value = channels[2];
 
 
                 //select which plate to display
-                var plateselector = new PlateSelector(d3.select("#plateSelector"),groupedData,groupedData[0].key,MyEventHandler);
+                var plateselector = new PlateSelector(d3.select("#plateSelector"),thisData,MyEventHandler);
 
                 //channel 1 for selection
-                var distvis1 = new DistVis(d3.select("#distVis1"),groupedData[0].values,channel_1,MyEventHandler);
+                var distvis1 = new DistVis(d3.select("#distVis1"),thisData,MyEventHandler);
                 
                 //channel 2 for selection
-                var distvis2 = new DistVis(d3.select("#distVis2"),groupedData[0].values,channel_2,MyEventHandler);
+                var distvis2 = new DistVis(d3.select("#distVis2"),thisData,MyEventHandler);
                 
                 //channel 3 for selection
-                var distvis3 = new DistVis(d3.select("#distVis3"),groupedData[0].values,channel_3,MyEventHandler);
+                var distvis3 = new DistVis(d3.select("#distVis3"),thisData,MyEventHandler);
 
                 //Chemical View 
-                var chemicalvis = new ChemicalVis(d3.select("#chemicalVis"),groupedData[0].values,MyEventHandler);
+                var chemicalvis = new ChemicalVis(d3.select("#chemicalVis"),thisData,MyEventHandler);
 
                 //plate heat plot
-                var platevis = new PlateVis(d3.select("#plateVis"),groupedData[0].values,channel_1,MyEventHandler)
+                var platevis = new PlateVis(d3.select("#plateVis"),thisData,MyEventHandler)
 
                 //scatter plot
-                var scattervis1 = new ScatterVis(d3.select("#scatterVis1"),groupedData[0].values,channel_1,channel_2,MyEventHandler);
+                var scattervis1 = new ScatterVis(d3.select("#scatterVis1"),thisData,MyEventHandler);
 
-                var scattervis2 = new ScatterVis(d3.select("#scatterVis2"),groupedData[0].values,channel_1,channel_3,MyEventHandler);
+                var scattervis2 = new ScatterVis(d3.select("#scatterVis2"),thisData,MyEventHandler);
 
                 //chemical cloud
                 //var cloudvis = new CloudVis(d3.select("#cloudVis"),groupedData[0].values,channel_1,1,MyEventHandler);
@@ -226,18 +222,18 @@
             }
 
             // call this function after both files are loaded -- error should be "null" if no error
-            var dataLoaded = function (error, _allData) {
+            var dataLoaded = function (error, _data) {
 
                 if (!error) {
 
-                    thisData.plateList = _allData.plate_list;
+                    thisData.plateList = _data.plate_list;
 
-                    thisData.channels = d3.range(1,12).map(function(d){ return _allData.meta[d]; })
+                    thisData.channels = d3.range(1,12).map(function(d){ return _data.meta[d]; })
                                 .filter(function(d){ return d != null; });
                     
-                    thisData.curPlate = _allData.plate;
+                    thisData.curPlate = _data.plate;
 
-                    thisData.results = _allData.results.map(function (d) {
+                    thisData.results = _data.results.map(function (d) {
                     
                         var res = {
                             platewell: d.plate_well,
@@ -257,7 +253,7 @@
                     });
                     
                     //aggregate data based on plate number
-                    console.log(_allData);
+                    console.log(thisData);
                     initVis();
                 }
             }

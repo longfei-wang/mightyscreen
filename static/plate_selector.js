@@ -19,14 +19,12 @@
  * @param _eventHandler -- the Eventhandling Object to emit data to (see Task 4)
  * @constructor
  */
-PlateSelector = function(_parentElement, _data, _selection, _eventHandler){
+PlateSelector = function(_parentElement, _data, _eventHandler){
     this.parentElement = _parentElement;
-    this.data = _data;
-    this.selection = _selection;
+    this.data = _data.plateList;
+    this.curPlate = _data.curPlate;
     this.eventHandler = _eventHandler;
-    this.displayData = [];
-
-
+    
     // TODO: define all "constants" here
     this.margin = {top: 20, right: 20, bottom: 20, left: 20},
     this.width = window.innerWidth - this.margin.left - this.margin.right,
@@ -109,16 +107,16 @@ PlateSelector.prototype.updateVis = function(){
         .attr("width",100)
         .attr("height",80)
         .attr("fill",function(d){ 
-            return (d.key == that.selection) ? "red" : "grey";
+            return (d == that.curPlate) ? "red" : "grey";
         })
         .attr("fill-opacity",0.5)
         .on("click",function(d){
-            $(that.eventHandler).trigger("plate",d.key);
+            $(that.eventHandler).trigger("plate",d);
         });
 
     this.plates.append("text")
         .attr("y",12)
-        .text(function(d){ return d.key; });
+        .text(function(d){ return d; });
 }
 
 /**
@@ -139,7 +137,7 @@ PlateSelector.prototype.onSelectionChange= function (selectionStart, selectionEn
 PlateSelector.prototype.onPlateChange= function (p){
 
     // TODO: call wrangle function
-    this.selection = p;
+    this.curPlate = p;
 
     this.updateVis();
     // do nothing -- no update when brushing

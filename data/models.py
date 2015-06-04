@@ -156,6 +156,7 @@ class data_base(models.Model):
         abstract=True
         unique_together = ('plate_well','project')
         index_together = ['plate_well','project']
+        ordering = ('create_date','plate')
     
     library = models.CharField(max_length=50,verbose_name='Library')
 

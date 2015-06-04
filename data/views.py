@@ -30,7 +30,7 @@ class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 		pdata = data.objects.filter(project=self.project)
 
 		self.plate_list = [ i['plate'] for i in \
-		list(pdata.order_by('-create_date','plate').values('plate','create_date').annotate(x=Count('plate'))) ]
+		pdata.order_by().values('plate').distinct() ]
 		
 		return pdata
 
