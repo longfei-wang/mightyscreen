@@ -10,6 +10,8 @@ from sets import Set
 from django.db.models import Count
 # Create your views here.
 
+
+
 class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 	"""
 	populate data based on query
@@ -30,7 +32,7 @@ class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 		pdata = data.objects.filter(project=self.project)
 
 		self.plate_list = [ i['plate'] for i in \
-		pdata.order_by().values('plate').distinct() ]
+		pdata.order_by('plate').values('plate').distinct()]
 		
 		return pdata
 
@@ -39,8 +41,9 @@ class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 		"""
 		list view for plateview
 		"""
+
 		query = self.get_queryset();
-		plate = self.request.GET.get('plate', (None if self.plate_list == [] else self.plate_list[0]))
+		plate = get_curPlate(request)
 
 		if plate:
 			query = query.filter(plate=plate)

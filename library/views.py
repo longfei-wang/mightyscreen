@@ -10,8 +10,9 @@ from library.models import *
 # Create your views here.
 
 
+from data.models import get_curPlate
 
-class CompoundViewSet(mixins.RetrieveModelMixin,viewsets.GenericViewSet):
+class CompoundViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.GenericViewSet):
 	"""
  	given platewell and library name return the small molecule data in json
  	rest_framework
@@ -20,16 +21,20 @@ class CompoundViewSet(mixins.RetrieveModelMixin,viewsets.GenericViewSet):
 	serializer_class = compound_serializer
 	lookup_field='plate_well'
 
+	def list(self,request): #given plate and return the small molecule list in json
+		chemicalList = request.GET.getlist('chemicallist[]')
 
-	@detail_route(methods=['GET'])
-	def plate(self,request,plate_well=None): #given plate and return the small molecule list in json
-		plate = compound.objects.filter(plate=plate_well).values('plate_well','library_name__library_name')
+		if chemicalList != []:
 
-		if len(plate) == 0:
+			compounds = compound.objects.filter(plate_well__in=chemicalList)
 			
+			serializer = self.get_serializer(compounds,many=True)
+
+			return Response(serializer.data)
+		else:
 			return HttpResponse(status =404)
 
-		return Response(plate)
+		
 
 	# @detail_route(methods=['GET'])
 	# def parse(self,request,pk=None): #The function to parse list csv file to database

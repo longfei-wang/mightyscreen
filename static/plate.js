@@ -19,10 +19,10 @@
  * @param _eventHandler -- the Eventhandling Object to emit data to (see Task 4)
  * @constructor
  */
-PlateVis = function(_parentElement, _data, _channel, _eventHandler){
+PlateVis = function(_parentElement, _data, _eventHandler){
     this.parentElement = _parentElement;
     this.data = _data;
-    this.channel = _channel;
+    this.channel = _data.channels[0];
     this.eventHandler = _eventHandler;
     this.displayData = [];
     this.selection = [];
@@ -104,16 +104,12 @@ PlateVis.prototype.wrangleData= function(_filter){
     //var filtered_data = this.data.filter(filter);
 
 
-    var data = this.data.map(function(d) {
+    var data = this.data.results.map(function(d) {
         
-        var entry =  {"platewell": d.platewell,
-                "well":d.well,
-                "welltype":d.welltype,
-                "readout":d[that.channel],
-                "opacity":1,
-                "selected":0
-            };
-                
+        var entry =  $.extend({},d);
+        entry.readout = d[that.channel];
+        entry['opacity'] = 1;
+        entry.selected = 0;
 
         if (_filter != null) {
             entry.opacity = _filter(d) ? 1 : 0.2;
@@ -130,15 +126,15 @@ PlateVis.prototype.wrangleData= function(_filter){
 
 
     //set domain for scales
-    var columns = this.data.map(function(d){ return that.get_column(d.well); });
+    var columns = data.map(function(d){ return that.get_column(d.well); });
     
-    var wells = this.data.map(function(d){ return that.get_row(d.well); });
+    var wells = data.map(function(d){ return that.get_row(d.well); });
 
     this.x.domain(d3.extent(columns));
 
     this.y.domain(d3.extent(wells));
 
-    this.readout.domain(d3.extent(this.data.map(function(d){ return d[that.channel]; })));
+    this.readout.domain(d3.extent(this.data.results.map(function(d){ return d[that.channel]; })));
 
     this.displayData = data;
 

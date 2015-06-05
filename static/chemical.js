@@ -20,9 +20,9 @@
  * @constructor
  */
 
-ChemicalVis = function(_parentElement, _data, _eventHandler){
+ChemicalVis = function(_parentElement, _url, _eventHandler){
     this.parentElement = _parentElement;
-    this.data = _data;
+    this.url = _url;
     this.selection = [];
     this.eventHandler = _eventHandler;
     this.displayData = [];
@@ -50,11 +50,6 @@ ChemicalVis.prototype.initVis = function(){
 
     //TODO: implement here all things that don't change
     //TODO: implement here all things that need an initial status
-    // Examples are:
-    // - construct SVG layout
-    // - create axis
-    // -  implement brushing !!
-    // --- ONLY FOR BONUS ---  implement zooming
 
     // TODO: modify this to append an svg element, not modify the current placeholder SVG element
     this.svg = this.parentElement.append("svg")
@@ -63,14 +58,28 @@ ChemicalVis.prototype.initVis = function(){
       .append("g")
         .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 
-
-
-
     // filter, aggregate, modify data
     this.wrangleData();
 
     // call the update method
     this.updateVis();
+}
+
+/**
+ * Method to load data through ajax
+  */
+ChemicalVis.prototype.refreshVis= function (){
+    var that = this;
+    $.get(this.url,
+        {'chemicallist':this.selection},
+        function(data) {
+            
+            that.displayData = data;
+            that.wrangleData();
+            console.log(that.displayData);
+            that.updateVis();
+    });
+
 }
 
 
@@ -85,14 +94,20 @@ ChemicalVis.prototype.wrangleData= function(){
     that = this;
 
     //select molecules in selection
-    var filtered = this.data.filter(function(d) {return d.svg && (that.selection.indexOf(d.platewell) > -1) ;});
+    this.displayData = this.displayData.filter(function(d){
+            return d.svg && (that.selection.indexOf(d.plate_well) > -1) ;
+        })
+        .map(function(d){
+            // clean up svg make it symbol and set the id to be 'sym'+platewell suppose to be unique
+            d.svg = d.svg ? "<symbol id='sym" + d.plate_well + "'" + d.svg.split("<svg")[2].split("</svg>")[0]+"</symbol>" : "";
+            return d;
+        })
 
-    this.displayData = filtered.sort(function(a,b) {
-        return d3.ascending(that.selection.indexOf(a.platewell),that.selection.indexOf(b.platewell)); 
-    });
+        .sort(function(a,b) {
+            return d3.ascending(that.selection.indexOf(a.plate_well),that.selection.indexOf(b.plate_well)); 
+        });
 
 }
-
 
 
 /**
@@ -127,7 +142,7 @@ ChemicalVis.prototype.updateVis = function(){
     this.svg.selectAll(".chemical").remove();
 
     this.chemical = this.svg.selectAll(".chemical")
-        .data(this.displayData,function(d){return d.platewell;})
+        .data(this.displayData,function(d){return d.plate_well;})
         .enter()
         .append("g")
         .attr("class", "chemical")
@@ -135,7 +150,7 @@ ChemicalVis.prototype.updateVis = function(){
             return "translate("+ that.x(i % that.numCol) +","+  that.y(Math.floor(i/that.numCol))  +")";
         })
         .on("click",function(d){
-            $(that.eventHandler).trigger("select",d.platewell);
+            $(that.eventHandler).trigger("select",d.plate_well);
         });
     
     //shadow
@@ -154,7 +169,7 @@ ChemicalVis.prototype.updateVis = function(){
 
     //draw chemical
     this.chemical.append("use")
-        .attr("xlink:href", function(d) {return "#sym"+d.platewell; })
+        .attr("xlink:href", function(d) {return "#sym"+d.plate_well; })
         .attr("width", this.box.width)
         .attr("height", this.box.height*0.75);
 
@@ -163,7 +178,7 @@ ChemicalVis.prototype.updateVis = function(){
         .attr("y",14)
         .attr("x",2)
         .attr("anchor","left")
-        .text(function(d) {return that.selection.indexOf(d.platewell)+1;})
+        .text(function(d) {return that.selection.indexOf(d.plate_well)+1;})
 
     //the bottom box
     var p = this.chemical.append("g")
@@ -194,13 +209,14 @@ ChemicalVis.prototype.updateVis = function(){
     mw.append("rect")
         .attr("width",this.box.height*0.20)
         .attr("height",this.box.height*0.20)
-        .attr("style",function(d) {return "fill:" + (d.mw < 500 ? "orange":"white");})
+        .attr("style",function(d) {return "fill:" + (d.molecular_weight < 500 ? "orange":"white");})
     mw.append("text")
         .attr("x",5)
         .attr("y",15)
         .attr("anchor","left")
-        .text(function(d) {return d.mw < 500 ? "MW" : "";});
+        .text(function(d) {return d.molecular_weight < 500 ? "MW" : "";});
 }
+
 
 /**
  * Gets called by event handler and should create new aggregated data
@@ -213,25 +229,19 @@ ChemicalVis.prototype.onChemSelectionChange= function (_selection){
     // TODO: call wrangle function
     this.selection=_selection;
 
-
-
-    this.wrangleData();
-
-    this.updateVis();
+    this.refreshVis();
 
     // do nothing -- no update when brushing
 
 }
 
-ChemicalVis.prototype.onPlateChange= function (d){
+ChemicalVis.prototype.onPlateChange= function (p){
 
 
     // TODO: call wrangle function
-    this.data = d;
+    this.plate = p;
 
-    this.wrangleData();
-
-    this.updateVis();
+    this.refreshVis();
     // do nothing -- no update when brushing
 }
 

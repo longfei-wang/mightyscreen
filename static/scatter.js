@@ -143,24 +143,15 @@ ScatterVis.prototype.wrangleData= function(_filter){
         filter = _filter;
     }
 
-    var filtered_data = this.data.filter(filter);
+    var filtered_data = this.data.results.filter(filter);
 
-    var data = filtered_data.map(function(d) {
-        return  {"platewell": d.platewell,
-                "fpA": d.fpA,
-                "fpB": d.fpB,
-                "fiA": d.fiA,
-                "fiB": d.fiB,
-                "logp":d.logp,
-                "wt":d.welltype,
-                "mw":d.mw,};
-    });
+    var data = filtered_data;
 
     //set domain for scales
 
-    this.x.domain(d3.extent(this.data.map(function(d){ return d[that.channelx]; })))
+    this.x.domain(d3.extent(this.data.results.map(function(d){ return d[that.channelx]; })))
 
-    this.y.domain(d3.extent(this.data.map(function(d) {return d[that.channely]; })));
+    this.y.domain(d3.extent(this.data.results.map(function(d) {return d[that.channely]; })));
 
     //this.wt.domain(d3.extent(data.map(function(d) {return d.wt; })));
 

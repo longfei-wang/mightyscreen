@@ -4,7 +4,7 @@
 {% block css %}
 
 <!-- add own stylesheet-->
-<link rel="stylesheet" type="text/css" href="{% static 'css/myStyle.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'myStyle.css' %}">
 
 {% endblock %}
 
@@ -61,217 +61,224 @@
 {% endblock %}
 
 {% block script %}
-    <script src="http://d3js.org/queue.v1.min.js"></script>
-    <script src = '{% static "plate_selector.js"%}'></script>
-    <script src = '{% static "dist.js"%}'></script>
-    <script src = '{% static "plate.js"%}'></script>
-    <script src = '{% static "scatter.js"%}'></script>
-    <script src = '{% static "chemical.js"%}'></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src = '{% static "plate_selector.js"%}'></script>
+<script src = '{% static "dist.js"%}'></script>
+<script src = '{% static "plate.js"%}'></script>
+<script src = '{% static "scatter.js"%}'></script>
+<script src = '{% static "chemical.js"%}'></script>
 
 
 
-    <script>
-        $(function(){ // this function is called after the HTML document is fully loaded
+<script>
+$(function(){ // this function is called after the HTML document is fully loaded
 
 
-            //==========================================
-            //--- HERE IS WHERE ALL THE MAGIC STARTS --
-            //==========================================
+    //==========================================
+    //--- HERE IS WHERE ALL THE MAGIC STARTS --
+    //==========================================
+    var url = "{% url 'data-all' %}";
+
+    // variables keeping global knowledge of the data
+    var thisData = [];
+    //brushed region
+    var brush = {};
+    //selected chemical list
+    var selection = [];
+    // this function can convert Date objects to a string
+    // it can also convert strings to Date objects
+    // see: https://github.com/mbostock/d3/wiki/Time-Formatting
+    var dateFormatter = d3.time.format("%Y-%m-%d");
 
 
-            // variables keeping global knowledge of the data
-            var thisData = [];
-            var platelist = [];
-            //define what readouts we are looking for.
-            var channels = []; 
+    var wrangleData = function(_data) {
 
-            //brushed region
-            var brush = {};
-            //selected chemical list
-            var selection = [];
-            // this function can convert Date objects to a string
-            // it can also convert strings to Date objects
-            // see: https://github.com/mbostock/d3/wiki/Time-Formatting
-            var dateFormatter = d3.time.format("%Y-%m-%d");
+        thisData.plateList = _data.plate_list;
+
+        thisData.channels = d3.range(1,12).map(function(d){ return _data.meta[d]; })
+                    .filter(function(d){ return d != null; });
+        
+        thisData.curPlate = _data.plate;
+
+        thisData.results = _data.results.map(function (d) {
+        
+            var res = {
+                platewell: d.plate_well,
+                plate:d.plate,
+                well:d.well,
+                welltype:d.welltype,
+            };
+
+            thisData.channels.map(function(c,i){
+                res[c] = parseFloat(d["readout"+(i+1)]);
+            });
+
+            // clean up svg make it symbol and set the id to be 'sym'+platewell suppose to be unique
+            //res.svg = d.svg ? "<symbol id='sym" + d.platewell + "'" + d.svg.split("<svg")[2].split("</svg>")[0]+"</symbol>" : "";
+
+            return res;
+        }); 
+    }
+
+    // call this function after Data is loaded, reformatted and bound to the variables
+    var initVis = function(){
+
+        //TODO: Create an eventHandler  --> DONE :)
+        var MyEventHandler = new Object();
+
+        //TODO: Instantiate all Vis Objects here
+
+        //TODO: channel selector
+        var dropdowns = d3.select("#dropdowns")
+            .selectAll("select")
+            .data([1,2,3])
+            .enter()
+            .append("div")
+            .attr("class","col-md-3")
+            .text(function(d){return "Channel "+d+": ";})
+            .append("select")
+            .attr("id",function(d) { return "select"+d;})
+            .on("change",function(d) {
+                $(MyEventHandler).trigger("channel",d);
+        });
+
+        dropdowns.selectAll("option")
+            .data(thisData.channels)
+            .enter()
+            .append("option")
+            .text(function(d) {return d;});
 
 
-            // call this function after Data is loaded, reformatted and bound to the variables
-            var initVis = function(){
-
-                //TODO: Create an eventHandler  --> DONE :)
-                var MyEventHandler = new Object();
-
-                //TODO: Instantiate all Vis Objects here
-
-                //TODO: channel selector
-                var dropdowns = d3.select("#dropdowns")
-                    .selectAll("select")
-                    .data([1,2,3])
-                    .enter()
-                    .append("div")
-                    .attr("class","col-md-3")
-                    .text(function(d){return "Channel "+d+": ";})
-                    .append("select")
-                    .attr("id",function(d) { return "select"+d;})
-                    .on("change",function(d) {
-                        $(MyEventHandler).trigger("channel",d);
-                });
-
-                dropdowns.selectAll("option")
-                    .data(channels)
-                    .enter()
-                    .append("option")
-                    .text(function(d) {return d;});
+        //set the default
+        d3.select("#select1").node().value = thisData.channels[0];
+        d3.select("#select2").node().value = thisData.channels[1];
+        d3.select("#select3").node().value = thisData.channels[2];
 
 
-                //set the default
-                d3.select("#select1").node().value = channels[0];
-                d3.select("#select2").node().value = channels[1];
-                d3.select("#select3").node().value = channels[2];
+        //select which plate to display
+        var plateselector = new PlateSelector(d3.select("#plateSelector"),thisData,MyEventHandler);
+
+        //channel 1 for selection
+        var distvis1 = new DistVis(d3.select("#distVis1"),thisData,thisData.channels[0],MyEventHandler);
+        
+        //channel 2 for selection
+        var distvis2 = new DistVis(d3.select("#distVis2"),thisData,thisData.channels[1],MyEventHandler);
+        
+        //channel 3 for selection
+        var distvis3 = new DistVis(d3.select("#distVis3"),thisData,thisData.channels[1],MyEventHandler);
+
+        //Chemical View 
+        var chemicalvis = new ChemicalVis(d3.select("#chemicalVis"),"{% url 'compound-list' %}",MyEventHandler);
+
+        //plate heat plot
+        var platevis = new PlateVis(d3.select("#plateVis"),thisData,MyEventHandler)
+
+        //scatter plot
+        var scattervis1 = new ScatterVis(d3.select("#scatterVis1"),thisData,thisData.channels[0],thisData.channels[1],MyEventHandler);
+
+        var scattervis2 = new ScatterVis(d3.select("#scatterVis2"),thisData,thisData.channels[0],thisData.channels[2],MyEventHandler);
+
+        //chemical cloud
+        //var cloudvis = new CloudVis(d3.select("#cloudVis"),groupedData[0].values,channel_1,1,MyEventHandler);
 
 
-                //select which plate to display
-                var plateselector = new PlateSelector(d3.select("#plateSelector"),thisData,MyEventHandler);
 
-                //channel 1 for selection
-                var distvis1 = new DistVis(d3.select("#distVis1"),thisData,MyEventHandler);
-                
-                //channel 2 for selection
-                var distvis2 = new DistVis(d3.select("#distVis2"),thisData,MyEventHandler);
-                
-                //channel 3 for selection
-                var distvis3 = new DistVis(d3.select("#distVis3"),thisData,MyEventHandler);
 
-                //Chemical View 
-                var chemicalvis = new ChemicalVis(d3.select("#chemicalVis"),thisData,MyEventHandler);
+        // TODO: bind the eventHandler to the Vis Objects
+        // events will be created from the CountVis object (nothing to do here)
+        // events will be consumed by the PrioVis and AgeVis object (binding should happen here)
+        $(MyEventHandler).bind("brush", function(event, s, e, c){
+            
+            brush[c] = [s,e];
 
-                //plate heat plot
-                var platevis = new PlateVis(d3.select("#plateVis"),thisData,MyEventHandler)
+            //update these visualization
+            platevis.onSelectionChange(brush);
+            scattervis1.onSelectionChange(brush);
+            scattervis2.onSelectionChange(brush);
+        });
 
-                //scatter plot
-                var scattervis1 = new ScatterVis(d3.select("#scatterVis1"),thisData,MyEventHandler);
 
-                var scattervis2 = new ScatterVis(d3.select("#scatterVis2"),thisData,MyEventHandler);
-
-                //chemical cloud
-                //var cloudvis = new CloudVis(d3.select("#cloudVis"),groupedData[0].values,channel_1,1,MyEventHandler);
-
-                // TODO: bind the eventHandler to the Vis Objects
-                // events will be created from the CountVis object (nothing to do here)
-                // events will be consumed by the PrioVis and AgeVis object (binding should happen here)
-                $(MyEventHandler).bind("brush", function(event, s, e, c){
+        $(MyEventHandler).bind("plate", function(event, p){
+            $.get(url,
+                {'plate':p},
+                function(d){
                     
-                    brush[c] = [s,e];
-
-                    //update these visualization
-                    platevis.onSelectionChange(brush);
-                    scattervis1.onSelectionChange(brush);
-                    scattervis2.onSelectionChange(brush);
-                });
+                    wrangleData(d);
 
 
-                $(MyEventHandler).bind("plate", function(event, p){
-                    
-                    var data = groupedData.filter(function(d) {
-                        if (d.key == p) {
-                            return d.values;
-                        }
-                    });
-
-                    var d = data[0].values;
-                    //update these visualization
-                    plateselector.onPlateChange(data[0].key);
-                    distvis1.onPlateChange(d);
-                    distvis2.onPlateChange(d);
-                    distvis3.onPlateChange(d);
-                    platevis.onPlateChange(d);
-                    scattervis1.onPlateChange(d);
-                    scattervis2.onPlateChange(d);
-                    //cloudvis.onPlateChange(d);
-                    chemicalvis.onPlateChange(d);
-                });
-
-                $(MyEventHandler).bind("select", function(event, p){
-                    
-                    if (selection.indexOf(p) > -1) {
-                        selection = selection.filter(function(d) {
-                            return d != p;
-                        });
-                    }else {
-                        selection.push(p);
-                    }
-                    //update these visualization
-                    chemicalvis.onChemSelectionChange(selection);
-                    platevis.onChemSelectionChange(selection);
-                });
-
-                $(MyEventHandler).bind("channel", function(event, c){
-
-                    var c1 = d3.select("#select1").node().value;
-                    var c2 = d3.select("#select2").node().value;
-                    var c3 = d3.select("#select3").node().value;
-
-                    distvis1.onChannelChange(c1);
-                    distvis2.onChannelChange(c2);
-                    distvis3.onChannelChange(c3);
-                    scattervis1.onChannelChange(c1,c2);
-                    scattervis2.onChannelChange(c1,c3);
-                    platevis.onChannelChange(c1);
+                    plateselector.onPlateChange(p);
+                    distvis1.onPlateChange(thisData);
+                    distvis2.onPlateChange(thisData);
+                    distvis3.onPlateChange(thisData);
+                    platevis.onPlateChange(thisData);
+                    scattervis1.onPlateChange(thisData);
+                    scattervis2.onPlateChange(thisData);
+                    //cloudvis.onPlateChange(thisData);
+                    chemicalvis.onPlateChange(thisData);
 
                 });
+        });
+
+        $(MyEventHandler).bind("select", function(event, p){
+            
+            if (selection.indexOf(p) > -1) {
+                selection = selection.filter(function(d) {
+                    return d != p;
+                });
+            }else {
+                selection.push(p);
             }
+            //update these visualization
+            chemicalvis.onChemSelectionChange(selection);
+            platevis.onChemSelectionChange(selection);
+        });
 
-            // call this function after both files are loaded -- error should be "null" if no error
-            var dataLoaded = function (error, _data) {
+        $(MyEventHandler).bind("channel", function(event, c){
 
-                if (!error) {
+            var c1 = d3.select("#select1").node().value;
+            var c2 = d3.select("#select2").node().value;
+            var c3 = d3.select("#select3").node().value;
 
-                    thisData.plateList = _data.plate_list;
+            distvis1.onChannelChange(c1);
+            distvis2.onChannelChange(c2);
+            distvis3.onChannelChange(c3);
+            scattervis1.onChannelChange(c1,c2);
+            scattervis2.onChannelChange(c1,c3);
+            platevis.onChannelChange(c1);
 
-                    thisData.channels = d3.range(1,12).map(function(d){ return _data.meta[d]; })
-                                .filter(function(d){ return d != null; });
-                    
-                    thisData.curPlate = _data.plate;
-
-                    thisData.results = _data.results.map(function (d) {
-                    
-                        var res = {
-                            platewell: d.plate_well,
-                            plate:d.plate,
-                            well:d.well,
-                            welltype:d.welltype,
-                        };
-
-                        channels.map(function(c,i){
-                            res[c] = parseFloat(d["readout"+(i+1)]);
-                        });
-
-                        // clean up svg make it symbol and set the id to be 'sym'+platewell suppose to be unique
-                        //res.svg = d.svg ? "<symbol id='sym" + d.platewell + "'" + d.svg.split("<svg")[2].split("</svg>")[0]+"</symbol>" : "";
-
-                        return res;
-                    });
-                    
-                    //aggregate data based on plate number
-                    console.log(thisData);
-                    initVis();
-                }
-            }
-
-            var startHere = function(){
-
-                //TODO: load data here and call "dataLoaded" afterwards
-                // Hint: http://giscollective.org/d3-queue-js/
-                queue()
-                .defer(d3.json,"{% url 'data-all' %}")
-                .await(dataLoaded);
+        });
+    }
 
 
-            }
+    // call this function after both files are loaded -- error should be "null" if no error
+    var dataLoaded = function (error, _data) {
 
-            startHere();
-        })
-    </script>
+        if (!error) {
+
+            wrangleData(_data);
+            
+            //aggregate data based on plate number
+            console.log(thisData);
+            initVis();
+        }
+    }
+
+
+
+    var startHere = function(){
+
+        //TODO: load data here and call "dataLoaded" afterwards
+        // Hint: http://giscollective.org/d3-queue-js/
+        queue()
+        .defer(d3.json,url)
+        .await(dataLoaded);
+
+
+    }
+
+    startHere();
+})
+</script>
 
 
 {% endblock %}

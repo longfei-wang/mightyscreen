@@ -139,7 +139,7 @@ DistVis.prototype.wrangleData= function(){
     // pretty simple in this case -- no modifications needed
     that = this;
 
-    var data = this.data.map(function(d) {
+    var data = this.data.results.map(function(d) {
         return  d[that.channel];
     });
 

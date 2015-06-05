@@ -80,6 +80,32 @@ def find_or_create_project(request):
 	return p
 
 
+def get_curPlate(request):
+	"""
+	A function to get current plate number
+	"""
+	def get_firstPlate(request):
+
+		project = get_object_or_404(project,id=self.request.session.get('project',None))
+
+		pdata = data.objects.filter(project=project)
+		
+		plate_list = [ i['plate'] for i in pdata.order_by('plate').values('plate').distinct()]
+
+		return plate_list[0] if plate_list != [] else None
+
+	#check request
+	plate = self.request.GET.get('plate',
+		self.request.session.get('plate',
+				get_firstPlate(request)
+			)
+		)
+
+	#set the plate number in session
+	if plate:
+		request.session['plate'] = plate
+
+	return plate
 
 #overwrite class from pytoolbox
 class OverwriteMixin(object):
@@ -156,7 +182,6 @@ class data_base(models.Model):
         abstract=True
         unique_together = ('plate_well','project')
         index_together = ['plate_well','project']
-        ordering = ('create_date','plate')
     
     library = models.CharField(max_length=50,verbose_name='Library')
 
