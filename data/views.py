@@ -12,7 +12,7 @@ from django.db.models import Count
 
 
 
-class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
+class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.GenericViewSet):
 	"""
 	populate data based on query
 	"""
@@ -20,7 +20,7 @@ class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 	serializer_class = DataSerializer
 	filter_class = DataFilter
 	search_fields = ('plate_well', 'plate', 'well')
-	lookup_field='plate'
+	lookup_field='plate_well'
 	project=None
 	plate_list=[]
 
@@ -37,7 +37,7 @@ class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 		return pdata
 
 	@list_route()
-	def all(self,request):
+	def plate(self,request):
 		"""
 		list view for plateview
 		"""
@@ -56,6 +56,34 @@ class DataViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 			'meta':self.project.meta,
 			'results':serializer.data})
 
+	@detail_route(methods=['GET'])
+	def mark(self,request,plate_well):
+		"""
+		mark/unmark a compound as hit
+		"""
+		instance = get_object_or_404(self.get_queryset(),plate_well=plate_well)
+		instance.hit = 1 if instance.hit == 0 else 0
+		instance.save()
+
+		hit_list, hit_prop = self.hits(request)
+		return Response({'mark':instance.hit,
+			'hit_list':hit_list,
+			'results':hit_prop,
+			})
+
+	def hits(self,request):
+		"""
+		return a list of hits on current plate 
+		"""
+
+		from library.models import compound, compound_serializer
+		p = get_curPlate(request)
+
+		hit_list = [i['plate_well'] for i in self.get_queryset().filter(plate=p,hit=1).values('plate_well')]
+		query = compound.objects.filter(plate_well__in=hit_list)
+		serializer = compound_serializer(query,many=True)
+
+		return hit_list, serializer.data
 
 
 class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.GenericViewSet):

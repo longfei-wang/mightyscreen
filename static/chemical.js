@@ -74,9 +74,9 @@ ChemicalVis.prototype.refreshVis= function (){
         {'chemicallist':this.selection},
         function(data) {
             
-            that.displayData = data;
+            that.displayData = data.results;
             that.wrangleData();
-            console.log(that.displayData);
+            //console.log(that.displayData);
             that.updateVis();
     });
 
@@ -253,7 +253,9 @@ ChemicalVis.prototype.onPlateChange= function (p){
  *
  * */
 
+ChemicalVis.prototype.getPlate = function(plate_well) {
 
+}
 
 
 

@@ -24,15 +24,12 @@ class CompoundViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.G
 	def list(self,request): #given plate and return the small molecule list in json
 		chemicalList = request.GET.getlist('chemicallist[]')
 
-		if chemicalList != []:
 
-			compounds = compound.objects.filter(plate_well__in=chemicalList)
-			
-			serializer = self.get_serializer(compounds,many=True)
+		compounds = compound.objects.filter(plate_well__in=chemicalList)
 
-			return Response(serializer.data)
-		else:
-			return HttpResponse(status =404)
+		serializer = self.get_serializer(compounds,many=True)
+
+		return Response(serializer.data)
 
 		
 
