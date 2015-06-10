@@ -202,7 +202,7 @@ class data_base(models.Model):
     ('X','compound'),
     )
     
-    welltype=models.CharField(max_length=1,choices=schoice,default='E')
+    welltype=models.CharField(max_length=1,choices=schoice,default='X')
 
     project = models.ForeignKey(project)
     

@@ -25,7 +25,7 @@ PlateVis = function(_parentElement, _data, _eventHandler){
     this.channel = _data.channels[0];
     this.eventHandler = _eventHandler;
     this.displayData = [];
-    this.selection = [];
+    this.selection = _data.hitList;
     this.alphabetic = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z".split(" ");
     this.filter = null;
 
@@ -103,25 +103,20 @@ PlateVis.prototype.wrangleData= function(_filter){
 
     //var filtered_data = this.data.filter(filter);
 
-
     var data = this.data.results.map(function(d) {
         
         var entry =  $.extend({},d);
         entry.readout = d[that.channel];
         entry['opacity'] = 1;
-        entry.selected = 0;
 
         if (_filter != null) {
             entry.opacity = _filter(d) ? 1 : 0.2;
         }
         
-        if (that.selection.indexOf(d.platewell) > -1 ) {
 
-            entry.selected = that.selection.indexOf(d.platewell)+1;
-        
-        }
-
+        entry.selected = (that.selection.indexOf(d.platewell) > -1) ? (that.selection.indexOf(d.platewell) + 1) : 0;
         return entry;
+    
     });
 
 
@@ -240,10 +235,10 @@ PlateVis.prototype.onSelectionChange= function (selection){
 
 }
 
-PlateVis.prototype.onChemSelectionChange= function (_selection){
+PlateVis.prototype.onChemSelectionChange= function (d){
 
     // TODO: call wrangle function
-    this.selection=_selection;
+    this.selection=d.hit_list;
 
     this.wrangleData(this.filter);
 

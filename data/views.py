@@ -24,7 +24,6 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 	project=None
 	plate_list=[]
 
-
 	def get_queryset(self):
 
 		self.project = get_object_or_404(project,id=self.request.session.get('project',None))
@@ -36,23 +35,34 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		
 		return pdata
 
+	def list(self,request):
+		response = super(DataViewSet,self).list(request)
+
+		response.data.update({
+			'plateList':self.plate_list,
+			'curPlate':get_curPlate(request),
+			'meta':self.project.meta,
+			'channels':[self.project.meta[i] for i in sorted(self.project.meta.keys())],
+			})
+		return response
+
 	@list_route()
 	def plate(self,request):
 		"""
 		list view for plateview
 		"""
 
-		query = self.get_queryset();
-		plate = get_curPlate(request)
-
-		if plate:
-			query = query.filter(plate=plate)
+		plate, hit_list, hit_prop = self.hits(request)
+		query = self.get_queryset().filter(plate=plate)
 
 
 		serializer = self.get_serializer(query,many=True)
 		return Response({
-			'plate_list':self.plate_list,
-			'plate':plate,
+			'plateList':self.plate_list,
+			'curPlate':plate,
+			'hitList':hit_list,
+			'hitProp':hit_prop,
+			'channels':[self.project.meta[i] for i in sorted(self.project.meta.keys())],
 			'meta':self.project.meta,
 			'results':serializer.data})
 
@@ -65,10 +75,13 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		instance.hit = 1 if instance.hit == 0 else 0
 		instance.save()
 
-		hit_list, hit_prop = self.hits(request)
-		return Response({'mark':instance.hit,
+		plate, hit_list, hit_prop = self.hits(request)
+		return Response({
+			'plate_well':plate_well,
+			'mark':instance.hit,
 			'hit_list':hit_list,
-			'results':hit_prop,
+			'hit_prop':hit_prop,
+			'plate':plate
 			})
 
 	def hits(self,request):
@@ -80,10 +93,11 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		p = get_curPlate(request)
 
 		hit_list = [i['plate_well'] for i in self.get_queryset().filter(plate=p,hit=1).values('plate_well')]
+		hit_list.sort(reverse=True)
 		query = compound.objects.filter(plate_well__in=hit_list)
 		serializer = compound_serializer(query,many=True)
 
-		return hit_list, serializer.data
+		return p, hit_list, serializer.data #hit_list and data returned will not be the same. Some marked hit compound doesn't exists in library.
 
 
 class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.GenericViewSet):

@@ -28,7 +28,8 @@ TableVis = function(_parentElement, _baseUrl, _eventHandler){
     this.displayData = [];
     this.query = {};
     this.data = {};
-
+    this.plateList = [];
+    this.curPlate = null;
     this.thead = null;
     this.tbody = null;
 
@@ -56,6 +57,7 @@ TableVis.prototype.initVis = function(){
     this.tbody = table.append("tbody");
 
     this.refreshTable();
+
 }
 
 
@@ -67,7 +69,10 @@ TableVis.prototype.wrangleData= function(){
     // displayData should hold the data which is visualized
     // pretty simple in this case -- no modifications needed
     this.displayData = this.data.results;
+    this.plateList = this.data.plateList;
+    this.curPlate = this.data.curPlate;
 
+    //trim
 
 }
 
@@ -101,7 +106,7 @@ TableVis.prototype.updateVis = function(){
     
     var cells = rows.selectAll("td")
         .data(function(row){
-        console.log(d3.values(row));return d3.values(row);
+        return d3.values(row);
     });
 
     cells.enter().append("td")
@@ -117,7 +122,7 @@ TableVis.prototype.refreshTable= function (){
     $.get(this.baseUrl,
         this.query,
         function(data) {
-            console.log(data);
+            //console.log(data);
             that.data = data;
             that.wrangleData();
             that.updateVis();
@@ -136,8 +141,6 @@ TableVis.prototype.onPlateChange= function (plate){
     this.refreshTable();
 
 }
-
-
 
 /*
  *

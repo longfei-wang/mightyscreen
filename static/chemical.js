@@ -20,10 +20,10 @@
  * @constructor
  */
 
-ChemicalVis = function(_parentElement, _url, _eventHandler){
+ChemicalVis = function(_parentElement, _data, _eventHandler){
     this.parentElement = _parentElement;
-    this.url = _url;
-    this.selection = [];
+    this.data = _data.hitProp;
+    this.selection = _data.hitList;
     this.eventHandler = _eventHandler;
     this.displayData = [];
 
@@ -38,6 +38,7 @@ ChemicalVis = function(_parentElement, _url, _eventHandler){
     this.numCol = Math.floor(this.width / this.box.outerwidth);
 
     this.initVis();
+
 }
 
 
@@ -65,23 +66,6 @@ ChemicalVis.prototype.initVis = function(){
     this.updateVis();
 }
 
-/**
- * Method to load data through ajax
-  */
-ChemicalVis.prototype.refreshVis= function (){
-    var that = this;
-    $.get(this.url,
-        {'chemicallist':this.selection},
-        function(data) {
-            
-            that.displayData = data.results;
-            that.wrangleData();
-            //console.log(that.displayData);
-            that.updateVis();
-    });
-
-}
-
 
 /**
  * Method to wrangle the data. In this case it takes an options object
@@ -94,18 +78,15 @@ ChemicalVis.prototype.wrangleData= function(){
     that = this;
 
     //select molecules in selection
-    this.displayData = this.displayData.filter(function(d){
-            return d.svg && (that.selection.indexOf(d.plate_well) > -1) ;
-        })
+    this.displayData = this.data
         .map(function(d){
             // clean up svg make it symbol and set the id to be 'sym'+platewell suppose to be unique
             d.svg = d.svg ? "<symbol id='sym" + d.plate_well + "'" + d.svg.split("<svg")[2].split("</svg>")[0]+"</symbol>" : "";
             return d;
-        })
-
-        .sort(function(a,b) {
-            return d3.ascending(that.selection.indexOf(a.plate_well),that.selection.indexOf(b.plate_well)); 
         });
+        // .sort(function(a,b) {
+        //     return d3.ascending(that.selection.indexOf(a.plate_well),that.selection.indexOf(b.plate_well)); 
+        // });
 
 }
 
@@ -224,24 +205,27 @@ ChemicalVis.prototype.updateVis = function(){
  * be defined here.
  * @param selection
  */
-ChemicalVis.prototype.onChemSelectionChange= function (_selection){
+ChemicalVis.prototype.onChemSelectionChange= function (d){
     
     // TODO: call wrangle function
-    this.selection=_selection;
 
-    this.refreshVis();
+    this.selection = d.hit_list;
+    this.data = d.hit_prop;
+    this.wrangleData();
+    this.updateVis();
 
     // do nothing -- no update when brushing
 
 }
 
-ChemicalVis.prototype.onPlateChange= function (p){
+ChemicalVis.prototype.onPlateChange= function (d){
 
 
     // TODO: call wrangle function
-    this.plate = p;
+    this.data = d.hitProp;
 
-    this.refreshVis();
+    this.wrangleData();
+    this.updateVis();
     // do nothing -- no update when brushing
 }
 
@@ -252,10 +236,6 @@ ChemicalVis.prototype.onPlateChange= function (p){
  * ==================================
  *
  * */
-
-ChemicalVis.prototype.getPlate = function(plate_well) {
-
-}
 
 
 

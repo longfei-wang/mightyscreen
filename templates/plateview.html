@@ -78,13 +78,11 @@ $(function(){ // this function is called after the HTML document is fully loaded
     //--- HERE IS WHERE ALL THE MAGIC STARTS --
     //==========================================
     var url = "{% url 'data-plate' %}";
-
+    var markUrl = "{% url 'data-list' %}";
     // variables keeping global knowledge of the data
     var thisData = [];
     //brushed region
     var brush = {};
-    //selected chemical list
-    var selection = [];
     // this function can convert Date objects to a string
     // it can also convert strings to Date objects
     // see: https://github.com/mbostock/d3/wiki/Time-Formatting
@@ -92,13 +90,8 @@ $(function(){ // this function is called after the HTML document is fully loaded
 
 
     var wrangleData = function(_data) {
-
-        thisData.plateList = _data.plate_list;
-
-        thisData.channels = d3.range(1,12).map(function(d){ return _data.meta[d]; })
-                    .filter(function(d){ return d != null; });
         
-        thisData.curPlate = _data.plate;
+        thisData = $.extend({},_data);
 
         thisData.results = _data.results.map(function (d) {
         
@@ -117,7 +110,7 @@ $(function(){ // this function is called after the HTML document is fully loaded
             //res.svg = d.svg ? "<symbol id='sym" + d.platewell + "'" + d.svg.split("<svg")[2].split("</svg>")[0]+"</symbol>" : "";
 
             return res;
-        }); 
+        });
     }
 
     // call this function after Data is loaded, reformatted and bound to the variables
@@ -153,8 +146,7 @@ $(function(){ // this function is called after the HTML document is fully loaded
         d3.select("#select1").node().value = thisData.channels[0];
         d3.select("#select2").node().value = thisData.channels[1];
         d3.select("#select3").node().value = thisData.channels[2];
-
-
+        
         //select which plate to display
         var plateselector = new PlateSelector(d3.select("#plateSelector"),thisData,MyEventHandler);
 
@@ -168,7 +160,7 @@ $(function(){ // this function is called after the HTML document is fully loaded
         var distvis3 = new DistVis(d3.select("#distVis3"),thisData,thisData.channels[1],MyEventHandler);
 
         //Chemical View 
-        var chemicalvis = new ChemicalVis(d3.select("#chemicalVis"),"{% url 'compound-list' %}",MyEventHandler);
+        var chemicalvis = new ChemicalVis(d3.select("#chemicalVis"),thisData,MyEventHandler);
 
         //plate heat plot
         var platevis = new PlateVis(d3.select("#plateVis"),thisData,MyEventHandler)
@@ -221,16 +213,16 @@ $(function(){ // this function is called after the HTML document is fully loaded
 
         $(MyEventHandler).bind("select", function(event, p){
             
-            if (selection.indexOf(p) > -1) {
-                selection = selection.filter(function(d) {
-                    return d != p;
-                });
-            }else {
-                selection.push(p);
-            }
+            //this is what happed after one select a compound
+            $.get(markUrl+p+"/mark/",
+                {},
+                function(d) {
+                    //console.log(d);
+                    chemicalvis.onChemSelectionChange(d);
+                    platevis.onChemSelectionChange(d);      
+            });
             //update these visualization
-            chemicalvis.onChemSelectionChange(selection);
-            platevis.onChemSelectionChange(selection);
+
         });
 
         $(MyEventHandler).bind("channel", function(event, c){
@@ -258,7 +250,7 @@ $(function(){ // this function is called after the HTML document is fully loaded
             wrangleData(_data);
             
             //aggregate data based on plate number
-            console.log(thisData);
+            //console.log(thisData);
             initVis();
         }
     }

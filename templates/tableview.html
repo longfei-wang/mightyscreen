@@ -9,22 +9,73 @@
 
 
 {% block content %}
+<!-- <div class="row">
+    <div class="col-md-12 col-sm-12" id="plateSelector">
+    </div>
 
-<div id="tableview">
+</div> -->
 
+
+<div class="row">
+	<div class="col-md-12 col-sm-12" id="tableview">
+	</div>
 </div>
 
 {% endblock %}
 
 
 {% block script %}
-<script src="{% static "tablevis.js" %}"></script>
-
+<script src='{% static "tablevis.js" %}'></script>
+<script src = '{% static "plate_selector.js"%}'></script>
 <script>
 
+
+var url = '{% url "data-list" %}';
+
+// var wrangleData = function(_data) {
+
+// 	var thisData = $.extend({},_data);
+
+//     thisData.results = _data.results.map(function (d) {
+    
+//         var res = {
+//             platewell: d.plate_well,
+//             plate:d.plate,
+//             well:d.well,
+//             welltype:d.welltype,
+//             hit:d.hit,
+//         };
+
+//         thisData.channels.map(function(c,i){
+//             res[c] = parseFloat(d["readout"+(i+1)]);
+//         });
+
+//         return res;
+//     });
+
+//     return thisData;
+// }
+
+
+// var thisData = wrangleData(d)
+// console.log(thisData)
 var MyEventHandler = new Object();
 
-var tableview =new TableVis(d3.select("#tableview"), '{% url "data-list" %}', MyEventHandler);
+var tableview =new TableVis(d3.select("#tableview"), url, MyEventHandler);	
+
+	// var plateselector = new PlateSelector(d3.select("#plateSelector"),thisData,MyEventHandler);
+
+
+
+	// $(MyEventHandler).bind("plate", function(event, d){
+	// 	plateselector.onPlateChange(d);
+	// });
+
+
+
+
+
+
 
 </script>
 
