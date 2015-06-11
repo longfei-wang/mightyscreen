@@ -142,7 +142,7 @@ DistVis.prototype.wrangleData= function(){
     var data = this.data.results.map(function(d) {
         return  d[that.channel];
     });
-    this.controls = data.filter(function(d){return d.welltype == "P" || d.welltype == "N"; });
+    this.controls = this.data.results.filter(function(d){return d.welltype == "P" || d.welltype == "N"; });
     //set domain for scales
 
     this.x.domain(d3.extent(data))

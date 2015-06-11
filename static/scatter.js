@@ -194,7 +194,7 @@ ScatterVis.prototype.updateVis = function(){
 
     //color encode welltype size encode drug-like property
     this.dot.append("circle")
-        .attr("fill", function(d) {return that.wt[d.wt]; })
+        .attr("fill", function(d) {return that.wt[d.welltype]; })
         .attr("fill-opacity",0.2)
         .attr("stroke","grey")
         //.attr("stroke-width", function(d) {return d.mw ? that.mw(d.mw) : 0;})

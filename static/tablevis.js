@@ -20,14 +20,13 @@
  * @param _eventHandler -- the Eventhandling Object to emit data to (see Task 4)
  * @constructor
  */
-TableVis = function(_parentElement, _baseUrl, _eventHandler){
+TableVis = function(_parentElement, _data, _eventHandler){
     
     this.parentElement = _parentElement;
     this.eventHandler = _eventHandler;
-    this.baseUrl = _baseUrl;
     this.displayData = [];
     this.query = {};
-    this.data = {};
+    this.data = _data;
     this.plateList = [];
     this.curPlate = null;
     this.thead = null;
@@ -56,7 +55,8 @@ TableVis.prototype.initVis = function(){
 
     this.tbody = table.append("tbody");
 
-    this.refreshTable();
+    this.wrangleData();
+    this.updateVis();
 
 }
 
@@ -82,6 +82,7 @@ TableVis.prototype.wrangleData= function(){
  */
 TableVis.prototype.updateVis = function(){
 
+    var that = this
     // update the table header
     var columns = Object.keys(this.displayData[0]);
 
@@ -92,11 +93,18 @@ TableVis.prototype.updateVis = function(){
         
     header.enter()
         .append("th")
-        .text(function(d) { return d; });
+        .text(function(d) { return that.data.verbose[d] ? that.data.verbose[d] : d; })
+        .on("click",function(d){
+            that.query.ordering = that.query.ordering == d ? ('-' + d) : d;
+            $(that.eventHandler).trigger('query',that.query);
+        });
 
     header.exit().remove();
 
-    // update the table content 
+    // update the table content
+
+    this.tbody.selectAll("tr.tablevisrow").remove()
+
     var rows = this.tbody.selectAll("tr.tablevisrow").data(this.displayData, function(d) {return d.plate_well;});
 
     rows.enter()
@@ -113,32 +121,21 @@ TableVis.prototype.updateVis = function(){
     cells.text(function(d) {return d; });
     cells.exit().remove();
 
+    this.parentElement.append('div')
 }
 
 
-TableVis.prototype.refreshTable= function (){
-    var that = this;
-
-    $.get(this.baseUrl,
-        this.query,
-        function(data) {
-            //console.log(data);
-            that.data = data;
-            that.wrangleData();
-            that.updateVis();
-    });
-
-}
 /**
  * Gets called by event handler and should create new aggregated data
  * aggregation is done by the function "aggregate(filter)". Filter has to
  * be defined here.
  * @param selection
  */
-TableVis.prototype.onPlateChange= function (plate){
+TableVis.prototype.onQuery= function (d){
 
-    this.query.plate = plate;
-    this.refreshTable();
+    this.data = d;
+    this.wrangleData();
+    this.updateVis();
 
 }
 

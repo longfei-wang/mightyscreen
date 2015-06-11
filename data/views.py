@@ -10,6 +10,34 @@ from sets import Set
 from django.db.models import Count
 # Create your views here.
 
+class MetaObject:
+	"""
+	Object that handle meta data
+	"""
+	meta = {}
+	fields = []
+	def __init__(self,_meta):
+		self.meta = _meta
+		if 'fields' in self.meta.keys():
+			self.fields = self.meta['fields']
+
+	@property
+	def channels(self):
+		"""
+		a list of channels that has been used
+		"""
+		return [i['name'] for i in self.fields]
+
+	@property
+	def verbose(self):
+		"""
+		a dictionary with field name as key and verbose name as values
+		"""
+		v = {}
+		for i in self.fields:
+			v[i['name']] = i['verbose']
+
+		return v
 
 
 class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.GenericViewSet):
@@ -23,11 +51,14 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 	lookup_field='plate_well'
 	project=None
 	plate_list=[]
+	meta=None
 
 	def get_queryset(self):
 
 		self.project = get_object_or_404(project,id=self.request.session.get('project',None))
 		
+		self.meta = MetaObject(self.project.meta)
+
 		pdata = data.objects.filter(project=self.project)
 
 		self.plate_list = [ i['plate'] for i in \
@@ -36,13 +67,15 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		return pdata
 
 	def list(self,request):
+
 		response = super(DataViewSet,self).list(request)
 
 		response.data.update({
 			'plateList':self.plate_list,
 			'curPlate':get_curPlate(request),
 			'meta':self.project.meta,
-			'channels':[self.project.meta[i] for i in sorted(self.project.meta.keys())],
+			'channels':self.meta.channels,
+			'verbose': self.meta.verbose,
 			})
 		return response
 
@@ -62,7 +95,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 			'curPlate':plate,
 			'hitList':hit_list,
 			'hitProp':hit_prop,
-			'channels':[self.project.meta[i] for i in sorted(self.project.meta.keys())],
+			'channels':self.meta.channels,
 			'meta':self.project.meta,
 			'results':serializer.data})
 
@@ -115,6 +148,8 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		"""
 		file_instance = get_object_or_404(csv_file,pk=pk)
 
+		project =find_or_create_project(request)
+
 		inputfile = file_instance.raw_csv_file
 		outputfile = ContentFile('')#file_instance.cleaned_csv_file
 
@@ -137,6 +172,10 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 
 		inputfile.close()
 		outputfile.close()
+
+		if project.meta:#if there is meta data for this project. pass it to frontend.
+			if 'map' in project.meta.keys():
+				results['map'] = project.meta['map'] 
 
 		return Response(results)
 
@@ -166,7 +205,7 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 				wellNum = row['well']
 
 				if (plateNum+wellNum) in content.keys():
-				
+					#if there are duplicate readouts combine them into array
 					for k,v in readouts.iteritems():
 						content[plateNum+wellNum][v] += [row[k]]
 
@@ -182,12 +221,13 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 
 			return content
 
-		def dict2object(d,project):
+		def dict2object(d,project,readouts):
 			"""
-			convert a dict that has platewell as key, to data objects
+			convert a dict that has platewell as key, to data objects that can be parsed into database
+			in the mean time create meta data for this data
 			"""
 			l = []
-			meta = {}
+			fields = []
 			for k,v in d.iteritems():
 
 				counter = 1
@@ -203,14 +243,20 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 				for r in readouts.values():
 					
 					for i,item in enumerate(v[r]):
-						if counter not in meta:
-							meta[str(counter)] = r + str(i+1)
+						if [x for x in fields if x['name'] == 'readout' + str(counter)] == []:
+							fields.append({
+								'name':'readout'+str(counter),
+								'verbose':r + str(i+1),
+								'datatype':'numeric',
+								})
+
 						dataDict['readout'+str(counter)] = item
 						counter += 1
 
 				l.append(data(**dataDict))
 
-			return l,meta
+			return l,{'fields':fields,
+						'map':readouts}
 
 
 
@@ -223,7 +269,6 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 
 		plates = {}
 		readouts = {}
-		
 
 		for i,item in enumerate(d.getlist('oreadouts[]')):
 			if d.getlist('readouts[]')[i]:
@@ -239,16 +284,25 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		#check if plate already exists in database if so delete
 		data.objects.filter(plate__in=set(plates.values())).delete()
 
-		dataList, meta = dict2object(file2dict(f,plates,readouts),project)
+		dataList, meta = dict2object(file2dict(f,plates,readouts),project,readouts)
+
+		meta['positives'] = d.getlist('positives[]')
+		meta['negatives'] = d.getlist('negatives[]')
 
 		#bulk create data. This is much faster than 1 by 1
 		data.objects.bulk_create(dataList)
+
+		#set controls
+
+		all_parsed_data = data.objects.filter(plate__in=set(plates.values()))
+		all_parsed_data.filter(well__in=meta['positives']).update(welltype='P')
+		all_parsed_data.filter(well__in=meta['negatives']).update(welltype='N')
 
 		#update the meta data of this project
 		project.meta = meta
 		project.save()
 
-		return Response("parse called")
+		return Response("parsed")
 	
 	def perform_create(self,serializer): #called when upload a file
 		

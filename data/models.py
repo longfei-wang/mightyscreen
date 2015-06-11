@@ -48,7 +48,7 @@ class project(models.Model):
 
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-	name = models.CharField(max_length=10,verbose_name='Project Name',blank=True)
+	name = models.CharField(max_length=10,verbose_name='Project Name',default='Untitled')
 
 	memo = models.TextField(blank=True)
 
