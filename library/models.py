@@ -20,18 +20,18 @@ class compound(models.Model):
     hidden_fields=['plate_well','sdf','id','fp2','fp3','fp4','plate','well']
 
     library_name = models.ForeignKey('library')
-    sub_library_name = models.ForeignKey('sub_library')
-    facility_reagent_id = models.CharField(max_length = 30)
+    sub_library_name = models.CharField(max_length=100)
+    facility_reagent_id = models.CharField(max_length = 100)
     plate = models.IntegerField()
     well = models.CharField(max_length = 20)
-    plate_well = models.CharField(max_length = 20)
+    plate_well = models.CharField(max_length = 20,unique=True)
     pubchem_cid = models.IntegerField(null=True)
     chemical_name = models.TextField()
     molecular_weight = models.DecimalField(max_digits=10, decimal_places=5)
-    formula = models.CharField(max_length = 30)
+    formula = models.CharField(max_length = 100)
     tpsa = models.DecimalField(max_digits=8, decimal_places=2)
     logp = models.DecimalField(max_digits=8, decimal_places=4)
-    inchikey = models.CharField(max_length = 30)
+    inchikey = models.CharField(max_length = 100)
     canonical_smiles = models.TextField()
     inchi = models.TextField()
     fp2 = models.TextField()
@@ -41,18 +41,10 @@ class compound(models.Model):
     sdf = models.TextField()
 
 
-class sub_library(models.Model):
-    def __unicode__(self):
-        return self.sub_library_name 
-    sub_library_name = models.CharField(unique=True,max_length = 30)
-    super_library = models.ForeignKey('library')
-    number_of_compounds = models.IntegerField(default=0)
-
 class library(models.Model):
     def __unicode__(self):
         return self.library_name
-    library_name = models.CharField(unique=True,max_length = 30)
-    number_of_sub_librarys = models.IntegerField(default=0)
+    library_name = models.CharField(unique=True,max_length = 100)
     number_of_compounds = models.IntegerField(default=0)
 
 #Serializer for REST framework
