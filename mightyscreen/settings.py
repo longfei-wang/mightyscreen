@@ -71,7 +71,7 @@ elif 'HOST' in os.environ.keys() and os.environ['HOST'] == 'mightyscreen':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'mightyscreen',
+            'NAME': 'mightyscreen2',
             'USER': 'mightyscreen',
             'PASSWORD': 'ms2014',
         }

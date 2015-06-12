@@ -55,9 +55,7 @@
                             <li><a href="">Edit Project</a></li>
                             <li><a href="">View Project</a></li>
                             <li class="divider"></li>
-                            {% for i in user.project_set.all %}
                                 <li><a href="">{{i.name|title}}</a></li>
-                            {% endfor %}                            
                         </ul>
                     </li>
                     {% endif %}
