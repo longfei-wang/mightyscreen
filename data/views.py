@@ -29,6 +29,13 @@ class MetaObject:
 		return [i['name'] for i in self.fields]
 
 	@property
+	def vchannels(self):
+		"""
+		a list of channels that has been used
+		"""
+		return [i['verbose'] for i in self.fields]
+
+	@property
 	def verbose(self):
 		"""
 		a dictionary with field name as key and verbose name as values
@@ -95,7 +102,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 			'curPlate':plate,
 			'hitList':hit_list,
 			'hitProp':hit_prop,
-			'channels':self.meta.channels,
+			'channels':self.meta.vchannels,
 			'meta':self.project.meta,
 			'results':serializer.data})
 

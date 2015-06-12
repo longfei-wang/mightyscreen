@@ -65,7 +65,6 @@ $(function() {
 
 
 		$(MyEventHandler).bind("query", function(event, query){
-			console.log(query)
 			$.get(url,query,function(d){
 				wrangleData(d);
 				tableview.onQuery(thisData);

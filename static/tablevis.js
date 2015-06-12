@@ -29,8 +29,11 @@ TableVis = function(_parentElement, _data, _eventHandler){
     this.data = _data;
     this.plateList = [];
     this.curPlate = null;
+    this.table = null;
     this.thead = null;
     this.tbody = null;
+    this.filter = null;
+    this.pagination = null;
 
     // TODO: define all "constants" here
     this.initVis();
@@ -44,7 +47,13 @@ TableVis.prototype.initVis = function(){
 
     var that = this; // read about the this
 
-    var table = this.parentElement.append("table")
+    this.filter = this.parentElement.append("input")
+            .attr("class","form-control");
+
+    this.pagination = this.parentElement.append("ul")
+            .attr("class","pagination");
+
+    table = this.parentElement.append("table")
             .attr("class","table");
     
     table.append("caption").html('TableView');
@@ -86,7 +95,9 @@ TableVis.prototype.updateVis = function(){
     // update the table header
     var columns = Object.keys(this.displayData[0]);
 
-    var sortorder = -1;
+    this.pagination.append("li")
+        .append("a")
+        .text("asdfsdf")
 
     var header = this.thead.selectAll("th")
         .data(columns)

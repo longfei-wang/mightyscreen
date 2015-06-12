@@ -97,7 +97,7 @@ PlateSelector.prototype.updateVis = function(){
     this.svg.selectAll(".plate").remove()
 
     this.plates = this.svg.selectAll(".plate")
-        .data(this.data)
+        .data(this.data.filter(function(d,i){return Math.abs(i - that.data.indexOf(parseInt(that.curPlate))) < 7}))
         .enter()
         .append("g")
         .attr("class","plate")
