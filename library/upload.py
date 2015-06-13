@@ -538,7 +538,8 @@ def json_to_djangodb(formated_dic_lib_file):
         obj.number_of_compounds+=1
         obj.save()
 
-        com, created = compound.objects.get_or_create(plate_well=mol['Plate_Well'])	
+        com = compound()
+        com.plate_well=mol['Plate_Well']
         com.library_name = obj
         com.sub_library_name = str(mol['Library'])
         com.facility_reagent_id = str(mol["Facility_Reagent_ID"])
