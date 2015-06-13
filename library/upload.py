@@ -536,42 +536,41 @@ def json_to_djangodb(formated_dic_lib_file):
     for mol in mols:
         obj,created = lib_model.objects.get_or_create(library_name = mol['Library_Name'])
         obj.number_of_compounds+=1
-	obj.save()
-	
-	subobj, created = sub_library.objects.get_or_create(sub_library_name = mol['Library'])
-	subobj.number_of_compounds+=1
-	subobj.save()
-	try:
-		
-	    com, created = compound.objects.get_or_create(plate_well=mol['Plate_Well'])	
-            com.library_name = obj
-            com.sub_library_name = subobj
-            com.facility_reagent_id = str(mol["Facility_Reagent_ID"])
-            com.plate= mol["Plate"]
-            com.well= mol["Well"]
-            #com.plate_well = mol["Plate_Well"]
-            com.pubchem_cid= mol["PubChem_CID"]
-            com.chemical_name = str(mol["Chemical_Name"])
-            com.molecular_weight = mol["Molecular_Weight"]
-            com.formula = mol["Formula"]
-            com.tpsa = mol["TPSA"]
-            com.logp = mol["logP"]
-            com.inchikey = mol["InChiKey"]
-            com.canonical_smiles = mol["Canonical_Smiles"]
-            com.inchi = str(mol["InChI"])
-            com.fp2= mol["Fp2"]
-            com.fp3 =mol["Fp3"]
-            com.fp4 = mol["Fp4"]
-            com.svg = mol["svg"]
-            com.sdf = mol['sdf']
-	    try:
+        obj.save()
+
+        com, created = compound.objects.get_or_create(plate_well=mol['Plate_Well'])	
+        com.library_name = obj
+        com.sub_library_name = str(mol['Library'])
+        com.facility_reagent_id = str(mol["Facility_Reagent_ID"])
+        com.plate= mol["Plate"]
+        com.well= mol["Well"]
+        #com.plate_well = mol["Plate_Well"]
+        com.pubchem_cid= mol["PubChem_CID"]
+        com.chemical_name = str(mol["Chemical_Name"])
+        com.molecular_weight = mol["Molecular_Weight"]
+        com.formula = mol["Formula"]
+        com.tpsa = mol["TPSA"]
+        com.logp = mol["logP"]
+        com.inchikey = mol["InChiKey"]
+        com.canonical_smiles = mol["Canonical_Smiles"]
+        com.inchi = str(mol["InChI"])
+        com.fp2= mol["Fp2"]
+        com.fp3 =mol["Fp3"]
+        com.fp4 = mol["Fp4"]
+        com.svg = mol["svg"]
+        com.sdf = mol['sdf']
+
+        try:
+    	    try:
                 com.save()
             except ValidationError:
                 com.pubchem_cid=None
                 com.save()
-	except:
-	    print mol
-	    print "---------------------------------------------"
+    	except:
+    	    print mol
+    	    print "---------------------------------------------"
+
+
 def upload(json_directory = '/home/server/iccb_parsed/parsed/'):
     files = filelist(json_directory, key = 'json')
     for f in files:
