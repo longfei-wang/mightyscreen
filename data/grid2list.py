@@ -144,7 +144,7 @@ def grid2list(inputfile=None,outputfile=None):
 	#print "Processing grid csv file....."
 
 	with inputfile as csvfile:
-		sample = csvfile.read(1024)
+		sample = csvfile.read(1024).replace('\r\n','\n') #throw a newline inside string error if not replace
 		csvfile.seek(0)
 
 		if csv.Sniffer().has_header(sample):#check if this is a list file if so then return
