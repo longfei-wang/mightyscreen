@@ -144,17 +144,31 @@ def grid2list(inputfile=None,outputfile=None):
 	#print "Processing grid csv file....."
 
 	with inputfile as csvfile:
-		sample = csvfile.read(1024).replace('\r\n','\n') #throw a newline inside string error if not replace
-		csvfile.seek(0)
+		#sample = csvfile.read(1024) #throw a newline inside string error if not replace
+		#csvfile.seek(0)
 
-		if csv.Sniffer().has_header(sample):#check if this is a list file if so then return
-			return {"is_list":True}
+		#if csv.Sniffer().has_header(sample):#check if this is a list file if so then return
+		#	return {"is_list":True}
 
-		dialect = csv.Sniffer().sniff(sample)
+		#dialect = csv.Sniffer().sniff(sample,delimiters=',')
 		
-		reader = csv.reader(csvfile, dialect)
+		reader = csv.reader(csvfile, delimiter=',')
+
+		header_checked = False
 
 		for row in reader:#read through the grid csv file and find plates/talbes
+			
+			if header_checked == False:#check the header line to see if this is a list file
+				
+				is_header = True
+				for i in row:
+					is_header = is_header and (isinstance(i,basestring) and i != '') 
+				
+				if is_header == True:
+					return {"is_list":True}
+
+				header_checked = True
+
 			if row[0] == 'Plate':
 				row = reader.next()
 
