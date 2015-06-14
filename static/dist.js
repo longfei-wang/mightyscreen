@@ -182,7 +182,7 @@ DistVis.prototype.updateVis = function(){
 
     //draw all the controls
     var controls = this.svg.selectAll(".controls")
-        .data(this.controls,function(d){return d.platewell;});
+        .data(this.controls,function(d){return d.platewell+d[that.channel];});
 
     controls.enter()
         .append("line")
