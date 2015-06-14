@@ -182,6 +182,7 @@ DistVis.prototype.updateVis = function(){
         .call(this.yAxis)
 
     //draw all the controls
+    this.svg.selectAll(".controls").remove();
     var controls = this.svg.selectAll(".controls")
         .data(this.controls,function(d){return d.platewell+d[that.channel];});
 
