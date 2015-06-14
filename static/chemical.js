@@ -75,7 +75,7 @@ ChemicalVis.prototype.wrangleData= function(){
     // displayData should hold the data which is visualized
     // pretty simple in this case -- no modifications needed
     // A certain propety will be used here. As an example we use fpA
-    that = this;
+    var that = this;
 
     //select molecules in selection
     this.displayData = this.data

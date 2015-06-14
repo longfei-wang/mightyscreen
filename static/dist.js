@@ -137,7 +137,7 @@ DistVis.prototype.wrangleData= function(){
 
     // displayData should hold the data which is visualized
     // pretty simple in this case -- no modifications needed
-    that = this;
+    var that = this;
 
     var data = this.data.results.map(function(d) {
         return  d[that.channel];
@@ -165,6 +165,7 @@ DistVis.prototype.wrangleData= function(){
  */
 DistVis.prototype.updateVis = function(){
 
+    var that = this;
     // TODO: implement update graphs (D3: update, enter, exit)
 
 

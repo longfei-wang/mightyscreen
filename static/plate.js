@@ -94,7 +94,7 @@ PlateVis.prototype.wrangleData= function(_filter){
 
     // displayData should hold the data which is visualized
     // pretty simple in this case -- no modifications needed
-    that = this;
+    var that = this;
 
     // var filter = function(){return true;}
     // if (_filter != null){
@@ -145,7 +145,7 @@ PlateVis.prototype.updateVis = function(){
 
     // TODO: implement update graphs (D3: update, enter, exit)
 
-    that = this;
+    var that = this;
     // updates axis
 
     //updates graph
