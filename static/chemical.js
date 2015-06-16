@@ -96,7 +96,8 @@ ChemicalVis.prototype.wrangleData= function(){
  * @param _options -- only needed if different kinds of updates are needed
  */
 ChemicalVis.prototype.updateVis = function(){
-
+    
+    var that = this;
     // TODO: implement update graphs (D3: update, enter, exit)
 
     this.numRow = Math.ceil(this.displayData.length / this.numCol);

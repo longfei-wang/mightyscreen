@@ -532,20 +532,19 @@ def json_to_djangodb(formated_dic_lib_file):
     from django.core.exceptions import *
      
     mols = [json.loads(mol) for mol in open(formated_dic_lib_file, 'rU')]
-
+    error_count = 0
     for mol in mols:
         obj,created = lib_model.objects.get_or_create(library_name = mol['Library_Name'])
         obj.number_of_compounds+=1
         obj.save()
 
         com = compound()
-        com.plate_well=mol['Plate_Well']
         com.library_name = obj
         com.sub_library_name = str(mol['Library'])
         com.facility_reagent_id = str(mol["Facility_Reagent_ID"])
         com.plate= mol["Plate"]
         com.well= mol["Well"]
-        #com.plate_well = mol["Plate_Well"]
+        com.plate_well = mol["Plate"]+mol["Well"]
         com.pubchem_cid= mol["PubChem_CID"]
         com.chemical_name = str(mol["Chemical_Name"])
         com.molecular_weight = mol["Molecular_Weight"]
@@ -568,9 +567,10 @@ def json_to_djangodb(formated_dic_lib_file):
                 com.pubchem_cid=None
                 com.save()
     	except:
+            error_count +=1
     	    print mol
     	    print "---------------------------------------------"
-
+    print error_count
 
 def upload(json_directory = '/home/server/iccb_parsed/parsed/'):
     files = filelist(json_directory, key = 'json')
