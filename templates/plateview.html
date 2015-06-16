@@ -146,7 +146,7 @@ $(function(){ // this function is called after the HTML document is fully loaded
         d3.select("#select1").node().value = thisData.channels[0];
         d3.select("#select2").node().value = thisData.channels[1];
         d3.select("#select3").node().value = thisData.channels[2];
-        
+
         //select which plate to display
         var plateselector = new PlateSelector(d3.select("#plateSelector"),thisData,MyEventHandler);
 
@@ -157,7 +157,7 @@ $(function(){ // this function is called after the HTML document is fully loaded
         var distvis2 = new DistVis(d3.select("#distVis2"),thisData,thisData.channels[1],MyEventHandler);
         
         //channel 3 for selection
-        var distvis3 = new DistVis(d3.select("#distVis3"),thisData,thisData.channels[1],MyEventHandler);
+        var distvis3 = new DistVis(d3.select("#distVis3"),thisData,thisData.channels[2],MyEventHandler);
 
         //Chemical View 
         var chemicalvis = new ChemicalVis(d3.select("#chemicalVis"),thisData,MyEventHandler);

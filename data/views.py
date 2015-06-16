@@ -8,6 +8,7 @@ from data.grid2list import grid2list, checklist
 import os
 from sets import Set
 from django.db.models import Count
+from collections import OrderedDict as odict
 # Create your views here.
 
 class MetaObject:
@@ -274,8 +275,8 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		d = request.POST
 
 
-		plates = {}
-		readouts = {}
+		plates = odict()
+		readouts = odict()
 
 		for i,item in enumerate(d.getlist('oreadouts[]')):
 			if d.getlist('readouts[]')[i]:
