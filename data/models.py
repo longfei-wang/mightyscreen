@@ -74,7 +74,7 @@ def find_or_create_project(request):
     elif project.objects.filter(id=request.session.get('project', None)).exists(): #if cannot find project
 
         p = project.objects.get(id=request.session.get('project', None))
-
+    
     else:
 
         p = project(user=None if request.user.is_anonymous() else request.user) #anonymouse user cannot be saved as a user object
