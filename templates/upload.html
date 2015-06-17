@@ -63,7 +63,6 @@ function updateParse(d,fid) {
 
     var response = d
 
-    console.log(d)
     
     var form = d3.select('#parse')
     .append('div')
@@ -137,7 +136,6 @@ function updateParse(d,fid) {
                 positives: $('input[name="' + fid +'positives"]').val().split(','),
                 negatives: $('input[name="' + fid +'negatives"]').val().split(','),
                 }
-            console.log(data)
             $.post(
                 "{% url 'csv_file-list' %}"+fid+"/parse/",
                 data,   
@@ -155,7 +153,8 @@ function updateClean(filename,fid,pid) {
     .text("Click to process "+filename)
     .on("click",function(){
         $.get("{% url 'csv_file-list' %}"+fid+"/clean/",function(d){
-            updateParse(d,fid);
+            console.log(d);
+	    updateParse(d,fid);
         });
     });
 }

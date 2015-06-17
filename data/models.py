@@ -70,7 +70,7 @@ def find_or_create_project(request):
         p = project.objects.get(id=request.session.get('project', None))
 
     elif project.objects.filter(user=request.user).exists():
-        p = project.objects.filter(user=request.user)[0].get()
+        p = project.objects.filter(user=request.user)[0]
 
     else:
 
