@@ -69,6 +69,8 @@ def find_or_create_project(request):
         
         p = project.objects.filter(user=request.user)[0]
 
+        request.session['project'] = p.id.hex
+
     elif project.objects.filter(id=request.session.get('project', None)).exists(): #if cannot find project
 
         p = project.objects.get(id=request.session.get('project', None))

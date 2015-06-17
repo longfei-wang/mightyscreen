@@ -63,7 +63,8 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 
 	def get_queryset(self):
 
-		self.project = get_object_or_404(project,id=self.request.session.get('project',None))
+		self.project = find_or_create_project(self.request)
+		#get_object_or_404(project,id=self.request.session.get('project',None))
 		
 		self.meta = MetaObject(self.project.meta)
 
