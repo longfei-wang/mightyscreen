@@ -60,25 +60,28 @@ class project(models.Model):
 
 
 def find_or_create_project(request):
-	"""
-	find the project instance based on request
-	if can't find any, create one and return the new project
-	"""
+    """
+    find the project instance based on request
+    if can't find any, create one and return the new project
+    """
 
-	if project.objects.filter(id=request.session.get('project', None)).exists(): #if cannot find project
-			
-		p = project.objects.get(id=request.session.get('project', None))
+    if project.objects.filter(id=request.session.get('project', None)).exists(): #if cannot find project
 
-	else:
+        p = project.objects.get(id=request.session.get('project', None))
 
-		p = project(user=None if request.user.is_anonymous() else request.user, #anonymouse user cannot be saved as a user object
-					)
+    elif project.objects.filter(user=request.user).exists():
+        p = project.objects.filter(user=request.user)[0].get()
 
-		p.save()
+    else:
 
-		request.session['project'] = p.id.hex #set the session project keyword
+        p = project(user=None if request.user.is_anonymous() else request.user) #anonymouse user cannot be saved as a user object
 
-	return p
+
+        p.save()
+
+        request.session['project'] = p.id.hex #set the session project keyword
+
+    return p
 
 
 def get_curPlate(request):
