@@ -65,17 +65,17 @@ def find_or_create_project(request):
     if can't find any, create one and return the new project
     """
 
-    if project.objects.filter(id=request.session.get('project', None)).exists(): #if cannot find project
-
-        p = project.objects.get(id=request.session.get('project', None))
-
-    elif project.objects.filter(user=request.user).exists():
+    if project.objects.filter(user=request.user).exists():
+        
         p = project.objects.filter(user=request.user)[0]
 
+    elif project.objects.filter(id=request.session.get('project', None)).exists(): #if cannot find project
+
+        p = project.objects.get(id=request.session.get('project', None))
+    
     else:
 
         p = project(user=None if request.user.is_anonymous() else request.user) #anonymouse user cannot be saved as a user object
-
 
         p.save()
 
