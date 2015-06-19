@@ -12,18 +12,19 @@ import sys
 
 class table():
 	"""A class that handle tables in a grid file"""
-	plates = list()
-	titles = list()
-	allcols = list()
-	allrows = list()
+	plates = []
+	titles = []
+	allcols = []
+	allrows = []
 
 	def __init__(self,pointer,plate_id,title,columns):
+
 		self.columns = [i.zfill(2) for i in columns]
 		self.plate_id = plate_id
 		self.title = title
 
-		self.rows=list()
-		self.c=list()
+		self.rows=[]
+		self.c=[]
 		r = pointer.next()
 		while r[0]:
 			self.rows.append(r[0])
@@ -46,6 +47,13 @@ class table():
 				return self.c[self.rows.index(row)][self.columns.index(col)]
 			except:
 				return ''
+	
+	@classmethod
+	def close(self):
+		self.plates = []
+		self.titles = []
+		self.allcols = []
+		self.allrows = [] 
 
 	@classmethod
 	def wells(self):
@@ -213,10 +221,14 @@ def grid2list(inputfile=None,outputfile=None):
 
 
 	#print "Done!"
-	return {
+	results =  {
 		"plates":table.plates,
 		"titles":table.titles,
 		"cols":table.allcols,
 		"rows":table.allrows,
 		"numWells": len(table.allcols)*len(table.allrows),
 		}
+
+	table.close()
+	
+	return results

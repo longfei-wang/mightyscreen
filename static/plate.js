@@ -67,7 +67,7 @@ PlateVis.prototype.initVis = function(){
         .range([0, this.width]);
 
     this.y = d3.scale.linear()
-        .range([this.height, 0]);
+        .range([0,this.height]);
 
     this.color = d3.scale.category10();
     //set the heatmap range based on category 20c
@@ -132,6 +132,8 @@ PlateVis.prototype.wrangleData= function(_filter){
     this.readout.domain(d3.extent(this.data.results.map(function(d){ return d[that.channel]; })));
 
     this.displayData = data;
+
+    console.log(this.displayData);
 
 }
 
