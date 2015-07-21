@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'django_filters',
     'library',
     'data',
+    'intouch.queryset_csv',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -106,12 +107,15 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 #Upload files
 
 MEDIA_ROOT =os.path.join(BASE_DIR,'media')
+
 MEDIA_URL = '/media/'
 
 CSV_FILE_DIR = 'CSV'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
+
+STATIC_ROOT = os.path.join(BASE_DIR,'staticroot')
 
 STATIC_URL = '/static/'
 
