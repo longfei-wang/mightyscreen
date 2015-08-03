@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load filters %}
+
+{% block content %}
+
+<div class="well">
+
+	<form id="registerform" class="form-horizontal" role="form" enctype="multipart/form-data" method="post" action="">
+	   {% csrf_token %}      
+
+	   {{form|crispy}}
+
+	</form>
+
+	<button class="btn btn-primary btn-block" data-toggle="modal" data-target="#myModal">
+  		Register
+	</button>
+
+
+
+	<!-- Button trigger modal -->
+
+	<!-- Modal -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h4 class="modal-title" id="myModalLabel">User Agreement</h4>
+	      </div>
+	      <div class="modal-body">
+			{{agreement|paragraphs|safe}}	
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-primary btn-block" data-dismiss="modal" onclick="$('#registerform').submit()">I understand and want to register</button>
+	      </div>
+	    </div><!-- /.modal-content -->
+	  </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+
+
+
+</div>
+{% endblock %}

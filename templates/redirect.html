@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<META HTTP-EQUIV="Refresh" CONTENT="2; URL={% url dest %}"> 
+
+<div class="alert alert-success"><strong>
+{{message}}. We will redirect you to main page in a few seconds. If not, you can click 
+<a href="{% url dest %}" class="alert-link">here.</a>
+</strong>
+</div>
+
+{% endblock %}

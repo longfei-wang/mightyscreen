@@ -1,4 +1,4 @@
-{% extends 'main/base.html' %}
+{% extends 'base.html' %}
 
 
 {% block content %}
@@ -14,12 +14,11 @@
 			<dt><strong>Username:</strong></dt><dd>{{user.username}}</dd>
 			<dt><strong>Full Name:</strong><dd>{{user.get_full_name}} </dd>
 			<dt><strong>Email:</strong><dd>{{user.email}} </dd>
-			<dt><strong>Affiliation:</strong><dd>{{profile.affiliation}} </dd>
-			<dt><strong>Position:</strong><dd>{{profile.position}} </dd>
+			<dt><strong>Affiliation:</strong><dd>{{user.user_profile.affiliation}} </dd>
+			<dt><strong>Position:</strong><dd>{{user.user_profile.position}} </dd>
 			<dt><strong>Date Joined:</strong><dd>{{user.date_joined}} </dd>
 			<dt><strong>Last Login:</strong><dd>{{user.last_login}} </dd></dd>
-			<dt></dt><dd><a href="">Edit</a></dd>
-			<dt></dt><dd><a href="">Change Password</a></dd>
+			<dt></dt><dd><a href="{% url 'password_change' %}">Change Password</a></dd>
 		</dl>
 	</div>
 </div>

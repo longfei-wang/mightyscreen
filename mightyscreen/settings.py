@@ -38,9 +38,10 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
+    'crispy_forms',
     'library',
     'data',
-    'intouch.queryset_csv',
+    'accounts',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -51,6 +52,13 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
+
+from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS as TCP
+
+TEMPLATE_CONTEXT_PROCESSORS = TCP + (
+    'django.core.context_processors.request',
+)
+
 
 ROOT_URLCONF = 'mightyscreen.urls'
 
@@ -138,3 +146,6 @@ REST_FRAMEWORK = {
     )
 }
 
+
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'

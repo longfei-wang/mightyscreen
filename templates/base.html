@@ -36,7 +36,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">MightyScreen</a>
+                <a class="navbar-brand" href="{% url 'index' %}">MightyScreen</a>
             </div>
 
             <div class="navbar-collapse collapse">
@@ -73,9 +73,9 @@
                          <span class="caret"></span>
                         </a>
                             <ul class="dropdown-menu">
-                                <li><a href="">Profile</a></li>
+                                <li><a href="{% url "profile" %}">Profile</a></li>
                                 <li class="divider"></li>
-                                <li><a href="">Logout</a></li>
+                                <li><a href="{% url "logout" %}">Logout</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -88,7 +88,7 @@
                 {% else %}
 
                     <ul class="nav navbar-nav navbar-right">
-                        <li><a href=""><span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;&nbsp;&nbsp;</a></li>
+                        <li><a href="{% url "login" %}?next={{request.path}}"><span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;&nbsp;&nbsp;</a></li>
                     </ul>
                 {% endif %}
             </div><!--/.navbar-collapse -->
