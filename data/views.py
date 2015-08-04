@@ -4,12 +4,12 @@ from rest_framework.decorators import api_view, detail_route, list_route
 from rest_framework.response import Response
 from django.core.files.base import ContentFile
 from data.models import *
-from data.grid2list import grid2list, checklist
 import os
 from sets import Set
 from django.db.models import Count
 from collections import OrderedDict as odict
 # Create your views here.
+
 
 class MetaObject:
 	"""
@@ -54,11 +54,10 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 	"""
 	queryset = data.objects.all()
 	serializer_class = DataSerializer
-	filter_class = DataFilter
-	search_fields = ('plate_well', 'plate', 'well')
-	lookup_field='plate_well'
+	lookup_field='plate'
 	project=None
 	plate_list=[]
+	curPlate = None
 	meta=None
 
 	def get_queryset(self):
@@ -68,56 +67,45 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		
 		self.meta = MetaObject(self.project.meta)
 
+		self.curPlate = get_curPlate(request)
+
 		pdata = data.objects.filter(project=self.project)
 
 		self.plate_list = [ i['plate'] for i in \
 		pdata.order_by('plate').values('plate').distinct()]
 		
-		return pdata
+		return pdata.filter(plate=self.curPlate)
 
 	def list(self,request):
+		"""
+		list view
+		"""
 
 		response = super(DataViewSet,self).list(request)
 
+		hit_list, hit_prop = self.hits(request)
+		
 		response.data.update({
 			'plateList':self.plate_list,
-			'curPlate':get_curPlate(request),
-			'meta':self.project.meta,
-			'channels':self.meta.channels,
-			'verbose': self.meta.verbose,
-			})
-		return response
-
-	@list_route()
-	def plate(self,request):
-		"""
-		list view for plateview
-		"""
-
-		plate, hit_list, hit_prop = self.hits(request)
-		query = self.get_queryset().filter(plate=plate)
-
-
-		serializer = self.get_serializer(query,many=True)
-		return Response({
-			'plateList':self.plate_list,
-			'curPlate':plate,
+			'curPlate':self.curPlate,
 			'hitList':hit_list,
 			'hitProp':hit_prop,
 			'channels':self.meta.vchannels,
 			'meta':self.project.meta,
-			'results':serializer.data})
+			})
+
+		return response
 
 	@detail_route(methods=['GET'])
 	def mark(self,request,plate_well):
 		"""
 		mark/unmark a compound as hit
 		"""
-		instance = get_object_or_404(self.get_queryset(),plate_well=plate_well)
-		instance.hit = 1 if instance.hit == 0 else 0
-		instance.save()
+		instance, created = hitlist.objects.get_or_create(project=self.project,plate_well=plate_well)
+		if not created:
+			instance.delete()
 
-		plate, hit_list, hit_prop = self.hits(request)
+		hit_list, hit_prop = self.hits(request)
 		return Response({
 			'plate_well':plate_well,
 			'mark':instance.hit,
@@ -132,14 +120,14 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		"""
 
 		from library.models import compound, compound_serializer
-		p = get_curPlate(request)
 
-		hit_list = [i['plate_well'] for i in self.get_queryset().filter(plate=p,hit=1).values('plate_well')]
+		hit_list = [i['plate_well'] for i in hitlist.objects.filter(plate=self.curPlate).values('plate_well')]
 		hit_list.sort(reverse=True)
+
 		query = compound.objects.filter(plate_well__in=hit_list)
 		serializer = compound_serializer(query,many=True)
 
-		return p, hit_list, serializer.data #hit_list and data returned will not be the same. Some marked hit compound doesn't exists in library.
+		return hit_list, serializer.data #hit_list and data returned will not be the same. Some marked hit compound doesn't exists in library.
 
 
 class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.GenericViewSet):
@@ -160,27 +148,8 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		project =find_or_create_project(request)
 
 		inputfile = file_instance.raw_csv_file
-		outputfile = ContentFile('')#file_instance.cleaned_csv_file
-
-		inputfile.open(mode='rb')
-		outputfile.open(mode='w')
-
-		results = grid2list(inputfile,outputfile)
-
-		if 'is_list' in results.keys():
-			
-			inputfile.open(mode='rb')
-
-			results = checklist(inputfile)
-
-			inputfile.open(mode='rb')
-
-			outputfile = ContentFile(inputfile.read())
-
-		file_instance.cleaned_csv_file.save(os.path.join('CSV',pk+'.csv'),outputfile)
-
-		inputfile.close()
-		outputfile.close()
+		
+		results = checklist(inputfile.path)
 
 		if project.meta:#if there is meta data for this project. pass it to frontend.
 			if 'map' in project.meta.keys():

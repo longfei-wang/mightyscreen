@@ -46,10 +46,6 @@ class JSONField(models.TextField):
 
 
 
-
-
-
-
 class project(models.Model):
 
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -119,20 +115,6 @@ def get_curPlate(request):
 
 	return plate
 
-#overwrite class from pytoolbox
-class OverwriteMixin(object):
-    """Update get_available_name to remove any previously stored file (if any) before returning the name."""
-
-    def get_available_name(self, name):
-        self.delete(name)
-        return name
-
-
-
-class OverwriteFileSystemStorage(OverwriteMixin, FileSystemStorage):
-	"""A file-system based storage that let overwrite files with the same name."""
-
-
 
 def get_file_name(instance,filename):
 	"""
@@ -151,8 +133,6 @@ class csv_file(models.Model):
     project = models.ForeignKey('project',null=True,blank=True)
 
     raw_csv_file = models.FileField(null=True,upload_to=get_file_name)
-
-    cleaned_csv_file = models.FileField(null=True,blank=True,upload_to=settings.CSV_FILE_DIR,storage=OverwriteFileSystemStorage())
 
 
 #Serializer for REST framework
@@ -178,78 +158,72 @@ def csv_file_delete(sender, instance, **kwargs):
 	"""
 	# Pass false so FileField doesn't save the model.
 	instance.raw_csv_file.delete(False)
-	instance.cleaned_csv_file.delete(False)
 
 
-#Data object abstract for all screening raw data. Real table is in app:data
-#Two ways of identify compound. FaciclityID? or Plate+Well
-class data_base(models.Model):
-    
+
+
+###############################################################################################
+#This is how we do it
+###############################################################################################
+class data(models.Model):
+    """
+    This is where users data is stored.
+    """
+
     def __unicode__(self):
-    
-        return self.library+self.plate_well
         
+        return self.plate
+
     class Meta:
 
-        abstract=True
-        unique_together = ('plate_well','project')
-        index_together = ['plate_well','project']
+        unique_together = ('plate','project')
+
+        index_together = ['plate','project']
     
-    library = models.CharField(max_length=50,verbose_name='Library')
-
-    plate_well = models.CharField(max_length=50)#using plate well as unique identifier, not good for more than one libraries
-
-    plate = models.IntegerField()
-
-    well = models.CharField(max_length=20)
-    
-    hit=models.PositiveSmallIntegerField(default=0,verbose_name='Hit')
-
-    schoice = (
-    ('B','bad well'),
-    ('E','empty'),
-    ('P','positive control'),
-    ('N','negative control'),
-    ('X','compound'),
-    )
-    
-    welltype=models.CharField(max_length=1,choices=schoice,default='X')
-
     project = models.ForeignKey(project)
     
+    plate = models.IntegerField()
+    
+    csv_file = models.FileField(null=True,upload_to=get_file_name)
+
+    create_date = models.DateTimeField(auto_now_add = True, blank = True)
+
+#the serializer for entries
+class DataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = data
+
+class hitlist(models.Model):
+    """
+    This table stored the hitlist of a project
+    """
+    def __unicode__(self):
+        
+        return self.plate_well
+    
+    class Meta:
+
+        unique_together = ('plate_well','project')
+
+        index_together = ['plate_well','project']
+
+    project = models.ForeignKey(project)
+
+    plate = models.IntegerField()
+    
+    well = models.CharField(max_length=20)
+    
+    plate_well = models.CharField(max_length=50)#using plate well as unique identifier, not good for more than one libraries
+    
+    activity = JSONField(blank=True)
+
+    chemical = models.TextField(blank=True)
+
     create_date = models.DateTimeField(auto_now_add = True, blank = True)
 
 
-class data(data_base):
-
-	readout1 = models.FloatField(null=True,blank=True)
-	readout2 = models.FloatField(null=True,blank=True)
-	readout3 = models.FloatField(null=True,blank=True)
-	readout4 = models.FloatField(null=True,blank=True)
-	readout5 = models.FloatField(null=True,blank=True)
-	readout6 = models.FloatField(null=True,blank=True)
-	readout7 = models.FloatField(null=True,blank=True)
-	readout8 = models.FloatField(null=True,blank=True)
-	readout9 = models.FloatField(null=True,blank=True)
-	readout10 = models.FloatField(null=True,blank=True)
-	readout11 = models.FloatField(null=True,blank=True)
-	readout12 = models.FloatField(null=True,blank=True)
-
-    
-#the serializer for data
-class DataSerializer(serializers.ModelSerializer):
-
+#the serializer for hitlist
+class HitListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = data
-        fields = 'plate_well plate well hit welltype create_date readout1 readout2 readout3 \
-        readout4 readout5 readout6 readout7 readout8 readout9 readout10 readout11 readout12'.split()
+        model = hitlist
 
-
-import django_filters
-
-#filter class for data
-class DataFilter(django_filters.FilterSet):
-    class Meta:
-        model = data
-        fields = 'plate well hit plate_well welltype readout1 readout2 readout3 readout4 \
-        readout5 readout6 readout7 readout8 readout9 readout10 readout11 readout12'.split()

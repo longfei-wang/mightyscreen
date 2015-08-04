@@ -10,58 +10,77 @@ import csv
 import sys
 
 
-class table():
-	"""A class that handle tables in a grid file"""
-	plates = []
-	titles = []
-	allcols = []
-	allrows = []
+# class table():
+# 	"""A class that handle tables in a grid file"""
+# 	plates = []
+# 	titles = []
+# 	allcols = []
+# 	allrows = []
 
-	def __init__(self,pointer,plate_id,title,columns):
+# 	def __init__(self,pointer,plate_id,title,columns):
 
-		self.columns = [i.zfill(2) for i in columns]
-		self.plate_id = plate_id
-		self.title = title
+# 		self.columns = [i.zfill(2) for i in columns]
+# 		self.plate_id = plate_id
+# 		self.title = title
 
-		self.rows=[]
-		self.c=[]
-		r = pointer.next()
-		while r[0]:
-			self.rows.append(r[0])
-			self.c.append(r[1:])
-			r = pointer.next()
+# 		self.rows=[]
+# 		self.c=[]
+# 		r = pointer.next()
+# 		while r[0]:
+# 			self.rows.append(r[0])
+# 			self.c.append(r[1:])
+# 			r = pointer.next()
 
-		#maintain a list of unique plates cols rows and titles 
-		self.allrows += [i for i in self.rows if i not in self.allrows]
-		self.allcols += [i for i in self.columns if i not in self.allcols]
-		if title not in self.titles:
-			self.titles.append(title)
-		if plate_id not in self.plates:
-			self.plates.append(plate_id)
+# 		#maintain a list of unique plates cols rows and titles 
+# 		self.allrows += [i for i in self.rows if i not in self.allrows]
+# 		self.allcols += [i for i in self.columns if i not in self.allcols]
+# 		if title not in self.titles:
+# 			self.titles.append(title)
+# 		if plate_id not in self.plates:
+# 			self.plates.append(plate_id)
 
-	def __getitem__(self,key):
-		col = key[-2:]
-		row = key[:-2]
-		if col in self.columns and row in self.rows:
-			try:
-				return self.c[self.rows.index(row)][self.columns.index(col)]
-			except:
-				return ''
+# 	def __getitem__(self,key):
+# 		col = key[-2:]
+# 		row = key[:-2]
+# 		if col in self.columns and row in self.rows:
+# 			try:
+# 				return self.c[self.rows.index(row)][self.columns.index(col)]
+# 			except:
+# 				return ''
 	
-	@classmethod
-	def close(self):
-		self.plates = []
-		self.titles = []
-		self.allcols = []
-		self.allrows = [] 
+# 	@classmethod
+# 	def close(self):
+# 		self.plates = []
+# 		self.titles = []
+# 		self.allcols = []
+# 		self.allrows = [] 
 
-	@classmethod
-	def wells(self):
-		c = list()
-		for row in self.allrows:
-			for col in self.allcols:
-				c.append(row+col)
-		return c
+# 	@classmethod
+# 	def wells(self):
+# 		c = list()
+# 		for row in self.allrows:
+# 			for col in self.allcols:
+# 				c.append(row+col)
+# 		return c
+
+
+def read_csv_file(path):
+	"""
+	csv reader wrapper
+	"""
+
+	with open(path, 'rU') as csvfile:
+
+		sample = csvfile.read(1024)
+		
+		csvfile.seek(0)
+
+		dialect = csv.Sniffer().sniff(sample)
+		
+		reader = csv.reader(csvfile, dialect)
+
+		for row in reader:
+			yield row
 
 
 def checklist(inputfile=None):
@@ -71,49 +90,42 @@ def checklist(inputfile=None):
 	"""
 	if inputfile==None: return {"failed":"inputfile is None"}
 
-	inputfile.seek(0)
-
 	titles = []
 	plates = []
 	cols = []
 	rows = []
 
-	with inputfile as csvfile:
+	reader = read_csv_file(inputfile)
 
-		sample = csvfile.read(1024)
-		csvfile.seek(0)
+	header = reader.next()
+	
+	numCol = len(header)
 
-		dialect = csv.Sniffer().sniff(sample)
-		reader = csv.reader(csvfile, dialect)
+	plateIndex = header.index('plate')
+	wellIndex = header.index('well')
 
-		header = reader.next()
-		numCol = len(header)
+	titles = [i for i in header if i not in "plate well".split()]
 
-		plateIndex = header.index('plate')
-		wellIndex = header.index('well')
+	line = 1
 
-		titles = [i for i in header if i not in "plate well".split()]
+	for row in reader:
+		
+		line += 1
 
-		line = 1
+		if len(row) != numCol:
+			return {"failed":"Bad CSV format",
+					"header":header,
+					"row":row,
+					"line":line}
 
-		for row in reader:
-			
-			line += 1
+		if row[plateIndex] not in plates:
+			plates.append(row[plateIndex])
 
-			if len(row) != numCol:
-				return {"failed":"Bad CSV format",
-						"header":header,
-						"row":row,
-						"line":line}
+		if row[wellIndex][-2:] not in cols:
+			cols.append(row[wellIndex][-2:])
 
-			if row[plateIndex] not in plates:
-				plates.append(row[plateIndex])
-
-			if row[wellIndex][-2:] not in cols:
-				cols.append(row[wellIndex][-2:])
-
-			if row[wellIndex][:-2] not in rows:
-				rows.append(row[wellIndex][:-2])
+		if row[wellIndex][:-2] not in rows:
+			rows.append(row[wellIndex][:-2])
 
 	return {
 		"plates":plates,
@@ -124,111 +136,111 @@ def checklist(inputfile=None):
 		}
 
 
-def test_all():
-	i = open('grid.csv','rb')
-	o = open('list.csv','w')
-	print grid2list(i,o)
-	i.close()
-	o.close()
-	f = open('list.csv','rb')
-	print checklist(f)
-	f.close()
+# def test_all():
+# 	i = open('grid.csv','rb')
+# 	o = open('list.csv','w')
+# 	print grid2list(i,o)
+# 	i.close()
+# 	o.close()
+# 	f = open('list.csv','rb')
+# 	print checklist(f)
+# 	f.close()
 
 
-def grid2list(inputfile=None,outputfile=None):
-	"""
-	take a grid file and output a list file
-	both files are python file handlers
-	"""
-	if (inputfile==None or outputfile==None): return {"failed":"inputfile or outputfile is None"}
+# def grid2list(inputfile=None,outputfile=None):
+# 	"""
+# 	take a grid file and output a list file
+# 	both files are python file handlers
+# 	"""
+# 	if (inputfile==None or outputfile==None): return {"failed":"inputfile or outputfile is None"}
 
-	inputfile.seek(0)
-	outputfile.seek(0)
+# 	inputfile.seek(0)
+# 	outputfile.seek(0)
 
-	plate_id = 0
-	title = ''
-	tabledict = dict()
+# 	plate_id = 0
+# 	title = ''
+# 	tabledict = dict()
 
-	#print "Processing grid csv file....."
+# 	#print "Processing grid csv file....."
 
-	with inputfile as csvfile:
-		#sample = csvfile.read(1024) #throw a newline inside string error if not replace
-		#csvfile.seek(0)
+# 	with inputfile as csvfile:
+# 		#sample = csvfile.read(1024) #throw a newline inside string error if not replace
+# 		#csvfile.seek(0)
 
-		#if csv.Sniffer().has_header(sample):#check if this is a list file if so then return
-		#	return {"is_list":True}
+# 		#if csv.Sniffer().has_header(sample):#check if this is a list file if so then return
+# 		#	return {"is_list":True}
 
-		#dialect = csv.Sniffer().sniff(sample,delimiters=',')
+# 		#dialect = csv.Sniffer().sniff(sample,delimiters=',')
 		
-		reader = csv.reader(csvfile, delimiter=',')
+# 		reader = csv.reader(csvfile, delimiter=',')
 
-		header_checked = False
+# 		header_checked = False
 
-		for row in reader:#read through the grid csv file and find plates/talbes
+# 		for row in reader:#read through the grid csv file and find plates/talbes
 			
-			if header_checked == False:#check the header line to see if this is a list file
+# 			if header_checked == False:#check the header line to see if this is a list file
 				
-				is_header = True
-				for i in row:
-					is_header = is_header and (isinstance(i,basestring) and i != '') 
+# 				is_header = True
+# 				for i in row:
+# 					is_header = is_header and (isinstance(i,basestring) and i != '') 
 				
-				if is_header == True:
-					return {"is_list":True}
+# 				if is_header == True:
+# 					return {"is_list":True}
 
-				header_checked = True
+# 				header_checked = True
 
-			if row[0] == 'Plate':
-				row = reader.next()
+# 			if row[0] == 'Plate':
+# 				row = reader.next()
 
-				try:
-					plate_id = row[0]
-					if plate_id not in tabledict.keys():
-						tabledict[plate_id] = dict()
-				except:
-					pass
+# 				try:
+# 					plate_id = row[0]
+# 					if plate_id not in tabledict.keys():
+# 						tabledict[plate_id] = dict()
+# 				except:
+# 					pass
 
-			elif ',1,2,3,4,5,6,7,8,9' in ','.join(row):#the columns header is the idenifier for a table, this might need to be improved
-				if title:
-					#print plate_id,title,reader.line_num
-					tabledict[plate_id][title] = table(reader,plate_id,title,row[1:])
+# 			elif ',1,2,3,4,5,6,7,8,9' in ','.join(row):#the columns header is the idenifier for a table, this might need to be improved
+# 				if title:
+# 					#print plate_id,title,reader.line_num
+# 					tabledict[plate_id][title] = table(reader,plate_id,title,row[1:])
 
-			else:
-				title = ''.join(row)
+# 			else:
+# 				title = ''.join(row)
 
-	#print "Writing list csv file....."
+# 	#print "Writing list csv file....."
 
-	with outputfile as csvfile:
-		writer=csv.writer(csvfile,delimiter=',')
+# 	with outputfile as csvfile:
+# 		writer=csv.writer(csvfile,delimiter=',')
 
-		writer.writerow(['plate','well']+table.titles)#header
+# 		writer.writerow(['plate','well']+table.titles)#header
 		
-		for plate in table.plates:
-			for well in table.wells():
+# 		for plate in table.plates:
+# 			for well in table.wells():
 
-				#print plate,well,
+# 				#print plate,well,
 
-				line = list()
+# 				line = list()
 
-				line+=[plate,well]
+# 				line+=[plate,well]
 
-				for title in table.titles:
-					try:
-						line.append(tabledict[plate][title][well])
-					except:
-						line.append('None')
+# 				for title in table.titles:
+# 					try:
+# 						line.append(tabledict[plate][title][well])
+# 					except:
+# 						line.append('None')
 
-				writer.writerow(line)
+# 				writer.writerow(line)
 
 
-	#print "Done!"
-	results =  {
-		"plates":table.plates,
-		"titles":table.titles,
-		"cols":table.allcols,
-		"rows":table.allrows,
-		"numWells": len(table.allcols)*len(table.allrows),
-		}
+# 	#print "Done!"
+# 	results =  {
+# 		"plates":table.plates,
+# 		"titles":table.titles,
+# 		"cols":table.allcols,
+# 		"rows":table.allrows,
+# 		"numWells": len(table.allcols)*len(table.allrows),
+# 		}
 
-	table.close()
+# 	table.close()
 	
-	return results
+# 	return results
