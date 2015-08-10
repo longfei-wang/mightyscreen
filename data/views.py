@@ -67,7 +67,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		
 		self.meta = MetaObject(self.project.meta)
 
-		self.curPlate = get_curPlate(request)
+		self.curPlate = get_curPlate(self.request)
 
 		pdata = data.objects.filter(project=self.project)
 
