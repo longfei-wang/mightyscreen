@@ -45,7 +45,6 @@ class JSONField(models.TextField):
         return super(JSONField, self).get_db_prep_save(value, *args, **kwargs)
 
 
-
 class project(models.Model):
 
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -66,24 +65,41 @@ def find_or_create_project(request):
     find the project instance based on request
     if can't find any, create one and return the new project
     """
-
-    if project.objects.filter(user=request.user).exists():
-        
-        p = project.objects.filter(user=request.user)[0]
-
-        request.session['project'] = p.id.hex
-
-    elif project.objects.filter(id=request.session.get('project', None)).exists(): #if cannot find project
-
-        p = project.objects.get(id=request.session.get('project', None))
-    
-    else:
+    def create_project():
 
         p = project(user=None if request.user.is_anonymous() else request.user) #anonymouse user cannot be saved as a user object
 
         p.save()
 
         request.session['project'] = p.id.hex #set the session project keyword
+        
+        return p
+
+
+    if request.user.is_anonymous():
+
+        if project.objects.filter(id=request.session.get('project', None)).exists():
+        
+            p = project.objects.get(id=request.session.get('project', None))
+        
+        else:
+
+            p = create_project()
+    else:
+
+        if project.objects.filter(id=request.session.get('project', None),user=request.user).exists(): #if can project
+
+            p = project.objects.get(id=request.session.get('project', None),user=request.user)
+
+        elif project.objects.filter(user=request.user).exists():
+            
+            p = project.objects.filter(user=request.user)[0]
+
+            request.session['project'] = p.id.hex        
+        
+        else:
+
+            p = create_project()
 
     return p
 
@@ -175,7 +191,7 @@ class data(models.Model):
         unique_together = ('plate_well','project')
         index_together = ['plate_well','project']
     
-    identifier = models.CharField(max_length=50,verbose_name='Chemical Identifier')
+    identifier = models.TextField()
 
     plate_well = models.CharField(max_length=50)#using plate well as unique identifier, not good for more than one libraries
 

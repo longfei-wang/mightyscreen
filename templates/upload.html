@@ -63,6 +63,7 @@ function updateParse(d,fid) {
 
     var response = d
 
+    d3.select('.parseform').remove();
     
     var form = d3.select('#parse')
     .append('div')
@@ -81,47 +82,60 @@ function updateParse(d,fid) {
         .attr('value',d.plates.join(','));
 
     //readouts name form
-    var readoutform = form.selectAll('.readoutform')
+    var readoutform = form
+        .append('div')
+        .attr('class','checkbox readoutform')
+        
+    readoutform.selectAll('label')
         .data(d.titles)
         .enter()
-        .append('div')
-        .attr('class','readoutform form-group');
-
-    readoutform.append('label')
-        .text(function(d,i){return 'Rename readout'+(i+1)+': '+d;});
-
-    readoutform.append('input')
-        .attr('class','form-control')
+        .append('label')
+        .text(function(d,i){return i+". "+d;})
+        .append('input')
         .attr('name',fid+'readout[]')
+        .attr('type','checkbox')
         .attr('value',function(d){
-            if (typeof response.map == 'object') {
-                if (typeof response.map[d] != 'undefined') {
-                    return response.map[d]
-                }
-            }
-            return d.replace(/\s+/g, '').substring(0,20);
+            return d;
         });
 
+    //identifier form
+    var identifierform = form
+        .append('select')
+        .attr('name','identifier')
+        .attr('class','form-control identifierform')
+
+    // identifierform
+    //     .append('option')
+    //     .attr('selected','selected')
+    //     .text('HMS-ICCB');
+
+    identifierform.selectAll('option')
+        .data(d.titles.concat('HMS'))
+        .enter()
+        .append('option')
+        .text(function(d){return d});
+
+
     //positive controls and negative controls
-    var controlform = form
-        .append('div')
-        .attr('class','controlform form-group');
+    // var controlform = form
+    //     .append('div')
+    //     .attr('class','controlform form-group');
 
-    plateform.append('label')
-        .text('Mark Wells as Positive controls.');
+    // plateform.append('label')
+    //     .text('Mark Wells as Positive controls.');
 
-    plateform.append('input')
-        .attr('class','form-control')
-        .attr('name',fid+'positives')
-        .attr('value','B23,C23,D23,E23,F23,G23,H23,I23,J23,K23,L23,M23,N23,O23');
+    // plateform.append('input')
+    //     .attr('class','form-control')
+    //     .attr('name',fid+'positives')
+    //     .attr('value','B23,C23,D23,E23,F23,G23,H23,I23,J23,K23,L23,M23,N23,O23');
 
-    plateform.append('label')
-        .text('Mark Wells as Negative controls.');
+    // plateform.append('label')
+    //     .text('Mark Wells as Negative controls.');
 
-    plateform.append('input')
-        .attr('class','form-control')
-        .attr('name',fid+'negatives')
-        .attr('value','B24,C24,D24,E24,F24,G24,H24,I24,J24,K24,L24,M24,N24,O24');
+    // plateform.append('input')
+    //     .attr('class','form-control')
+    //     .attr('name',fid+'negatives')
+    //     .attr('value','B24,C24,D24,E24,F24,G24,H24,I24,J24,K24,L24,M24,N24,O24');
 
 
     form.append('button')
@@ -129,12 +143,14 @@ function updateParse(d,fid) {
         .text('Confirm and Submit')
         .on('click',function(){
             //array of old/new plate numbers and readouts
-            var data = {oplates: d.plates,
-                oreadouts: d.titles,
+            var data = {
+                oplates: d.plates,
+                // oreadouts: d.titles,
                 plates: $('input[name="' + fid +'plates"]').val().split(','),
-                readouts: d3.selectAll('input[name="' + fid +'readout[]"]')[0].map(function(d){ return d.value;}), //!!
-                positives: $('input[name="' + fid +'positives"]').val().split(','),
-                negatives: $('input[name="' + fid +'negatives"]').val().split(','),
+                readouts: d3.selectAll('input[name="' + fid +'readout[]"]:checked')[0].map(function(d){ return d.value;}), //!!
+                // positives: $('input[name="' + fid +'positives"]').val().split(','),
+                // negatives: $('input[name="' + fid +'negatives"]').val().split(','),
+                identifier: $('input[name="identifier"]').val(),
                 }
             $.post(
                 "{% url 'csv_file-list' %}"+fid+"/parse/",

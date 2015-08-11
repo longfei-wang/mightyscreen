@@ -12,7 +12,7 @@ urlpatterns = patterns('',
     url(r'^table/',TemplateView.as_view(template_name="tableview.html"),name='tableview'),
     url(r'^plate/',TemplateView.as_view(template_name="plateview.html"),name='plateview'),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/', include('library.urls')),
+    #url(r'^api/', include('library.urls')),
     url(r'^api/', include('data.urls')),
     url(r'^accounts/', include('accounts.urls')),
 )

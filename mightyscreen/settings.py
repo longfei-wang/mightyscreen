@@ -39,7 +39,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'django_filters',
     'crispy_forms',
-    'library',
+    #'library',
     'data',
     'accounts',
 )

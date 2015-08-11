@@ -8,7 +8,7 @@
 
 import csv
 import sys
-
+from collections import OrderedDict as odict
 
 # class table():
 # 	"""A class that handle tables in a grid file"""
@@ -64,7 +64,7 @@ import sys
 # 		return c
 
 
-def read_csv_file(path):
+def read_csv_file(path,dictformat=False):
 	"""
 	csv reader wrapper
 	"""
@@ -77,7 +77,10 @@ def read_csv_file(path):
 
 		dialect = csv.Sniffer().sniff(sample)
 		
-		reader = csv.reader(csvfile, dialect)
+		if dictformat:
+			reader = csv.DictReader(csvfile, dialect=dialect)
+		else:
+			reader = csv.reader(csvfile, dialect=dialect)
 
 		for row in reader:
 			yield row
@@ -135,6 +138,56 @@ def checklist(inputfile=None):
 		"numWells": len(rows)*len(cols),
 		}
 
+
+def file2dict(csvfile,plates,readouts,identifier):
+	"""
+	convert a list file to a dict that has platewell as key. Readouts are arrays.
+	"""
+
+	reader = read_csv_file(inputfile,dictformat=True)
+
+	content = {}
+
+	for row in reader:
+
+		plateNum = plates[row['plate']]
+		wellNum = row['well']
+		
+		plate_well = str(plateNum)+str(wellNum)
+
+		#######################################################
+		#the core mapping for identifiers. (pubchem/rest/pug)
+		#######################################################
+		pubchem_header = "http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/"
+		
+		if identifier.lower() == 'hms':
+			chem_id = pubchem_header + 'name/HMS' + plate_well
+		
+		elif identifier in row.keys() and identifier.lower() in "cid name smiles inchi sdf inchikey formula listkey".split():
+			chem_id = pubchem_header + identifier.lower() +'/' + row[identifier]
+		
+		else:
+			chem_id = "NA"
+
+		if plate_well in content.keys():
+			#if there are duplicate readouts combine them into array
+			for k in readouts:
+				content[plate_well]['readouts'][k] += [row[k]]
+
+		else:
+
+			content[plate_well] = {
+				'plate':plateNum,
+				'well':wellNum,
+				'welltype': 'X' if 'welltype' not in row.keys() else row['welltype'],
+				'identifier':chem_id,
+				'readouts':odict(),
+			}
+
+			for k in readouts:
+				content[plate_well]['readouts'][k] = [row[k]]
+
+	return content
 
 # def test_all():
 # 	i = open('grid.csv','rb')
