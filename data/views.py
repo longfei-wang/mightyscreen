@@ -84,7 +84,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		
 		response.data.update({
 			'plateList':self.plate_list,
-			'plate':self.curPlate,
+			'curPlate':self.curPlate,
 			})
 
 		return response
@@ -102,7 +102,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 
 		return Response({
 			'plate_well':plate_well,
-			'plate':self.curPlate,
+			'curPlate':self.curPlate,
 			'mark':instance.hit,
 			'results':hits_data,
 			})

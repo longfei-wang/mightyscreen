@@ -47,11 +47,11 @@ TableVis.prototype.initVis = function(){
 
     var that = this; // read about the this
 
-    this.filter = this.parentElement.append("input")
-            .attr("class","form-control");
+    // this.filter = this.parentElement.append("input")
+    //         .attr("class","form-control");
 
-    this.pagination = this.parentElement.append("ul")
-            .attr("class","pagination");
+    // this.pagination = this.parentElement.append("ul")
+    //         .attr("class","pagination");
 
     table = this.parentElement.append("table")
             .attr("class","table");
@@ -77,7 +77,29 @@ TableVis.prototype.wrangleData= function(){
 
     // displayData should hold the data which is visualized
     // pretty simple in this case -- no modifications needed
-    this.displayData = this.data.results;
+    this.displayData = this.data.results.map(function(d){
+        
+        var welltype = '<label class="radio-inline">' +
+        '<input type="radio" pw="'+d.plate_well+'" name="welltype'+d.plate_well+'" value="X" '+(d.welltype=='X'?'checked':'')+'>X</label>'+
+        '<label class="radio-inline">'+
+        '<input type="radio" pw="'+d.plate_well+'" name="welltype'+d.plate_well+'" value="P" '+(d.welltype=='P'?'checked':'')+'>P</label>'+
+        '<label class="radio-inline">'+
+        '<input type="radio" pw="'+d.plate_well+'" name="welltype'+d.plate_well+'" value="N" '+(d.welltype=='N'?'checked':'')+'>N</label>';
+        d.welltype = welltype;
+
+        var hit = '<input type="checkbox" name="hit" value="'+d.plate_well+'" '+(d.hit==1?'checked':'')+'>';
+        
+        d.hit = hit;
+
+        var identifier = '<a href="'+d.identifier+'/PNG">'+'LINK'+'</a>';
+
+        d.identifier = identifier;
+
+        delete d.plate;
+        delete d.plate_well;
+        
+        return d;
+    });
     this.plateList = this.data.plateList;
     this.curPlate = this.data.curPlate;
 
@@ -91,23 +113,28 @@ TableVis.prototype.wrangleData= function(){
  */
 TableVis.prototype.updateVis = function(){
 
-    var that = this
+    var that = this;
     // update the table header
     var columns = Object.keys(this.displayData[0]);
+    
+    var sortorder = -1;
 
-    this.pagination.append("li")
-        .append("a")
-        .text("asdfsdf")
 
     var header = this.thead.selectAll("th")
         .data(columns)
         
+    
+
     header.enter()
         .append("th")
-        .text(function(d) { return that.data.verbose[d] ? that.data.verbose[d] : d; })
-        .on("click",function(d){
-            that.query.ordering = that.query.ordering == d ? ('-' + d) : d;
-            $(that.eventHandler).trigger('query',that.query);
+        .text(function(d) { return d; })
+        .on("click", function(header, i) {
+          
+          sortorder = - sortorder;
+          that.tbody.selectAll("tr").sort(function(a, b) {
+            //sort function that use name as secondary sort.
+            return sortorder * (a[header] == b[header] ? d3.descending(a['plate_well'],b['plate_well'])  : d3.descending(a[header], b[header]));
+          });
         });
 
     header.exit().remove();
@@ -116,7 +143,7 @@ TableVis.prototype.updateVis = function(){
 
     this.tbody.selectAll("tr.tablevisrow").remove()
 
-    var rows = this.tbody.selectAll("tr.tablevisrow").data(this.displayData, function(d) {return d.plate_well;});
+    var rows = this.tbody.selectAll("tr.tablevisrow").data(this.displayData, function(d) {return d.well;});
 
     rows.enter()
         .append("tr")
@@ -129,10 +156,25 @@ TableVis.prototype.updateVis = function(){
     });
 
     cells.enter().append("td")
-    cells.text(function(d) {return d; });
+    cells.html(function(d,i) {
+        return d;
+
+    });
     cells.exit().remove();
 
-    this.parentElement.append('div')
+    d3.selectAll('input[name="hit"]').on('click',function(){
+        
+        var plate_well = $(this).val();
+
+        $(that.eventHandler).trigger("hit",plate_well);
+    });
+
+    d3.selectAll('input[type="radio"]').on('click',function(){
+        
+        console.log($(this).val());
+
+    });
+
 }
 
 
