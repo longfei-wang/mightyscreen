@@ -7,6 +7,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 import uuid, os
 import json
 from django.shortcuts import get_object_or_404
+from collections import OrderedDict as odict
 #Create your models here.
 
 class JSONField(models.TextField):
@@ -32,7 +33,7 @@ class JSONField(models.TextField):
             return None
         try:
             if isinstance(value, basestring):
-                return json.loads(value)
+                return json.loads(value,object_pairs_hook=odict)
         except ValueError:
             pass
         return value
@@ -184,7 +185,7 @@ class data(models.Model):
     
     def __unicode__(self):
     
-        return self.library+self.plate_well
+        return self.project.name+self.plate_well
         
     class Meta:
 
@@ -228,9 +229,7 @@ class DataSerializer(serializers.ModelSerializer):
     def to_representation(self,obj):#just to add readouts to it.
         data = super(DataSerializer,self).to_representation(obj)
         readouts = obj.readouts
-
-        if (type(readouts) is dict):
-            readouts.update(data)
-            data = readouts
+        if (type(readouts) is odict):
+            data.update(readouts)
         
         return  data

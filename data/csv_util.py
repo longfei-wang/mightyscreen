@@ -144,9 +144,9 @@ def file2dict(csvfile,plates,readouts,identifier):
 	convert a list file to a dict that has platewell as key. Readouts are arrays.
 	"""
 
-	reader = read_csv_file(inputfile,dictformat=True)
+	reader = read_csv_file(csvfile,dictformat=True)
 
-	content = {}
+	content = odict()
 
 	for row in reader:
 
@@ -158,16 +158,19 @@ def file2dict(csvfile,plates,readouts,identifier):
 		#######################################################
 		#the core mapping for identifiers. (pubchem/rest/pug)
 		#######################################################
-		pubchem_header = "http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/"
+		pubchem_header = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/"
 		
-		if identifier.lower() == 'hms':
-			chem_id = pubchem_header + 'name/HMS' + plate_well
-		
-		elif identifier in row.keys() and identifier.lower() in "cid name smiles inchi sdf inchikey formula listkey".split():
-			chem_id = pubchem_header + identifier.lower() +'/' + row[identifier]
-		
-		else:
-			chem_id = "NA"
+		chem_id = "NA"
+
+		if identifier:
+
+			if identifier.lower() == 'hms':
+				chem_id = pubchem_header + 'name/HMS' + plate_well
+			
+			elif identifier in row.keys() and identifier.lower() in "cid name smiles inchi sdf inchikey formula listkey".split():
+				chem_id = pubchem_header + identifier.lower() +'/' + row[identifier]
+			
+				
 
 		if plate_well in content.keys():
 			#if there are duplicate readouts combine them into array
@@ -179,13 +182,14 @@ def file2dict(csvfile,plates,readouts,identifier):
 			content[plate_well] = {
 				'plate':plateNum,
 				'well':wellNum,
-				'welltype': 'X' if 'welltype' not in row.keys() else row['welltype'],
+				'welltype': 'X' if 'welltype' not in row.keys() else row['welltype'].upper(),
 				'identifier':chem_id,
 				'readouts':odict(),
 			}
 
 			for k in readouts:
 				content[plate_well]['readouts'][k] = [row[k]]
+
 
 	return content
 

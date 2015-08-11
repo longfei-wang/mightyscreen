@@ -83,21 +83,23 @@ function updateParse(d,fid) {
 
     //readouts name form
     var readoutform = form
-        .append('div')
-        .attr('class','checkbox readoutform')
-        
-    readoutform.selectAll('label')
+
+    readoutform.append('label')
+        .text('Select Readouts (check to select)');
+    
+    readoutform.selectAll('.readoutform')
         .data(d.titles)
         .enter()
+        .append('div')
+        .attr('class','checkbox readoutform')
         .append('label')
-        .text(function(d,i){return i+". "+d;})
-        .append('input')
-        .attr('name',fid+'readout[]')
-        .attr('type','checkbox')
-        .attr('value',function(d){
-            return d;
+        .html(function(d,i){
+            return '<input name="'+fid+'readout[]" type="checkbox" value="'+d+'"> '+i+'. '+d;
         });
 
+
+    form.append('label')
+        .text('Select Chemical Identifier (Select None if not available)')
     //identifier form
     var identifierform = form
         .append('select')
@@ -109,11 +111,19 @@ function updateParse(d,fid) {
     //     .attr('selected','selected')
     //     .text('HMS-ICCB');
 
+    var supported_options = "cid name smiles inchi sdf inchikey formula listkey".split();
+
+    var supported_titles = d.titles.filter(function(d){
+        return supported_options.indexOf(d.toLowerCase()) > -1;
+    });
+
     identifierform.selectAll('option')
-        .data(d.titles.concat('HMS'))
+        .data(supported_titles.concat('HMS','None'))
         .enter()
         .append('option')
+        .attr('value',function(d){return d})
         .text(function(d){return d});
+
 
 
     //positive controls and negative controls
@@ -150,7 +160,7 @@ function updateParse(d,fid) {
                 readouts: d3.selectAll('input[name="' + fid +'readout[]"]:checked')[0].map(function(d){ return d.value;}), //!!
                 // positives: $('input[name="' + fid +'positives"]').val().split(','),
                 // negatives: $('input[name="' + fid +'negatives"]').val().split(','),
-                identifier: $('input[name="identifier"]').val(),
+                identifier: $('select[name="identifier"]').val(),
                 }
             $.post(
                 "{% url 'csv_file-list' %}"+fid+"/parse/",

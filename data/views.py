@@ -9,6 +9,7 @@ import os
 from sets import Set
 from django.db.models import Count
 from collections import OrderedDict as odict
+import json
 # Create your views here.
 
 
@@ -55,7 +56,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 	"""
 	queryset = data.objects.all()
 	serializer_class = DataSerializer
-	lookup_field='plate'
+	lookup_field='plate_well'
 	project=None
 	plate_list=[]
 	curPlate = None
@@ -103,7 +104,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 			'plate_well':plate_well,
 			'plate':self.curPlate,
 			'mark':instance.hit,
-			'hit_data':hit_data,
+			'results':hits_data,
 			})
 
 	def hits(self):
@@ -146,7 +147,7 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		take the list file and convert it to a format that can be used by front end.
 		"""
 
-		def dict2object(d,project):
+		def dict2object(d,project,chunk_size=100):
 			"""
 			convert a dict that has platewell as key, to data objects that can be parsed into database
 			in the mean time create meta data for this data
@@ -164,6 +165,7 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 					'readouts':odict(),
 				}
 				
+
 				for kk,vv in v['readouts'].iteritems():
 					
 					for i,item in enumerate(vv):
@@ -172,7 +174,12 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 
 				l.append(data(**dataDict))
 
-			return l
+				if len(l)>=chunk_size:
+					yield l
+					l = []
+
+
+			yield l
 
 
 		file_instance = get_object_or_404(csv_file,pk=pk)
@@ -194,13 +201,15 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		#check if plate already exists in database if so delete
 		data.objects.filter(plate__in=set(plates)).delete()
 
-		dataList = dict2object(file2dict(f.path,plates,readouts),project,identifier)
-
+		for i in dict2object(file2dict(f.path,plates,readouts,identifier),project):
+			data.objects.bulk_create(i)
 		# meta['positives'] = d.getlist('positives[]')
 		# meta['negatives'] = d.getlist('negatives[]')
 
 		#bulk create data. This is much faster than 1 by 1
-		data.objects.bulk_create(dataList)
+		# chunk_size = 100
+		# for i in range(0,len(dataList),chunk_size):
+		# 	data.objects.bulk_create(dataList[i:i+chunk_size])
 
 		#set controls
 
