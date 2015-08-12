@@ -31,17 +31,21 @@
 $(function() {
 
 	var url = '{% url "data-list" %}';
-	var thisData = [];
+
 	var MyEventHandler = new Object();
 
 	var wrangleData = function(_data) {
 
-		thisData = _data;
+		return _data;
 
 	}
 
-	var init = function() {
 
+
+	d3.json(url,function(d){
+
+		var thisData = wrangleData(d);
+		
 		var tableview =new TableVis(d3.select("#tableview"),thisData,MyEventHandler);	
 		
 		var plateselector = new PlateSelector(d3.select("#plateSelector"),thisData,MyEventHandler);
@@ -54,29 +58,23 @@ $(function() {
 
         });
 
-        $(MyEventHandler).bind("welltype", function(event, plate_well){
-            
-            d3.json(url+plate_well+'/mark',function(d){
+        $(MyEventHandler).bind("welltype", function(event, plate_well, welltype){
+            console.log(welltype)
+            d3.json(url+plate_well+'/set'+welltype,function(d){
             });
             //update these visualization
 
         });
 
-        // $(MyEventHandler).bind("plate", function(event, p){
-        //     $.get(url,
-        //         {'plate':p},
-        //         function(d){
+        $(MyEventHandler).bind("plate", function(event, p){
+            $.get(url,
+                {'plate':p},
+                function(d){
                     
-        //             wrangleData(d);
-
-        //         });
-        // });
-
-	}
-
-	d3.json(url,function(d){
-		wrangleData(d);
-		init();
+                    plateselector.onPlateChange(p);
+                    tableview.onPlateChange(wrangleData(d));
+                });
+        });
 	});
 
 });

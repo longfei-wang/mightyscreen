@@ -54,7 +54,7 @@ TableVis.prototype.initVis = function(){
     //         .attr("class","pagination");
 
     table = this.parentElement.append("table")
-            .attr("class","table");
+            .attr("class","table");  
     
     table.append("caption").html('TableView');
 
@@ -127,7 +127,7 @@ TableVis.prototype.updateVis = function(){
 
     header.enter()
         .append("th")
-        .text(function(d) { return d; })
+        .text(function(d) { return d.substring(0,30); })
         .on("click", function(header, i) {
           
           sortorder = - sortorder;
@@ -171,8 +171,9 @@ TableVis.prototype.updateVis = function(){
 
     d3.selectAll('input[type="radio"]').on('click',function(){
         
-        console.log($(this).val());
-
+        var welltype = $(this).val();
+        var plate_well = $(this).attr('pw');
+        $(that.eventHandler).trigger("welltype",[plate_well,welltype]);
     });
 
 }
@@ -184,6 +185,19 @@ TableVis.prototype.updateVis = function(){
  * be defined here.
  * @param selection
  */
+
+TableVis.prototype.onPlateChange= function (d){
+
+
+    // TODO: call wrangle function
+    this.data = d;
+
+    this.wrangleData();
+
+    this.updateVis();
+    // do nothing -- no update when brushing
+}
+
 TableVis.prototype.onQuery= function (d){
 
     this.data = d;

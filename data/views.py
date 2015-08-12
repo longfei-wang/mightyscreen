@@ -79,6 +79,8 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		"""
 		list view
 		"""
+		if request.GET.get('plate',None):
+			request.session['plate'] = request.GET.get('plate',None)
 
 		response = super(DataViewSet,self).list(request)
 		
@@ -106,6 +108,52 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 			'mark':instance.hit,
 			'results':hits_data,
 			})
+
+	@detail_route(methods=['GET'])
+	def setP(self,request,plate_well):
+		"""
+		mark/unmark a compound as positive control
+		"""
+		instance = get_object_or_404(self.get_queryset(),plate_well=plate_well)
+		instance.welltype = 'P'
+		instance.save()
+
+		return Response({
+			'success':True,
+			'plate_well':plate_well,
+			'curPlate':self.curPlate,
+			})
+
+	@detail_route(methods=['GET'])
+	def setN(self,request,plate_well):
+		"""
+		mark/unmark a compound as positive control
+		"""
+		instance = get_object_or_404(self.get_queryset(),plate_well=plate_well)
+		instance.welltype = 'N'
+		instance.save()
+
+		return Response({
+			'success':True,
+			'plate_well':plate_well,
+			'curPlate':self.curPlate,
+			})
+
+	@detail_route(methods=['GET'])
+	def setX(self,request,plate_well):
+		"""
+		mark/unmark a compound as positive control
+		"""
+		instance = get_object_or_404(self.get_queryset(),plate_well=plate_well)
+		instance.welltype = 'X'
+		instance.save()
+
+		return Response({
+			'success':True,
+			'plate_well':plate_well,
+			'curPlate':self.curPlate,
+			})
+
 
 	def hits(self):
 		"""
