@@ -75,7 +75,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		
 		curPlateData = pdata.filter(plate=self.curPlate)
 
-		self.channels = curPlateData[0].readouts.keys()
+		self.channels = curPlateData[0].readouts.keys() if len(curPlateData) > 0 else []
 
 		return curPlateData
 
@@ -83,8 +83,6 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		"""
 		list view
 		"""
-		if request.GET.get('plate',None):
-			request.session['plate'] = request.GET.get('plate',None)
 
 		response = super(DataViewSet,self).list(request)
 		
@@ -249,10 +247,12 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		for i,item in enumerate(d.getlist('oplates[]')):
 			plates[item] = d.getlist('plates[]')[i]
 
+		print plates.values()
+
 		f = file_instance.raw_csv_file
 
 		#check if plate already exists in database if so delete
-		data.objects.filter(plate__in=set(plates)).delete()
+		data.objects.filter(project=project,plate__in=set(plates.values())).delete()
 
 		for i in dict2object(file2dict(f.path,plates,readouts,identifier),project):
 			data.objects.bulk_create(i)

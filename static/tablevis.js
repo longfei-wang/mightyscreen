@@ -119,7 +119,7 @@ TableVis.prototype.updateVis = function(){
 
     var that = this;
     // update the table header
-    var columns = Object.keys(this.displayData[0]);
+    var columns = this.displayData[0] ? Object.keys(this.displayData[0]) : [];
     
     var sortorder = -1;
 

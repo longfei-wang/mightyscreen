@@ -106,31 +106,27 @@ def find_or_create_project(request):
 
 
 def get_curPlate(request):
-	"""
-	A function to get current plate number
-	"""
-	def get_firstPlate(request):
+    """
+    A function to get current plate number
+    """
+    p = get_object_or_404(project,id=request.session.get('project',None))
 
-		p = get_object_or_404(project,id=request.session.get('project',None))
+    pdata = data.objects.filter(project=p)
 
-		pdata = data.objects.filter(project=p)
-		
-		plate_list = [ i['plate'] for i in pdata.order_by('plate').values('plate').distinct()]
+    plate_list = [ i['plate'] for i in pdata.order_by('plate').values('plate').distinct()]
+    
+    #check request
+    plate = request.GET.get('plate',
+        request.session.get('plate',
+    			plate_list[0] if plate_list != [] else None
+    		)
+    	)
 
-		return plate_list[0] if plate_list != [] else None
+    print plate
+    #set the plate number in session
+    request.session['plate'] = plate
 
-	#check request
-	plate = request.GET.get('plate',
-		request.session.get('plate',
-				get_firstPlate(request)
-			)
-		)
-
-	#set the plate number in session
-	if plate:
-		request.session['plate'] = plate
-
-	return plate
+    return plate
 
 
 def get_file_name(instance,filename):

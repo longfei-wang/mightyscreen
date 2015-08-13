@@ -126,7 +126,7 @@ PlateVis.prototype.wrangleData= function(_filter){
 
     this.y.domain(d3.extent(wells));
 
-    this.readout.domain(d3.extent(this.data.results.map(function(d){ return d[that.channel]; })));
+    this.readout.domain(d3.extent(data.map(function(d){ return d.readout; })));
 
     this.displayData = data;
 
@@ -146,7 +146,7 @@ PlateVis.prototype.updateVis = function(){
     // updates axis
 
     //updates graph
-    //this.svg.selectAll(".well").remove();
+    this.svg.selectAll(".well").remove();
 
     this.well = this.svg.selectAll(".well")
         .data(this.displayData, function(d) {return d.plate_well + that.channel + d.opacity + d.hit;});
@@ -241,11 +241,14 @@ PlateVis.prototype.onSelectionChange= function (selection){
 PlateVis.prototype.onChemSelectionChange= function (plate_well){
 
     // TODO: call wrangle function
-    this.data.results.map(function(d){
-        if (d.plate_well==plate_well){
-            d.hit = 1 - d.hit;
-        }
-    });
+    // this.data.results.map(function(d){  
+        
+    //     if (d.plate_well==plate_well){
+
+    //         d.hit = d.hit; //?????
+        
+    //     }
+    // });
 
     this.wrangleData(this.filter);
 

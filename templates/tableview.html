@@ -26,7 +26,7 @@
 
 
 {% block script %}
-<script src='{% static "util.js" %}'></script>
+<!-- <script src='{% static "util.js" %}'></script> -->
 <script src='{% static "tablevis.js" %}'></script>
 <script src = '{% static "plate_selector.js"%}'></script>
 <script>
@@ -42,7 +42,7 @@ $(function() {
 
 	}
 
-	loading();
+	// loading();
 
 	d3.json(url,function(d){
 
@@ -69,7 +69,7 @@ $(function() {
 
         $(MyEventHandler).bind("plate", function(event, p){
 
-        	loading();
+        	// loading();
             
             $.get(url,
                 {'plate':p},
@@ -77,11 +77,11 @@ $(function() {
                     
                     plateselector.onPlateChange(p);
                     tableview.onPlateChange(wrangleData(d));
-                    loading_done();
+                    // loading_done();
                 });
         });
 
-        loading_done();
+        // loading_done();
 	});
 
 });

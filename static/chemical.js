@@ -77,10 +77,9 @@ ChemicalVis.prototype.wrangleData= function(){
     var that = this;
 
     //select molecules in selection
-    this.displayData = this.data.results.filter(function(d){
+    this.displayData = $.extend({},this.data).results.filter(function(d){
             return d.hit == 1;
         });
-
 
 }
 

@@ -1,4 +1,4 @@
-plate,well,"Calculated results: Calc 1: mP value for FP measurement = 1000 * (S - G * P) / (S + G * P) where S = <detector 2 or LWang - FP2(1) channel 2>,P = <detector 1 or LWang - FP2(1) channel 1>,G = G-factor","Calculated results: Calc 2: Total fluorescence intensity = S + 2 * P where S = <detector 2 or LWang - FP2(1) channel 2>,P = <detector 1 or LWang - FP2(1) channel 1>",Results for LWang - FP2(1) - P channel (RFU),Results for LWang - FP2(1) - S channel (RFU)
+plate,well,fp,fi,p,s
 1,A01,229.4,54711929,23592389,7527151
 1,A02,229,53094132,22897099,7299934
 1,A03,237.2,54312537,23366163,7580211

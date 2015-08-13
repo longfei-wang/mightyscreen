@@ -91,7 +91,7 @@ $(function(){ // this function is called after the HTML document is fully loaded
 
     var wrangleData = function(_data) {
         
-        thisData = $.extend({},_data);
+        thisData = _data;
 
         // thisData.results = _data.results.map(function (d) {
         
@@ -218,7 +218,7 @@ $(function(){ // this function is called after the HTML document is fully loaded
                 function(d) {
                     //console.log(d);
                     chemicalvis.onChemSelectionChange(plate_well);
-                    platevis.onChemSelectionChange(plate_well);      
+                    platevis.onChemSelectionChange(plate_well);
             });
             //update these visualization
 
