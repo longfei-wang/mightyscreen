@@ -1,5 +1,5 @@
 /**
- * Created by Hendrik Strobelt (hendrik.strobelt.com) on 1/28/15.
+ * Created by Longfei Wang on 5/4/15.
  */
 
 
@@ -12,7 +12,7 @@
  * */
 
 /**
- * PlateSelector object for HW3 of CS171
+ * PlateSelector object
  * @param _parentElement -- the HTML or SVG element (D3 node) to which to attach the vis
  * @param _data -- the data array
  * @param _metaData -- the meta-data / data description object

@@ -60,6 +60,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 	project=None
 	plate_list=[]
 	curPlate = None
+	channels = []
 
 	def get_queryset(self):
 
@@ -70,10 +71,13 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 
 		pdata = data.objects.filter(project=self.project)
 
-		self.plate_list = [ i['plate'] for i in \
-		pdata.order_by('plate').values('plate').distinct()]
+		self.plate_list = [ i['plate'] for i in pdata.order_by('plate').values('plate').distinct()]
 		
-		return pdata.filter(plate=self.curPlate)
+		curPlateData = pdata.filter(plate=self.curPlate)
+
+		self.channels = curPlateData[0].readouts.keys()
+
+		return curPlateData
 
 	def list(self,request):
 		"""
@@ -87,6 +91,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		response.data.update({
 			'plateList':self.plate_list,
 			'curPlate':self.curPlate,
+			'channels':self.channels,
 			})
 
 		return response
@@ -106,7 +111,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 			'plate_well':plate_well,
 			'curPlate':self.curPlate,
 			'mark':instance.hit,
-			'results':hits_data,
+			#'results':hits_data,
 			})
 
 	@detail_route(methods=['GET'])
@@ -217,7 +222,7 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 				for kk,vv in v['readouts'].iteritems():
 					
 					for i,item in enumerate(vv):
-						dataDict['readouts'][kk+("" if i == 0 else "_"+str(i))] = item
+						dataDict['readouts'][kk+("" if i == 0 else "_"+str(i))] = float(item)
 
 
 				l.append(data(**dataDict))

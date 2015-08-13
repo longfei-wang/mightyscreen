@@ -9,6 +9,7 @@
 
 
 {% block content %}
+
 <div class="row">
     <div class="col-md-12 col-sm-12" id="plateSelector">
     </div>
@@ -25,6 +26,7 @@
 
 
 {% block script %}
+<script src='{% static "util.js" %}'></script>
 <script src='{% static "tablevis.js" %}'></script>
 <script src = '{% static "plate_selector.js"%}'></script>
 <script>
@@ -40,7 +42,7 @@ $(function() {
 
 	}
 
-
+	loading();
 
 	d3.json(url,function(d){
 
@@ -51,7 +53,7 @@ $(function() {
 		var plateselector = new PlateSelector(d3.select("#plateSelector"),thisData,MyEventHandler);
 
         $(MyEventHandler).bind("hit", function(event, plate_well){
-            
+
             d3.json(url+plate_well+'/mark',function(d){
             });
             //update these visualization
@@ -59,7 +61,6 @@ $(function() {
         });
 
         $(MyEventHandler).bind("welltype", function(event, plate_well, welltype){
-            console.log(welltype)
             d3.json(url+plate_well+'/set'+welltype,function(d){
             });
             //update these visualization
@@ -67,14 +68,20 @@ $(function() {
         });
 
         $(MyEventHandler).bind("plate", function(event, p){
+
+        	loading();
+            
             $.get(url,
                 {'plate':p},
                 function(d){
                     
                     plateselector.onPlateChange(p);
                     tableview.onPlateChange(wrangleData(d));
+                    loading_done();
                 });
         });
+
+        loading_done();
 	});
 
 });

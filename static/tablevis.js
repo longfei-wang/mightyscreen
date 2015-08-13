@@ -1,6 +1,5 @@
 /**
- * Author Longfei Wang 5/24/2015.
- * Based on template Created by Hendrik Strobelt (hendrik.strobelt.com) on 1/28/15.
+ * Created by Longfei Wang on 5/4/15.
  */
 
 
@@ -47,8 +46,13 @@ TableVis.prototype.initVis = function(){
 
     var that = this; // read about the this
 
-    // this.filter = this.parentElement.append("input")
-    //         .attr("class","form-control");
+    this.filter = this.parentElement.append("input")
+            .attr("id","tablefilter")
+            .attr("class","form-control")
+            .on("change",function(){
+                var query = $(this).val();
+                that.onFilter(query);
+            })
 
     // this.pagination = this.parentElement.append("ul")
     //         .attr("class","pagination");
@@ -56,7 +60,7 @@ TableVis.prototype.initVis = function(){
     table = this.parentElement.append("table")
             .attr("class","table");  
     
-    table.append("caption").html('TableView');
+    //table.append("caption").html('TableView');
 
     this.thead = table.append("thead")
             .attr("class", "thead")
@@ -73,30 +77,30 @@ TableVis.prototype.initVis = function(){
 /**
  * Method to wrangle the data. In this case it takes an options object
   */
-TableVis.prototype.wrangleData= function(){
+TableVis.prototype.wrangleData= function(_filter){
 
     // displayData should hold the data which is visualized
     // pretty simple in this case -- no modifications needed
-    this.displayData = this.data.results.map(function(d){
+
+    var data = this.data.results.slice(0);
+
+    if (_filter != null){
+        data = data.filter(_filter)
+    }
+    
+    this.displayData = data.map(function(d){
         
-        var welltype = '<label class="radio-inline">' +
-        '<input type="radio" pw="'+d.plate_well+'" name="welltype'+d.plate_well+'" value="X" '+(d.welltype=='X'?'checked':'')+'>X</label>'+
-        '<label class="radio-inline">'+
-        '<input type="radio" pw="'+d.plate_well+'" name="welltype'+d.plate_well+'" value="P" '+(d.welltype=='P'?'checked':'')+'>P</label>'+
-        '<label class="radio-inline">'+
-        '<input type="radio" pw="'+d.plate_well+'" name="welltype'+d.plate_well+'" value="N" '+(d.welltype=='N'?'checked':'')+'>N</label>';
-        d.welltype = welltype;
 
-        var hit = '<input type="checkbox" name="hit" value="'+d.plate_well+'" '+(d.hit==1?'checked':'')+'>';
+
+        // var hit = '<input type="checkbox" name="hit" value="'+d.plate_well+'" '+(d.hit==1?'checked':'')+'>';
         
-        d.hit = hit;
+        // d.hit = hit;
 
-        var identifier = '<a href="'+d.identifier+'/PNG">'+'LINK'+'</a>';
+        // var identifier = '<a href="'+d.identifier+'/PNG">'+'LINK'+'</a>';
 
-        d.identifier = identifier;
+        // d.identifier = identifier;
 
         delete d.plate;
-        delete d.plate_well;
         
         return d;
     });
@@ -127,7 +131,7 @@ TableVis.prototype.updateVis = function(){
 
     header.enter()
         .append("th")
-        .text(function(d) { return d.substring(0,30); })
+        .text(function(d) { return d =='plate_well' ? '' : d.substring(0,30); })
         .on("click", function(header, i) {
           
           sortorder = - sortorder;
@@ -155,9 +159,24 @@ TableVis.prototype.updateVis = function(){
         return d3.values(row);
     });
 
+
+    var welltypeToHTML =  function(plate_well,welltype) {
+        return '<label class="radio-inline">' +
+        '<input type="radio" pw="'+plate_well+'" name="welltype'+plate_well+'" value="X" '+(welltype=='X'?'checked':'')+'>X</label>'+
+        '<label class="radio-inline">'+
+        '<input type="radio" pw="'+plate_well+'" name="welltype'+plate_well+'" value="P" '+(welltype=='P'?'checked':'')+'>P</label>'+
+        '<label class="radio-inline">'+
+        '<input type="radio" pw="'+plate_well+'" name="welltype'+plate_well+'" value="N" '+(welltype=='N'?'checked':'')+'>N</label>';
+        };
+
     cells.enter().append("td")
     cells.html(function(d,i) {
-        return d;
+        var plate_well = $(this)[0].parentElement.__data__.plate_well;
+        return i == columns.indexOf('plate_well')?'':
+                i == columns.indexOf('identifier')?'<a href="'+d+'/PNG" target="_blank">'+'IMG'+'</a>':
+                i == columns.indexOf('hit')?'<input type="checkbox" name="hit" value="'+plate_well+'" '+(d==1?'checked':'')+'>':
+                i == columns.indexOf('welltype')?welltypeToHTML(plate_well,d):
+                d;
 
     });
     cells.exit().remove();
@@ -166,6 +185,12 @@ TableVis.prototype.updateVis = function(){
         
         var plate_well = $(this).val();
 
+        that.displayData.map(function(d){//also changed the binding data
+            if (d.plate_well == plate_well) {
+                d.hit = 1 - d.hit;
+            }
+        });
+        
         $(that.eventHandler).trigger("hit",plate_well);
     });
 
@@ -173,6 +198,13 @@ TableVis.prototype.updateVis = function(){
         
         var welltype = $(this).val();
         var plate_well = $(this).attr('pw');
+
+        that.displayData.map(function(d){
+            if (d.plate_well == plate_well) {
+                d.welltype = welltype;
+            }
+        });
+
         $(that.eventHandler).trigger("welltype",[plate_well,welltype]);
     });
 
@@ -198,10 +230,12 @@ TableVis.prototype.onPlateChange= function (d){
     // do nothing -- no update when brushing
 }
 
-TableVis.prototype.onQuery= function (d){
+TableVis.prototype.onFilter= function (query){
 
-    this.data = d;
-    this.wrangleData();
+    this.wrangleData(function(d) {
+        return d.well.indexOf(query) > -1;
+    });
+
     this.updateVis();
 
 }

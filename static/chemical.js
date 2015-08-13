@@ -1,5 +1,5 @@
 /**
- * Created by Hendrik Strobelt (hendrik.strobelt.com) on 1/28/15.
+ * Created by Longfei Wang on 5/4/15.
  */
 
 
@@ -12,7 +12,7 @@
  * */
 
 /**
- * ChemicalVis object for final project of CS171
+ * ChemicalVis object
  * @param _parentElement -- the HTML or SVG element (D3 node) to which to attach the vis
  * @param _data -- the data array
  * @param _metaData -- the meta-data / data description object
@@ -22,8 +22,7 @@
 
 ChemicalVis = function(_parentElement, _data, _eventHandler){
     this.parentElement = _parentElement;
-    this.data = _data.hitProp;
-    this.selection = _data.hitList;
+    this.data = _data;
     this.eventHandler = _eventHandler;
     this.displayData = [];
 
@@ -78,15 +77,10 @@ ChemicalVis.prototype.wrangleData= function(){
     var that = this;
 
     //select molecules in selection
-    this.displayData = this.data
-        .map(function(d){
-            // clean up svg make it symbol and set the id to be 'sym'+platewell suppose to be unique
-            d.svg = d.svg ? "<symbol id='sym" + d.plate_well + "'" + d.svg.split("<svg")[2].split("</svg>")[0]+"</symbol>" : "";
-            return d;
+    this.displayData = this.data.results.filter(function(d){
+            return d.hit == 1;
         });
-        // .sort(function(a,b) {
-        //     return d3.ascending(that.selection.indexOf(a.plate_well),that.selection.indexOf(b.plate_well)); 
-        // });
+
 
 }
 
@@ -155,12 +149,18 @@ ChemicalVis.prototype.updateVis = function(){
         .attr("width", this.box.width)
         .attr("height", this.box.height*0.75);
 
+    var counter = 0;
     //the index
     this.chemical.append("text")
         .attr("y",14)
         .attr("x",2)
         .attr("anchor","left")
-        .text(function(d) {return that.selection.indexOf(d.plate_well)+1;})
+        .text(function(d) {
+            if (d.hit) {
+                counter += 1;
+                return counter;
+            }
+    })
 
     //the bottom box
     var p = this.chemical.append("g")
@@ -206,12 +206,16 @@ ChemicalVis.prototype.updateVis = function(){
  * be defined here.
  * @param selection
  */
-ChemicalVis.prototype.onChemSelectionChange= function (d){
+ChemicalVis.prototype.onChemSelectionChange= function (plate_well){
     
     // TODO: call wrangle function
+    
+    this.data.results.map(function(d){
+        if (d.plate_well==plate_well) {
+            d.hit = 1 - d.hit;
+        }
+    });
 
-    this.selection = d.hit_list;
-    this.data = d.hit_prop;
     this.wrangleData();
     this.updateVis();
 
@@ -223,7 +227,6 @@ ChemicalVis.prototype.onPlateChange= function (d){
 
 
     // TODO: call wrangle function
-    this.data = d.hitProp;
 
     this.wrangleData();
     this.updateVis();

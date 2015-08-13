@@ -1,5 +1,5 @@
 /**
- * Created by Hendrik Strobelt (hendrik.strobelt.com) on 1/28/15.
+ * Created by Longfei Wang on 5/4/15.
  */
 
 
@@ -12,7 +12,7 @@
  * */
 
 /**
- * DistVis object for HW3 of CS171
+ * DistVis object
  * @param _parentElement -- the HTML or SVG element (D3 node) to which to attach the vis
  * @param _data -- the data array
  * @param _metaData -- the meta-data / data description object
@@ -145,7 +145,7 @@ DistVis.prototype.wrangleData= function(){
     this.controls = this.data.results.filter(function(d){return d.welltype == "P" || d.welltype == "N"; });
     //set domain for scales
 
-    this.x.domain(d3.extent(data))
+    this.x.domain(d3.extent(data));
 
     var histogram = d3.layout.histogram()
         .bins(this.x.ticks(that.bins))
@@ -184,7 +184,7 @@ DistVis.prototype.updateVis = function(){
     //draw all the controls
     this.svg.selectAll(".controls").remove();
     var controls = this.svg.selectAll(".controls")
-        .data(this.controls,function(d){return d.platewell+d[that.channel];});
+        .data(this.controls,function(d){return d.plate_well+d[that.channel];});
 
     controls.enter()
         .append("line")

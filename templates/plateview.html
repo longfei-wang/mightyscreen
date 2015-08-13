@@ -93,24 +93,24 @@ $(function(){ // this function is called after the HTML document is fully loaded
         
         thisData = $.extend({},_data);
 
-        thisData.results = _data.results.map(function (d) {
+        // thisData.results = _data.results.map(function (d) {
         
-            var res = {
-                platewell: d.plate_well,
-                plate:d.plate,
-                well:d.well,
-                welltype:d.welltype,
-            };
+        //     var res = {
+        //         platewell: d.plate_well,
+        //         plate:d.plate,
+        //         well:d.well,
+        //         welltype:d.welltype,
+        //     };
 
-            thisData.channels.map(function(c,i){
-                res[c] = parseFloat(d["readout"+(i+1)]);
-            });
+        //     thisData.channels.map(function(c,i){
+        //         res[c] = parseFloat(d["readout"+(i+1)]);
+        //     });
 
-            // clean up svg make it symbol and set the id to be 'sym'+platewell suppose to be unique
-            //res.svg = d.svg ? "<symbol id='sym" + d.platewell + "'" + d.svg.split("<svg")[2].split("</svg>")[0]+"</symbol>" : "";
+        //     // clean up svg make it symbol and set the id to be 'sym'+platewell suppose to be unique
+        //     //res.svg = d.svg ? "<symbol id='sym" + d.platewell + "'" + d.svg.split("<svg")[2].split("</svg>")[0]+"</symbol>" : "";
 
-            return res;
-        });
+        //     return res;
+        // });
     }
 
     // call this function after Data is loaded, reformatted and bound to the variables
@@ -144,20 +144,20 @@ $(function(){ // this function is called after the HTML document is fully loaded
 
         //set the default
         d3.select("#select1").node().value = thisData.channels[0];
-        d3.select("#select2").node().value = thisData.channels[1];
-        d3.select("#select3").node().value = thisData.channels[2];
+        d3.select("#select2").node().value = thisData.channels[1] ? thisData.channels[1] : thisData.channels[0];//if there is no more readouts just use readout 1
+        d3.select("#select3").node().value = thisData.channels[2] ? thisData.channels[2] : thisData.channels[0];
 
         //select which plate to display
         var plateselector = new PlateSelector(d3.select("#plateSelector"),thisData,MyEventHandler);
 
         //channel 1 for selection
-        var distvis1 = new DistVis(d3.select("#distVis1"),thisData,thisData.channels[0],MyEventHandler);
+        var distvis1 = new DistVis(d3.select("#distVis1"),thisData,d3.select("#select1").node().value,MyEventHandler);
         
         //channel 2 for selection
-        var distvis2 = new DistVis(d3.select("#distVis2"),thisData,thisData.channels[1],MyEventHandler);
+        var distvis2 = new DistVis(d3.select("#distVis2"),thisData,d3.select("#select2").node().value,MyEventHandler);
         
         //channel 3 for selection
-        var distvis3 = new DistVis(d3.select("#distVis3"),thisData,thisData.channels[2],MyEventHandler);
+        var distvis3 = new DistVis(d3.select("#distVis3"),thisData,d3.select("#select3").node().value,MyEventHandler);
 
         //Chemical View 
         var chemicalvis = new ChemicalVis(d3.select("#chemicalVis"),thisData,MyEventHandler);
@@ -166,9 +166,9 @@ $(function(){ // this function is called after the HTML document is fully loaded
         var platevis = new PlateVis(d3.select("#plateVis"),thisData,MyEventHandler)
 
         //scatter plot
-        var scattervis1 = new ScatterVis(d3.select("#scatterVis1"),thisData,thisData.channels[0],thisData.channels[1],MyEventHandler);
+        var scattervis1 = new ScatterVis(d3.select("#scatterVis1"),thisData,d3.select("#select1").node().value,d3.select("#select2").node().value,MyEventHandler);
 
-        var scattervis2 = new ScatterVis(d3.select("#scatterVis2"),thisData,thisData.channels[0],thisData.channels[2],MyEventHandler);
+        var scattervis2 = new ScatterVis(d3.select("#scatterVis2"),thisData,d3.select("#select1").node().value,d3.select("#select3").node().value,MyEventHandler);
 
         //chemical cloud
         //var cloudvis = new CloudVis(d3.select("#cloudVis"),groupedData[0].values,channel_1,1,MyEventHandler);
@@ -197,7 +197,6 @@ $(function(){ // this function is called after the HTML document is fully loaded
                     
                     wrangleData(d);
 
-
                     plateselector.onPlateChange(p);
                     distvis1.onPlateChange(thisData);
                     distvis2.onPlateChange(thisData);
@@ -211,15 +210,15 @@ $(function(){ // this function is called after the HTML document is fully loaded
                 });
         });
 
-        $(MyEventHandler).bind("select", function(event, p){
+        $(MyEventHandler).bind("select", function(event, plate_well){
             
             //this is what happed after one select a compound
-            $.get(markUrl+p+"/mark/",
+            $.get(markUrl+plate_well+"/mark/",
                 {},
                 function(d) {
                     //console.log(d);
-                    chemicalvis.onChemSelectionChange(d);
-                    platevis.onChemSelectionChange(d);      
+                    chemicalvis.onChemSelectionChange(plate_well);
+                    platevis.onChemSelectionChange(plate_well);      
             });
             //update these visualization
 

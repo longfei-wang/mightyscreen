@@ -1,5 +1,5 @@
 /**
- * Created by Hendrik Strobelt (hendrik.strobelt.com) on 1/28/15.
+ * Created by Longfei Wang on 5/4/15.
  */
 
 
@@ -12,7 +12,7 @@
  * */
 
 /**
- * PlateVis object for HW3 of CS171
+ * PlateVis object
  * @param _parentElement -- the HTML or SVG element (D3 node) to which to attach the vis
  * @param _data -- the data array
  * @param _metaData -- the meta-data / data description object
@@ -25,7 +25,6 @@ PlateVis = function(_parentElement, _data, _eventHandler){
     this.channel = _data.channels[0];
     this.eventHandler = _eventHandler;
     this.displayData = [];
-    this.selection = _data.hitList;
     this.alphabetic = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z".split(" ");
     this.filter = null;
 
@@ -113,8 +112,6 @@ PlateVis.prototype.wrangleData= function(_filter){
             entry.opacity = _filter(d) ? 1 : 0.2;
         }
         
-
-        entry.selected = (that.selection.indexOf(d.platewell) > -1) ? (that.selection.indexOf(d.platewell) + 1) : 0;
         return entry;
     
     });
@@ -132,8 +129,6 @@ PlateVis.prototype.wrangleData= function(_filter){
     this.readout.domain(d3.extent(this.data.results.map(function(d){ return d[that.channel]; })));
 
     this.displayData = data;
-
-    console.log(this.displayData);
 
 }
 
@@ -154,7 +149,7 @@ PlateVis.prototype.updateVis = function(){
     //this.svg.selectAll(".well").remove();
 
     this.well = this.svg.selectAll(".well")
-        .data(this.displayData, function(d) {return d.platewell + that.channel + d.opacity + d.selected;});
+        .data(this.displayData, function(d) {return d.plate_well + that.channel + d.opacity + d.hit;});
 
     this.well.exit().remove();
 
@@ -167,7 +162,7 @@ PlateVis.prototype.updateVis = function(){
         })
         .on("click",function(d){
 
-            $(that.eventHandler).trigger("select",d.platewell);
+            $(that.eventHandler).trigger("select",d.plate_well);
          
          });
 
@@ -191,7 +186,7 @@ PlateVis.prototype.updateVis = function(){
                     "grey"); 
             }
 
-            return d.selected ? "purple" : "white";
+            return d.hit ? "purple" : "white";
 
         });
 
@@ -203,13 +198,19 @@ PlateVis.prototype.updateVis = function(){
         .attr("text-anchor","middle")
         .text(function(d){ return that.format(d.readout);});
 
+    var counter = 0;
     //index of selection
     dot.append("text")
         .attr("font-size", 10)
         .attr("x", - this.height / 40 - 4)
         .attr("y", - this.height / 40)
         .attr("text-anchor","right")
-        .text(function(d){ return d.selected ? (that.selection.indexOf(d.platewell) + 1) : "";});
+        .text(function(d){
+            if (d.hit) {
+                counter += 1;
+                return counter
+            }
+    });
 
 }
 
@@ -237,10 +238,14 @@ PlateVis.prototype.onSelectionChange= function (selection){
 
 }
 
-PlateVis.prototype.onChemSelectionChange= function (d){
+PlateVis.prototype.onChemSelectionChange= function (plate_well){
 
     // TODO: call wrangle function
-    this.selection=d.hit_list;
+    this.data.results.map(function(d){
+        if (d.plate_well==plate_well){
+            d.hit = 1 - d.hit;
+        }
+    });
 
     this.wrangleData(this.filter);
 
