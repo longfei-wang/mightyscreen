@@ -1,0 +1,5 @@
+.hover_text:hover
+{
+	fill: red;
+	cursor: pointer;
+}

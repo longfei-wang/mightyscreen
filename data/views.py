@@ -3,6 +3,7 @@ from rest_framework import generics, mixins, viewsets
 from rest_framework.decorators import api_view, detail_route, list_route
 from rest_framework.response import Response
 from django.core.files.base import ContentFile
+from django.http import HttpResponse
 from data.models import *
 from data.csv_util import *
 import os
@@ -10,6 +11,7 @@ from sets import Set
 from django.db.models import Count
 from collections import OrderedDict as odict
 import json
+import csv
 # Create your views here.
 
 
@@ -58,6 +60,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 	serializer_class = DataSerializer
 	lookup_field='plate_well'
 	project=None
+	pdata=None
 	plate_list=[]
 	curPlate = None
 	channels = []
@@ -69,11 +72,11 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 
 		self.curPlate = get_curPlate(self.request)
 
-		pdata = data.objects.filter(project=self.project)
+		self.pdata = data.objects.filter(project=self.project)
 
-		self.plate_list = [ i['plate'] for i in pdata.order_by('plate').values('plate').distinct()]
+		self.plate_list = [ i['plate'] for i in self.pdata.order_by('plate').values('plate').distinct()]
 		
-		curPlateData = pdata.filter(plate=self.curPlate)
+		curPlateData = self.pdata.filter(plate=self.curPlate)
 
 		self.channels = curPlateData[0].readouts.keys() if len(curPlateData) > 0 else []
 
@@ -93,6 +96,29 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 			})
 
 		return response
+
+	@list_route()
+	def to_csv(self,request):
+		"""
+		conver all project data to csv for user to download.
+		"""
+
+		response = HttpResponse(content_type='text/csv')
+		response['Content-Disposition'] = 'attachment;filename="export.csv"'
+
+		self.get_queryset()
+		serializer = self.serializer_class(self.pdata,many=True)
+		print self.pdata
+		keys = serializer.data[0].keys()
+
+		with response as output_file:
+			dict_writer = csv.DictWriter(output_file, keys)
+			dict_writer.writeheader()
+			dict_writer.writerows(serializer.data.results)
+
+		return response
+
+
 
 	@detail_route(methods=['GET'])
 	def mark(self,request,plate_well):

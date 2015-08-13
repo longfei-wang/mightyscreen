@@ -26,13 +26,12 @@ ChemicalVis = function(_parentElement, _data, _eventHandler){
     this.eventHandler = _eventHandler;
     this.displayData = [];
 
-    this.box = {width:125,height:200,outerwidth:145,outerheight:220};
+    this.box = {width:125,height:180,outerwidth:145,outerheight:220};
 
     // TODO: define all "constants" here
     this.margin = {top: 20, right: 200, bottom: 20, left: 20},
     this.width = window.innerWidth - this.margin.left - this.margin.right,
     this.height = 0;
-
     this.numRow = 0;
     this.numCol = Math.floor(this.width / this.box.outerwidth);
 
@@ -81,6 +80,41 @@ ChemicalVis.prototype.wrangleData= function(){
             return d.hit == 1;
         });
 
+    this.displayData.map(function(d){
+        
+        //put a lock on displayData do not visualize when data is not ready
+        d.display = false;
+
+        //read checmial property from pubchem
+        $.get(d.identifier+'/JSON',function(dd){
+            d.cid = dd.PC_Compounds[0].id.id.cid;
+            dd.PC_Compounds[0].props.map(function(ddd){
+                switch (ddd.urn.label) {
+                    case 'Log P':
+                        d.logp = ddd.value.fval;
+                        break;
+                    case 'Topological':
+                        d.tpsa = ddd.value.fval;
+                        break;
+                    case 'Molecular Weight':
+                        d.molecular_weight = ddd.value.fval;
+                        break;
+                }
+
+            });
+
+            d.display = true; //unlock it
+
+            that.updateVis();
+
+        }).error(function(){
+
+            d.display = true;
+
+            that.updateVis();
+        });
+    });
+
 }
 
 
@@ -91,6 +125,14 @@ ChemicalVis.prototype.wrangleData= function(){
 ChemicalVis.prototype.updateVis = function(){
     
     var that = this;
+
+    //check the lock if it is lock then end function
+    for (i in this.displayData) {
+        if (this.displayData[i].display == false) {
+            return;
+        }
+    }
+
     // TODO: implement update graphs (D3: update, enter, exit)
 
     this.numRow = Math.ceil(this.displayData.length / this.numCol);
@@ -109,10 +151,10 @@ ChemicalVis.prototype.updateVis = function(){
         .range([0, this.height]);
 
     //add symbols (svg reference)
-    this.symbol = this.svg
-        .append("g")
-        .attr("class", "symbol")
-        .html(this.displayData.map(function(d) {return d.svg;}).join());
+    // this.symbol = this.svg
+    //     .append("g")
+    //     .attr("class", "symbol")
+    //     .html(this.displayData.map(function(d) {return d.svg;}).join());
 
     this.svg.selectAll(".chemical").remove();
 
@@ -123,10 +165,8 @@ ChemicalVis.prototype.updateVis = function(){
         .attr("class", "chemical")
         .attr("transform",function(d, i){ 
             return "translate("+ that.x(i % that.numCol) +","+  that.y(Math.floor(i/that.numCol))  +")";
-        })
-        .on("click",function(d){
-            $(that.eventHandler).trigger("select",d.plate_well);
         });
+
     
     //shadow
     this.chemical.append("rect")
@@ -143,14 +183,15 @@ ChemicalVis.prototype.updateVis = function(){
         .attr("style","fill:white;stroke:black;");
 
     //draw chemical
-    this.chemical.append("use")
-        .attr("xlink:href", function(d) {return "#sym"+d.plate_well; })
+    this.chemical.append("image")
+        .attr("xlink:href", function(d) {return d.identifier+'/PNG?record_type=2d&image_size='+(that.box.width-2)+'x'+that.box.height*0.75; })
         .attr("width", this.box.width)
         .attr("height", this.box.height*0.75);
 
     var counter = 0;
     //the index
-    this.chemical.append("text")
+    this.chemical
+        .append("text")
         .attr("y",14)
         .attr("x",2)
         .attr("anchor","left")
@@ -160,6 +201,34 @@ ChemicalVis.prototype.updateVis = function(){
                 return counter;
             }
     })
+
+    //link to pubchem
+    this.chemical
+        .append("a")
+        .attr("target","_blank")
+        .attr("xlink:href",function(d){
+            return 'https://pubchem.ncbi.nlm.nih.gov/compound/'+d.cid;
+        })
+        .append("text")
+        .attr("class","hover_text")
+        .attr("y",14)
+        .attr("x",20)
+        .attr("anchor","left")
+        .text(function(d){
+            return d.cid?"PubChem":"";
+    });
+
+    //link to close button
+    this.chemical
+        .append("text")
+        .attr("y",14)
+        .attr("x",this.box.width-15)
+        .attr("anchor","right")
+        .attr("class","hover_text")
+        .text("X")
+        .on("click",function(d){
+        $(that.eventHandler).trigger("select",d.plate_well);
+    });
 
     //the bottom box
     var p = this.chemical.append("g")
@@ -186,7 +255,7 @@ ChemicalVis.prototype.updateVis = function(){
 
     //if MW < 500 draw a rect
     var mw = p.append("g")
-        .attr("transform","translate("+(this.box.height*0.20+10)+","+5+")")
+        .attr("transform","translate("+(this.box.height*0.20+8)+","+5+")")
     mw.append("rect")
         .attr("width",this.box.height*0.20)
         .attr("height",this.box.height*0.20)
@@ -196,6 +265,25 @@ ChemicalVis.prototype.updateVis = function(){
         .attr("y",15)
         .attr("anchor","left")
         .text(function(d) {return d.molecular_weight < 500 ? "MW" : "";});
+
+    //if MW < 500 draw a rect
+    var mw = p.append("g")
+        .attr("transform","translate("+(this.box.height*0.40+12)+","+5+")")
+    mw.append("rect")
+        .attr("width",this.box.height*0.20)
+        .attr("height",this.box.height*0.20)
+        .attr("style",function(d) {return "fill:" + (d.tpsa < 140 ? "greenyellow":"white");})
+    mw.append("text")
+        .attr("x",5)
+        .attr("y",15)
+        .attr("anchor","left")
+        .text(function(d) {return d.tpsa < 140 ? "tPSA" : "";});
+
+    //after display is finished, lock the data
+    // this.displayData.map(function(d){
+    //     d.display = false;
+    // });
+
 }
 
 
@@ -226,7 +314,7 @@ ChemicalVis.prototype.onPlateChange= function (d){
 
 
     // TODO: call wrangle function
-
+    this.data = d;
     this.wrangleData();
     this.updateVis();
     // do nothing -- no update when brushing
