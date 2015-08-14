@@ -47,21 +47,23 @@
                     {% if user.is_authenticated %}
                     <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                    Project{% if request.session.proj %}<span class="badge">{{request.session.proj}}</span>{% endif %}
-                     <span class="caret"></span>
+                    Proj:{% if request.session.project %}<span class="badge">{{request.session.project_name}}</span>{% endif %}
+                    <span class="caret"></span>
                     </a>
                         <ul class="dropdown-menu">
-                            <li><a href="">New Project</a></li>
-                            <li><a href="">Edit Project</a></li>
-                            <li><a href="">View Project</a></li>
+                            {% for project in user.project_set.all %}
+                                {% if request.session.project != project.id.hex %}
+                                    <li>{{ project.name|title }}</li>
+                                {% endif %}
+                            {% endfor %}
                             <li class="divider"></li>
-                                <li><a href="">{{i.name|title}}</a></li>
+                            <li>New Project</li>
                         </ul>
                     </li>
                     {% endif %}
 
                     <li><a href="">Documents</a></li>
-                    <li><a href="https://github.com/longfei-wang/mightyscreen/issues">Contact Us</a></li>
+                    <li><a href="mailto:mightyscreen@gmail.com?subject=[from%20{{user.username}}]" target="_top">Contact Us</a></li>
 
                 </ul>
 

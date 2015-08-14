@@ -15,43 +15,6 @@ import csv
 # Create your views here.
 
 
-# class MetaObject:
-# 	"""
-# 	Object that handle meta data
-# 	"""
-# 	meta = {}
-# 	fields = []
-# 	def __init__(self,_meta):
-# 		self.meta = _meta
-# 		if 'fields' in self.meta.keys():
-# 			self.fields = self.meta['fields']
-
-# 	@property
-# 	def channels(self):
-# 		"""
-# 		a list of channels that has been used
-# 		"""
-# 		return [i['name'] for i in self.fields]
-
-# 	@property
-# 	def vchannels(self):
-# 		"""
-# 		a list of channels that has been used
-# 		"""
-# 		return [i['verbose'] for i in self.fields]
-
-# 	@property
-# 	def verbose(self):
-# 		"""
-# 		a dictionary with field name as key and verbose name as values
-# 		"""
-# 		v = {}
-# 		for i in self.fields:
-# 			v[i['name']] = i['verbose']
-
-# 		return v
-
-
 class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.GenericViewSet):
 	"""
 	populate data based on query
