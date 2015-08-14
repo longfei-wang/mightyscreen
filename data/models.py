@@ -72,7 +72,8 @@ def find_or_create_project(request):
 
         p.save()
 
-        request.session['project'] = p.id.hex #set the session project keyword
+        request.session['project'] =  p.id.hex #set the session project keyword
+        
         
         return p
 
@@ -96,12 +97,14 @@ def find_or_create_project(request):
             
             p = project.objects.filter(user=request.user)[0]
 
-            request.session['project'] = p.id.hex        
+            request.session['project'] = p.id.hex
         
         else:
 
             p = create_project()
 
+    request.session['project_name'] =  p.name
+    
     return p
 
 
@@ -114,7 +117,7 @@ def get_curPlate(request):
     pdata = data.objects.filter(project=p)
 
     plate_list = [ i['plate'] for i in pdata.order_by('plate').values('plate').distinct()]
-    
+
     #check request
     plate = request.GET.get('plate',
         request.session.get('plate',
