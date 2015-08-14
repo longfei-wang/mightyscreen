@@ -71,13 +71,19 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 
 		self.get_queryset()
 		serializer = self.serializer_class(self.pdata,many=True)
-		print self.pdata
+		
+		unique_keys = set()
+		for i in serializer.data:
+			unique_keys.update(i.keys())
+		
 		keys = serializer.data[0].keys()
+		for i in unique_keys:
+			if i not in keys:
+				keys.append(i)
 
-		with response as output_file:
-			dict_writer = csv.DictWriter(output_file, keys)
-			dict_writer.writeheader()
-			dict_writer.writerows(serializer.data.results)
+		dict_writer = csv.DictWriter(response, keys, restval='', extrasaction='ignore',quotechar='"',quoting=True)
+		dict_writer.writeheader()
+		dict_writer.writerows(serializer.data)
 
 		return response
 

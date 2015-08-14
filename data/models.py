@@ -58,7 +58,7 @@ class project(models.Model):
 
 	meta = JSONField(blank=True,null=True)#this stores a dictionary of the meta data of this project.
 
-	create_date = models.DateTimeField(auto_now_add = True, blank = True)
+	create_date = models.DateTimeField(auto_now_add=True, blank=True)
 
 
 def find_or_create_project(request):

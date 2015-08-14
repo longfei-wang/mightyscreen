@@ -11,7 +11,15 @@
 
 {% block content %}
 
-<input id="input-700" name="raw_csv_file" type="file" multiple class="file-loading">
+<div class="row pull-right">
+    <div class=""><a href="">Demo inputfile download</a><div>
+</div>
+
+<div class="row">
+    <input id="input-700" name="raw_csv_file" type="file" multiple class="file-loading">
+<div>
+
+
 
 <div id="clean"></div>
 
@@ -123,7 +131,7 @@ function updateParse(d,fid) {
         .append('option')
         .attr('value',function(d){return d})
         .text(function(d){return d});
-        
+
     //positive controls and negative controls
     // var controlform = form
     //     .append('div')

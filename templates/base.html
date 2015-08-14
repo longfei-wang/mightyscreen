@@ -62,8 +62,8 @@
                     </li>
                     {% endif %}
 
-                    <li><a href="">Documents</a></li>
-                    <li><a href="mailto:mightyscreen@gmail.com?subject=[from%20{{user.username}}]" target="_top">Contact Us</a></li>
+                    <li><a href="{% url 'data-to-csv' %}">Export Data</a></li>
+                    <li><a href="mailto:mightyscreen@gmail.com?subject=[from%20{{user.username}}]" target="_top">Help</a></li>
 
                 </ul>
 
