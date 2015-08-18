@@ -1,7 +1,8 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework import generics, mixins, viewsets
 from rest_framework.decorators import api_view, detail_route, list_route
 from rest_framework.response import Response
+from rest_framework import status
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
 from django.contrib.auth.models import User
@@ -14,6 +15,82 @@ from collections import OrderedDict as odict
 import json
 import csv
 # Create your views here.
+
+class ProjectViewSet(mixins.RetrieveModelMixin,mixins.ListModelMixin,viewsets.GenericViewSet):
+	
+	queryset = project.objects.all()
+	serializer_class = ProjectSerializer
+
+	def get_queryset(self):
+
+		return [] if self.request.user.is_anonymous() else project.objects.filter(user=self.request.user) #anonymous dont have any right other than create new project.
+	
+	def perform_create(self, serializer):
+		serializer.save(user=self.request.user)
+
+	def list(self):
+		return Response({
+			'results':'not allowed'
+			},status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+	def retrieve(self):
+		return Response({
+			'results':'not allowed'
+			},status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+	@detail_route(methods=['GET'])
+	def use(self,request,pk):
+		"""
+		to change current project
+		"""
+		request.session['project'] = self.get_object().id.hex
+		request.session['project_name'] = self.get_object().name
+
+		return redirect('tableview')
+
+	@detail_route(methods=['GET'])
+	def rename(self,request,pk):
+		"""
+		rename current project
+		"""
+		p = self.get_object()
+		new_name = request.GET.get('name',None)
+
+
+		if new_name:
+			p.name = new_name
+			p.save()
+			request.session['project_name'] = p.name
+
+			return Response({'results':'success','name':p.name},status=status.HTTP_200_OK)
+
+		return Response({'results':'fail: no name provided'},status=status.HTTP_404_NOT_FOUND)
+	
+	@detail_route(methods=['GET'])
+	def delete(self,request,pk):
+		"""
+		delete current project
+		"""
+		p = self.get_object()
+		if p.id.hex == request.session.get('project',None):
+			request.session['project'] = None
+			request.session['project_name'] = ''
+			get_or_create_project(request)
+
+		p.delete()
+
+		return Response({'results':'success'},status=status.HTTP_200_OK)
+
+	@list_route()
+	def new(self,request):
+		"""
+		create a new project
+		"""
+		p = create_project(request)
+		request.session['project'] = p.id.hex
+		request.session['project_name'] = p.name		
+		return redirect('tableview')
+
 
 class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.GenericViewSet):
 	"""
@@ -30,12 +107,12 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 
 	def get_queryset(self):
 
-		self.project = find_or_create_project(self.request)
+		self.project = get_or_create_project(self.request)
 		#get_object_or_404(project,id=self.request.session.get('project',None))
 
 		self.pdata = self.project.data_set
 
-		self.plate_list = self.get_plate_list()
+		self.plate_list = self.project.get_plate_list()
 
 		self.curPlate = self.project.get_curPlate(self.request)
 
@@ -97,16 +174,13 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		
 		try:
 			demo = User.objects.get(username='demo')
-		except User.DoesNotExist:
-			demo = None
-			return Resposnse({
-				'results':'User demo does not exists.'
-				})
+			demo_data = demo.project_set.first().data_set.all()
+		except:
+			return redirect('uploadview')
 
 		self.get_queryset()
-		self.pdata.delete()
+		self.pdata.all().delete()#all previous data will be deleted
 		
-		demo_data = demo.data_set.all()
 
 		def query2object(d,project,chunk_size=100):
 			"""
@@ -114,7 +188,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 			in the mean time create meta data for this data
 			"""
 			l = []
-			for i in d.iteritems():
+			for i in d:
 				
 				dataDict = {
 					'project': self.project,
@@ -122,6 +196,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 					'plate': i.plate,
 					'well': i.well,
 					'welltype': i.welltype,
+					'hit': i.hit,
 					'identifier': i.identifier,
 					'readouts':i.readouts,
 				}
@@ -137,72 +212,71 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		for i in query2object(demo_data,self.project):
 			data.objects.bulk_create(i)
 
-		return Resposnse({
-			'results':'success',
-			]})
+		return redirect('tableview')
 
 	@detail_route(methods=['GET'])
 	def mark(self,request,plate_well):
 		"""
 		mark/unmark a compound as hit
 		"""
-		instance = get_object_or_404(self.get_queryset(),plate_well=plate_well)
+		instance = self.get_object()
 		instance.hit = 1 if instance.hit == 0 else 0
 		instance.save()
 
 		#hits_data = self.hits()
 
 		return Response({
+			'results':'success',
 			'plate_well':plate_well,
 			'curPlate':self.curPlate,
 			'mark':instance.hit,
 			#'results':hits_data,
-			})
+			},status=status.HTTP_200_OK)
 
 	@detail_route(methods=['GET'])
 	def setP(self,request,plate_well):
 		"""
 		mark/unmark a compound as positive control
 		"""
-		instance = get_object_or_404(self.get_queryset(),plate_well=plate_well)
+		instance = self.get_object()
 		instance.welltype = 'P'
 		instance.save()
 
 		return Response({
-			'success':True,
+			'results':'success',
 			'plate_well':plate_well,
 			'curPlate':self.curPlate,
-			})
+			},status=status.HTTP_200_OK)
 
 	@detail_route(methods=['GET'])
 	def setN(self,request,plate_well):
 		"""
 		mark/unmark a compound as positive control
 		"""
-		instance = get_object_or_404(self.get_queryset(),plate_well=plate_well)
+		instance = self.get_object()
 		instance.welltype = 'N'
 		instance.save()
 
 		return Response({
-			'success':True,
+			'results':'success',
 			'plate_well':plate_well,
 			'curPlate':self.curPlate,
-			})
+			},status=status.HTTP_200_OK)
 
 	@detail_route(methods=['GET'])
 	def setX(self,request,plate_well):
 		"""
 		mark/unmark a compound as positive control
 		"""
-		instance = get_object_or_404(self.get_queryset(),plate_well=plate_well)
+		instance = self.get_object()
 		instance.welltype = 'X'
 		instance.save()
 
 		return Response({
-			'success':True,
+			'results':'success',
 			'plate_well':plate_well,
 			'curPlate':self.curPlate,
-			})
+			},status=status.HTTP_200_OK)
 
 
 	def hits(self):
@@ -229,15 +303,15 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		inputfile is a grid file/list file
 		outputfile is a list file
 		"""
-		file_instance = get_object_or_404(csv_file,pk=pk)
+		file_instance = self.get_object()
 
-		project =find_or_create_project(request)
+		project =get_or_create_project(request)
 
 		inputfile = file_instance.raw_csv_file
 		
 		results = checklist(inputfile.path)
 
-		return Response(results)
+		return Response(results,status=status.HTTP_200_OK)
 
 	@detail_route(methods=['POST'])
 	def parse(self,request,pk=None): #The function to parse list csv file to database
@@ -280,9 +354,9 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 			yield l
 
 
-		file_instance = get_object_or_404(csv_file,pk=pk)
+		file_instance = self.get_object()
 
-		project =find_or_create_project(request)
+		project =get_or_create_project(request)
 
 		d = request.POST
 
@@ -321,9 +395,9 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 		# project.meta = meta
 		# project.save()
 
-		return Response("parsed")
+		return Response({"results":"parsed"},status=status.HTTP_201_CREATED)
 	
 	def perform_create(self,serializer): #called when upload a file
 		
-		serializer.save(project=find_or_create_project(self.request))
+		serializer.save(project=get_or_create_project(self.request))
 

@@ -82,6 +82,8 @@ PlateSelector.prototype.wrangleData= function(){
     // displayData should hold the data which is visualized
     // pretty simple in this case -- no modifications needed
 
+    //slice the data.
+
 }
 
 
@@ -97,7 +99,7 @@ PlateSelector.prototype.updateVis = function(){
     this.svg.selectAll(".plate").remove()
 
     this.plates = this.svg.selectAll(".plate")
-        .data(this.data.filter(function(d,i){return Math.abs(i - that.data.indexOf(parseInt(that.curPlate))) < 7}))
+        .data(this.data)
         .enter()
         .append("g")
         .attr("class","plate")

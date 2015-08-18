@@ -50,7 +50,7 @@ class project(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    name = models.CharField(max_length=10,verbose_name='Project Name',default='Untitled')
+    name = models.CharField(max_length=20,verbose_name='Project Name',default='Untitled')
 
     memo = models.TextField(blank=True)
 
@@ -79,7 +79,7 @@ class project(models.Model):
 
         self.meta = self.get_meta()
 
-        curPlate = self.meta.curPlate if 'curPlate' in self.get_meta() else None
+        curPlate = self.meta['curPlate'] if 'curPlate' in self.meta.keys() else None
         
         if request != None:
             curPlate = request.GET.get('plate',curPlate)
@@ -95,6 +95,12 @@ class project(models.Model):
         return curPlate
 
 
+class ProjectSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = project
+        fields = 'id name memo meta user create_date'.split()
+        read_only_fields = 'id meta'.split()
 
 # def get_curPlate(request):
 
@@ -118,22 +124,36 @@ class project(models.Model):
 #     return plate
 
 
+def create_project(request):
+    if request.user.is_anonymous():
 
-def find_or_create_project(request):
+        p = project(user=None) #anonymouse user cannot be saved as a user object
+
+    else:
+
+        projs_names = project.objects.filter(user=request.user).values_list('name',flat=True)
+
+        #figure out the numbering
+        number = 0
+        for i in projs_names:
+            try:
+                number = int(i.split('Untitled')[1]) if int(i.split('Untitled')[1]) >  number else number
+            except:
+                pass
+
+        p = project(name= 'Untitled ' + str(number+1),user=request.user)
+
+    p.save()
+    
+    return p
+
+
+def get_or_create_project(request):
     """
     find the project instance based on request
     if can't find any, create one and return the new project
     """
-    def create_project():
 
-        p = project(user=None if request.user.is_anonymous() else request.user) #anonymouse user cannot be saved as a user object
-
-        p.save()
-
-        request.session['project'] =  p.id.hex #set the session project keyword
-        
-        
-        return p
 
 
     if request.user.is_anonymous():
@@ -144,7 +164,7 @@ def find_or_create_project(request):
         
         else:
 
-            p = create_project()
+            p = create_project(request)
     else:
 
         if project.objects.filter(id=request.session.get('project', None),user=request.user).exists(): #if can project
@@ -159,8 +179,10 @@ def find_or_create_project(request):
         
         else:
 
-            p = create_project()
+            p = create_project(request)
 
+
+    request.session['project'] =  p.id.hex #set the session project keyword
     request.session['project_name'] =  p.name
     
     return p

@@ -41,28 +41,33 @@
 
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="{% url "uploadview" %}">Upload</a></li>
-                    <li><a href="{% url "tableview" %}">TableView</a></li>
-                    <li><a href="{% url "plateview" %}">PlateView</a></li>
+                    <li {% if request.resolver_match.url_name == 'uploadview' %}class="active"{% endif %}><a href="{% url "uploadview" %}">Upload</a></li>
+                    <li {% if request.resolver_match.url_name == 'tableview' %}class="active"{% endif %}><a href="{% url "tableview" %}">TableView</a></li>
+                    <li {% if request.resolver_match.url_name == 'plateview' %}class="active"{% endif %}><a href="{% url "plateview" %}">PlateView</a></li>
                     {% if user.is_authenticated %}
                     <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                    Proj:{% if request.session.project %}<span class="badge">{{request.session.project_name}}</span>{% endif %}
+                    Proj:{% if request.session.project %}<span id="curProjectName" class="badge">{{request.session.project_name}}</span>{% endif %}
                     <span class="caret"></span>
                     </a>
                         <ul class="dropdown-menu">
                             {% for project in user.project_set.all %}
                                 {% if request.session.project != project.id.hex %}
-                                    <li>{{ project.name|title }}</li>
+                                    <li><a href="{% url 'project-list' %}{{ project.id }}/use">{{ project.name|title }}</a></li>
                                 {% endif %}
                             {% endfor %}
                             <li class="divider"></li>
-                            <li>New Project</li>
+                            <li><a href="{% url 'project-new' %}">New Project</a></li>
+                            <li><a href="#" onclick="change_proj_name('{{request.session.project}}','{{request.session.project_name}}');">Rename Project</a></li>
+                            <li><a href="#" onclick="delete_proj('{{request.session.project}}','{{request.session.project_name}}');">Delete Project</a></li>
+                            
                         </ul>
                     </li>
+                    {% else %}
+                    <li><a href="{% url "project-new" %}" onclick="return confirm('All data will be lost. Are you sure?')">ClearData</a></li>
                     {% endif %}
 
-                    <li><a href="{% url 'data-to-csv' %}">Export Data</a></li>
+                    <li><a href="{% url 'data-to-csv' %}">ExportData</a></li>
                     <li><a href="mailto:mightyscreen@gmail.com?subject=[from%20{{user.username}}]" target="_top">Help</a></li>
 
                 </ul>
@@ -136,6 +141,48 @@
 <script src="{% static "js/jquery.min.js" %}"></script>
 <script src="{% static "js/bootstrap.min.js" %}"></script>
 <script src="{% static "js/d3.min.js" %}"></script>
+<script src="{% static "js/bootbox.min.js" %}"></script>
+
+<script>
+var change_proj_name = function(pk,name) {
+    bootbox.prompt({
+        title: "Please input the new name for current project",
+        value: name?name:'',
+        callback: function(result) {                
+            if (result === null) {                                             
+                                              
+            } else {
+                $.get('{% url "project-list" %}'+pk+'/rename/',{name:result},function(d) {
+                    if (d.name) {
+                        location.reload();
+                    }
+                });                          
+            }
+        }
+    });
+}
+
+var delete_proj = function(pk,name) {
+    bootbox.confirm("All data in project "+name+" will be lost. Are you sure?", function(result) {
+    if (result) {
+        $.get('{% url "project-list" %}'+pk+'/delete/',{},function(d){
+            if (d.results) {
+                location.reload();
+            }
+        });
+    }
+});
+
+}
+
+// var confirm_action = function(message,url) {
+//     bootbox.confirm(message, function(result) {
+//     if (result) {
+
+//     }
+// }); 
+// }
+</script>
 
 {% block script %}
 

@@ -274,7 +274,7 @@ ChemicalVis.prototype.updateVis = function(){
         .attr("height",this.box.height*0.20)
         .attr("style",function(d) {return "fill:" + (d.tpsa < 140 ? "greenyellow":"white");})
     mw.append("text")
-        .attr("x",5)
+        .attr("x",2)
         .attr("y",15)
         .attr("anchor","left")
         .text(function(d) {return d.tpsa < 140 ? "tPSA" : "";});
