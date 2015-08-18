@@ -48,17 +48,75 @@ class JSONField(models.TextField):
 
 class project(models.Model):
 
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-	name = models.CharField(max_length=10,verbose_name='Project Name',default='Untitled')
+    name = models.CharField(max_length=10,verbose_name='Project Name',default='Untitled')
 
-	memo = models.TextField(blank=True)
+    memo = models.TextField(blank=True)
 
-	user = models.ForeignKey(User,null=True,blank=True)
+    user = models.ForeignKey(User,null=True,blank=True)
 
-	meta = JSONField(blank=True,null=True)#this stores a dictionary of the meta data of this project.
+    meta = JSONField(blank=True,null=True)#this stores a dictionary of the meta data of this project.
 
-	create_date = models.DateTimeField(auto_now_add=True, blank=True)
+    create_date = models.DateTimeField(auto_now_add=True, blank=True)
+
+    def get_plate_list(self):
+        """
+        return a list of plates ######need to improve.
+        """
+        return self.data_set.order_by('plate').distinct().values_list('plate',flat=True)
+
+    def get_meta(self):#meta is a dictionary/json but I didn't enforce that. could be improved.
+        if self.meta == None:
+            return dict()
+        else:
+            return self.meta
+
+    def get_curPlate(self,request=None):
+        """
+        A function to get current plate number
+        """
+
+        self.meta = self.get_meta()
+
+        curPlate = self.meta.curPlate if 'curPlate' in self.get_meta() else None
+        
+        if request != None:
+            curPlate = request.GET.get('plate',curPlate)
+
+        if  not self.data_set.filter(plate=curPlate).exists():
+
+            curPlate = self.get_plate_list()[0] if len(self.get_plate_list()) > 0 else None
+
+        self.meta['curPlate'] = curPlate
+
+        self.save()
+
+        return curPlate
+
+
+
+# def get_curPlate(request):
+
+#     p = get_object_or_404(project,id=request.session.get('project',None))
+
+#     pdata = data.objects.filter(project=p)
+
+#     plate_list = [ i['plate'] for i in pdata.order_by('plate').values('plate').distinct()]
+
+#     #check request
+#     plate = request.GET.get('plate',
+#         request.session.get('plate',
+#                 plate_list[0] if plate_list != [] else None
+#             )
+#         )
+
+#     print plate
+#     #set the plate number in session
+#     request.session['plate'] = plate
+
+#     return plate
+
 
 
 def find_or_create_project(request):
@@ -108,28 +166,7 @@ def find_or_create_project(request):
     return p
 
 
-def get_curPlate(request):
-    """
-    A function to get current plate number
-    """
-    p = get_object_or_404(project,id=request.session.get('project',None))
 
-    pdata = data.objects.filter(project=p)
-
-    plate_list = [ i['plate'] for i in pdata.order_by('plate').values('plate').distinct()]
-
-    #check request
-    plate = request.GET.get('plate',
-        request.session.get('plate',
-    			plate_list[0] if plate_list != [] else None
-    		)
-    	)
-
-    print plate
-    #set the plate number in session
-    request.session['plate'] = plate
-
-    return plate
 
 
 def get_file_name(instance,filename):

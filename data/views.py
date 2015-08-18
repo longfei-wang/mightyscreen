@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view, detail_route, list_route
 from rest_framework.response import Response
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
+from django.contrib.auth.models import User
 from data.models import *
 from data.csv_util import *
 import os
@@ -13,7 +14,6 @@ from collections import OrderedDict as odict
 import json
 import csv
 # Create your views here.
-
 
 class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.GenericViewSet):
 	"""
@@ -33,12 +33,12 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		self.project = find_or_create_project(self.request)
 		#get_object_or_404(project,id=self.request.session.get('project',None))
 
-		self.curPlate = get_curPlate(self.request)
+		self.pdata = self.project.data_set
 
-		self.pdata = data.objects.filter(project=self.project)
+		self.plate_list = self.get_plate_list()
 
-		self.plate_list = [ i['plate'] for i in self.pdata.order_by('plate').values('plate').distinct()]
-		
+		self.curPlate = self.project.get_curPlate(self.request)
+
 		curPlateData = self.pdata.filter(plate=self.curPlate)
 
 		self.channels = curPlateData[0].readouts.keys() if len(curPlateData) > 0 else []
@@ -88,6 +88,58 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		return response
 
 
+	@list_route()
+	def demo(self,request):
+		"""
+		to load demo into current project.
+		demo will be copies from User: demo.
+		"""
+		
+		try:
+			demo = User.objects.get(username='demo')
+		except User.DoesNotExist:
+			demo = None
+			return Resposnse({
+				'results':'User demo does not exists.'
+				})
+
+		self.get_queryset()
+		self.pdata.delete()
+		
+		demo_data = demo.data_set.all()
+
+		def query2object(d,project,chunk_size=100):
+			"""
+			convert a data query to a new data objects that can be parsed into database
+			in the mean time create meta data for this data
+			"""
+			l = []
+			for i in d.iteritems():
+				
+				dataDict = {
+					'project': self.project,
+					'plate_well': i.plate_well,
+					'plate': i.plate,
+					'well': i.well,
+					'welltype': i.welltype,
+					'identifier': i.identifier,
+					'readouts':i.readouts,
+				}
+				
+				l.append(data(**dataDict))
+
+				if len(l)>=chunk_size:
+					yield l
+					l = []
+
+			yield l
+
+		for i in query2object(demo_data,self.project):
+			data.objects.bulk_create(i)
+
+		return Resposnse({
+			'results':'success',
+			]})
 
 	@detail_route(methods=['GET'])
 	def mark(self,request,plate_well):
@@ -98,7 +150,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 		instance.hit = 1 if instance.hit == 0 else 0
 		instance.save()
 
-		hits_data = self.hits()
+		#hits_data = self.hits()
 
 		return Response({
 			'plate_well':plate_well,
