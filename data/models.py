@@ -72,8 +72,7 @@ class project(models.Model):
         """
         return a detailed list of plates
         """
-        select_data = {"date": """strftime('%%m/%%d/%%Y', time_stamp)"""}
-        return data.objects.extra(select=select_data).values('plate').order_by('plate').annotate(numHit=Sum('hit'),date=Max('create_date'))
+        return self.data_set.values('plate').order_by('plate').annotate(numHit=Sum('hit'),date=Max('create_date'))
 
     def get_meta(self):#meta is a dictionary/json but I didn't enforce that. could be improved.
         if self.meta == None:

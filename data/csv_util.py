@@ -55,7 +55,7 @@ def checklist(inputfile=None):
 	plateIndex = header.index('plate')
 	wellIndex = header.index('well')
 
-	titles = [i for i in header if i not in "plate well".split()]
+	titles = [i for i in header if i not in "plate well plate_well hit welltype create_date".split()] #remove reserved name spaces
 
 	line = 1
 
@@ -110,11 +110,15 @@ def file2dict(csvfile,plates,readouts,identifier):
 		
 		chem_id = "NA"
 
-		if identifier:
+
+		if identifier:##### All supported chemical identifiers: pubchem link name cid smiles inchi inchikey formula ...
 
 			if identifier.lower() == 'hms':
 				chem_id = pubchem_header + 'name/HMS' + plate_well
 			
+			elif identifier.lower() == 'identifier':
+				chem_id = row[identifier]
+
 			elif identifier in row.keys() and identifier.lower() in "cid name smiles inchi sdf inchikey formula listkey".split():
 				chem_id = pubchem_header + identifier.lower() +'/' + row[identifier]
 			
@@ -130,6 +134,7 @@ def file2dict(csvfile,plates,readouts,identifier):
 			content[plate_well] = {
 				'plate':plateNum,
 				'well':wellNum,
+				'hit': 0 if 'hit' not in row.keys() else row['hit'],
 				'welltype': 'X' if 'welltype' not in row.keys() else row['welltype'].upper(),
 				'identifier':chem_id,
 				'readouts':odict(),

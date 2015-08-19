@@ -14,7 +14,7 @@
 <div class="row well">
     <div class="btn-group" role="group" aria-label="demo">
         <a href="{% url 'data-demo' %}" onclick="return confirm('Demo will overwrite your current data. Do you want to continue?')" class="btn btn-default">Load Demo</a>
-        <a href="" class="btn btn-default">Download Sample Demo File</a>
+        <a href="{% static 'sample/sample.csv' %}" class="btn btn-default" target="_blank">Download Sample Demo File</a>
     </div>
 </div>
 
@@ -22,7 +22,8 @@
     <input id="input-700" name="raw_csv_file" type="file" multiple class="file-loading">
 </div>
 
-
+<br />
+<br />
 
 <div id="clean"></div>
 
@@ -78,19 +79,19 @@ function updateParse(d,fid) {
     
     var form = d3.select('#parse')
     .append('div')
-    .attr('class','parseform')
+    .attr('class','parseform well')
 
     var plateform = form
         .append('div')
         .attr('class','plateform form-group');
 
     plateform.append('label')
-        .text('Rename Plates: '+d.plates.join(','));
+        .text('Rename Plates: '+response.plates.join(','));
 
     plateform.append('input')
         .attr('class','form-control')
         .attr('name',fid+'plates')
-        .attr('value',d.plates.join(','));
+        .attr('value',response.plates.join(','));
 
     //readouts name form
     var readoutform = form
@@ -99,13 +100,13 @@ function updateParse(d,fid) {
         .text('Select Readouts (check to select)');
     
     readoutform.selectAll('.readoutform')
-        .data(d.titles)
+        .data(response.titles.filter(function(d){return d != 'identifier';}))
         .enter()
         .append('div')
         .attr('class','checkbox readoutform')
         .append('label')
         .html(function(d,i){
-            return '<input name="'+fid+'readout[]" type="checkbox" value="'+d+'"> '+i+'. '+d;
+            return '<input name="'+fid+'readout[]" type="checkbox" value="'+d+'" checked> '+i+'. '+d;
         });
 
 
@@ -122,10 +123,14 @@ function updateParse(d,fid) {
     //     .attr('selected','selected')
     //     .text('HMS-ICCB');
 
-    var supported_options = "identifier cid name smiles inchi sdf inchikey formula listkey".split();
+    var supported_options = "identifier cid name smiles inchi sdf inchikey formula listkey".split(" ");
 
-    var supported_titles = d.titles.filter(function(d){
+    console.log(response.titles)
+    var supported_titles = response.titles.filter(function(d){
+        console.log(d == 'identifier')
+        console.log(supported_options)
         return supported_options.indexOf(d.toLowerCase()) > -1;
+        
     });
 
     identifierform.selectAll('option')
@@ -187,15 +192,19 @@ function updateParse(d,fid) {
 
 function updateClean(filename,fid,pid) {
     //Create a button to call the clean method of file on server
-    d3.select('#clean')
-    .append('button')
-    .attr('class','btn btn-default')
-    .text("Click to process "+filename)
-    .on("click",function(){
-        $.get("{% url 'csv_file-list' %}"+fid+"/clean/",function(d){
-            console.log(d);
-	    updateParse(d,fid);
-        });
+    // d3.select('#clean')
+    // .append('button')
+    // .attr('class','btn btn-default')
+    // .text("Click to process "+filename)
+    // .on("click",function(){
+    //     $.get("{% url 'csv_file-list' %}"+fid+"/clean/",function(d){
+    //         console.log(d);
+	   //  updateParse(d,fid);
+    //     });
+    // });
+    
+    $.get("{% url 'csv_file-list' %}"+fid+"/clean/",function(d){
+        updateParse(d,fid);
     });
 }
 

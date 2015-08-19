@@ -333,6 +333,7 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 					'plate': v['plate'],
 					'well': v['well'],
 					'welltype': v['welltype'],
+					'hit':v['hit'],
 					'identifier': v['identifier'],
 					'readouts':odict(),
 				}
@@ -341,8 +342,10 @@ class FileViewSet(mixins.RetrieveModelMixin,mixins.CreateModelMixin,viewsets.Gen
 				for kk,vv in v['readouts'].iteritems():
 					
 					for i,item in enumerate(vv):
-						dataDict['readouts'][kk+("" if i == 0 else "_"+str(i))] = float(item)
-
+						try:#if it is not a number just pass on
+							dataDict['readouts'][kk+("" if i == 0 else "_"+str(i))] = float(item)
+						except:
+							pass
 
 				l.append(data(**dataDict))
 

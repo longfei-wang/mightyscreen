@@ -79,8 +79,8 @@ ScatterVis.prototype.initVis = function(){
 
     this.wt = {
         "P" : "red",
-        "N" : "green",
-        "X" : "blue",
+        "N" : "blue",
+        "X" : "grey",
         "E" : "white",
         "B" : "white"
     }

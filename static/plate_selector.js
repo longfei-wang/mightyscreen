@@ -164,11 +164,13 @@ PlateSelector.prototype.updateVis = function(){
         .attr("y",40)
         .attr("x",this.box.width-5)
         .attr("text-anchor","end")
+        .attr("fill","purple")
         .text(function(d){ return d.numHit; });
 
     this.plates.append("text")
-        .attr("y",this.box.height)
-        .text(function(d){ return d.date; });
+        .attr("y",this.box.height-2)
+        .attr("fill","white")
+        .text(function(d){ return d.date.split("T")[0]; });
 }
 
 /**

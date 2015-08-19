@@ -194,7 +194,7 @@ DistVis.prototype.updateVis = function(){
         .attr("y1",0)
         .attr("y2",this.height)
         .attr("style",function(d) {
-            return "stroke:"+(d.welltype=="P" ? "red" : "green") +";stroke-width:1;stroke-opacity:0.3";
+            return "stroke:"+(d.welltype=="P" ? "red" : "blue") +";stroke-width:1;stroke-opacity:0.3";
         });
 
     controls.exit().remove();

@@ -182,7 +182,7 @@ PlateVis.prototype.updateVis = function(){
 
             if (d.welltype != "X") {
                 return d.welltype == "P" ? "red" :
-                    (d.welltype == "N" ? "green" :
+                    (d.welltype == "N" ? "blue" :
                     "grey"); 
             }
 
