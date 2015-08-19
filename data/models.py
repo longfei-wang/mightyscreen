@@ -8,6 +8,7 @@ import uuid, os
 import json
 from django.shortcuts import get_object_or_404
 from collections import OrderedDict as odict
+from django.db.models import Sum,Max
 #Create your models here.
 
 class JSONField(models.TextField):
@@ -64,7 +65,15 @@ class project(models.Model):
         """
         return a list of plates ######need to improve.
         """
+
         return self.data_set.order_by('plate').distinct().values_list('plate',flat=True)
+
+    def get_detail_plate_list(self):
+        """
+        return a detailed list of plates
+        """
+        select_data = {"date": """strftime('%%m/%%d/%%Y', time_stamp)"""}
+        return data.objects.extra(select=select_data).values('plate').order_by('plate').annotate(numHit=Sum('hit'),date=Max('create_date'))
 
     def get_meta(self):#meta is a dictionary/json but I didn't enforce that. could be improved.
         if self.meta == None:

@@ -146,7 +146,7 @@ PlateVis.prototype.updateVis = function(){
     // updates axis
 
     //updates graph
-    this.svg.selectAll(".well").remove();
+    //this.svg.selectAll(".well").remove();
 
     this.well = this.svg.selectAll(".well")
         .data(this.displayData, function(d) {return d.plate_well + that.channel + d.opacity + d.hit;});

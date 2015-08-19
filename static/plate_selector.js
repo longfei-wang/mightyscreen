@@ -22,15 +22,17 @@
 PlateSelector = function(_parentElement, _data, _eventHandler){
     this.parentElement = _parentElement;
     this.data = _data.plateList;
+    this.data_slice = [];
     this.curPlate = _data.curPlate;
+    this.curRow = 0;
     this.eventHandler = _eventHandler;
-    
+    this.displayData = [];
     // TODO: define all "constants" here
     this.margin = {top: 20, right: 20, bottom: 20, left: 20},
     this.width = window.innerWidth - this.margin.left - this.margin.right,
-    this.height = 100 - this.margin.top - this.margin.bottom;
+    this.height = 110 - this.margin.top - this.margin.bottom;
 
-
+    this.box = {height:70,width:100,space:105};
 
     this.initVis();
 }
@@ -60,6 +62,8 @@ PlateSelector.prototype.initVis = function(){
       .append("g")
         .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 
+    this.x = d3.scale.linear()
+        .range([5, this.width]);
 
     // creates axis and scales
 
@@ -83,7 +87,27 @@ PlateSelector.prototype.wrangleData= function(){
     // pretty simple in this case -- no modifications needed
 
     //slice the data.
+    var that = this;
 
+    this.platesRow = Math.floor(this.width/this.box.space);
+    
+    this.numRow = Math.ceil(this.data.length/this.platesRow);
+    
+
+    for (i=0;i<this.numRow;i++) {
+        var slice = that.data.slice(that.platesRow*i,that.platesRow*(i+1));    
+        that.data_slice.push(slice);
+        slice.map(function(d){
+            if (d.plate == parseInt(that.curPlate)) {
+                that.curRow = i;
+            }
+        });
+    }
+
+
+    this.x.domain([0, Math.floor(this.width/15)]);
+    
+    this.displayData = this.data_slice[this.curRow];
 }
 
 
@@ -98,27 +122,53 @@ PlateSelector.prototype.updateVis = function(){
     // TODO: implement update graphs (D3: update, enter, exit)
     this.svg.selectAll(".plate").remove()
 
+    this.dots = this.svg.append('g')
+        .selectAll(".dot")
+        .data(d3.range(0,this.numRow))
+        .enter()
+        .append("circle")
+        .attr("class","dot hover_item")
+        .attr("cx",function(d) {return that.x(d);})
+        .attr("cy",this.box.height+10)
+        .attr("r",5)
+        .attr('fill',function(d){return d==that.curRow ? 'red':'grey';})
+        .on('click',function(d){
+            that.curRow = d;
+            that.displayData=that.data_slice[d];
+            that.updateVis(); 
+        });
+
     this.plates = this.svg.selectAll(".plate")
-        .data(this.data)
+        .data(this.displayData,function(d){return d.plate;})
         .enter()
         .append("g")
-        .attr("class","plate")
-        .attr("transform", function(d,i){ return "translate("+ i*105 + ",0)"; });
+        .attr("class","plate hover_item")
+        .attr("transform", function(d,i){ return "translate("+ i*that.box.space + ",0)"; });
 
     this.plates.append("rect")
-        .attr("width",100)
-        .attr("height",80)
+        .attr("width",this.box.width)
+        .attr("height",this.box.height)
         .attr("fill",function(d){ 
-            return (d == that.curPlate) ? "red" : "grey";
+            return (d.plate == parseInt(that.curPlate)) ? "red" : "grey";
         })
         .attr("fill-opacity",0.5)
         .on("click",function(d){
-            $(that.eventHandler).trigger("plate",d);
+            $(that.eventHandler).trigger("plate",d.plate);
         });
 
     this.plates.append("text")
         .attr("y",12)
-        .text(function(d){ return d; });
+        .text(function(d){ return d.plate; });
+
+    this.plates.append("text")
+        .attr("y",40)
+        .attr("x",this.box.width-5)
+        .attr("text-anchor","end")
+        .text(function(d){ return d.numHit; });
+
+    this.plates.append("text")
+        .attr("y",this.box.height)
+        .text(function(d){ return d.date; });
 }
 
 /**

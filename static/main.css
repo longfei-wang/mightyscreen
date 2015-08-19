@@ -3,3 +3,8 @@
 	fill: red;
 	cursor: pointer;
 }
+
+.hover_item:hover
+{
+	cursor: pointer;
+}

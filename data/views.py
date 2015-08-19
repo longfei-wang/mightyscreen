@@ -112,7 +112,7 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 
 		self.pdata = self.project.data_set
 
-		self.plate_list = self.project.get_plate_list()
+		self.plate_list = self.project.get_detail_plate_list()
 
 		self.curPlate = self.project.get_curPlate(self.request)
 
