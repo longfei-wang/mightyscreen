@@ -37,7 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'django_filters',
+    #'django_filters',
     'crispy_forms',
     #'library',
     'data',
@@ -80,7 +80,7 @@ elif 'HOST' in os.environ.keys() and os.environ['HOST'] == 'mightyscreen':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'mightyscreen2',
+            'NAME': 'mightyscreen3',
             'USER': 'mightyscreen',
             'PASSWORD': 'ms2014',
         }
