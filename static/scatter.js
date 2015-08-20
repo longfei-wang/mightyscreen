@@ -107,13 +107,13 @@ ScatterVis.prototype.initVis = function(){
         .attr("id","ylabel")
         .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
         .attr("transform", "translate("+ (-40) +","+(this.height/2)+")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
-        .text("Channel 2 Readout: "+this.channely);
+        .text("Channel Readout: "+this.channely);
 
     this.svg.append("text")
         .attr("id","xlabel")
         .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
         .attr("transform", "translate("+ (this.width/2) +","+(this.height+45)+")")  // centre below axis
-        .text("Channel 1 Readout: "+this.channelx);
+        .text("Channel Readout: "+this.channelx);
 
 
 
