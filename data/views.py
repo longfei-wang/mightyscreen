@@ -144,8 +144,11 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 
 		response = HttpResponse(content_type='text/csv')
 		response['Content-Disposition'] = 'attachment;filename="export.csv"'
+		
+		#if there is not data just export an empty csv file instead of causing error
+		if not self.get_queryset().exists():
+			return response
 
-		self.get_queryset()
 		serializer = self.serializer_class(self.pdata,many=True)
 		
 		unique_keys = set()

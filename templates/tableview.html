@@ -10,13 +10,6 @@
 
 {% block content %}
 
-<div id="nodata" class="hide"> 
-    <div class="alert alert-info">
-    There is no data. Do you want to <a href="{% url 'data-demo' %}">Load Demo</a>?
-    <a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
-    </div>
-</div>
-
 <div id="visualization">
 
 	<div class="row">
@@ -63,6 +56,13 @@ $(function() {
 
 		var thisData = wrangleData(d);
 		
+		//if there is not data display the nodata warning and return
+        if (thisData.results.length < 1) {
+            d3.select("#nodata").attr('class','');
+            d3.select("#visualization").attr('class','hide');
+        	return;
+        }
+
 		var tableview =new TableVis(d3.select("#tableview"),thisData,MyEventHandler);	
 		
 		var plateselector = new PlateSelector(d3.select("#plateSelector"),thisData,MyEventHandler);

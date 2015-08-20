@@ -10,14 +10,6 @@
 
 {% block content %}
 
-<div id="nodata" class="hide"> 
-    <div class="alert alert-info">
-    There is no data. Do you want to <a href="{% url 'data-demo' %}">Load Demo</a>?
-    <a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
-    </div>
-</div>
-
-
 <div id="visualization">
         <div class="row">
             <div class="col-md-12 col-sm-12" id="plateSelector">
@@ -127,10 +119,13 @@ $(function(){ // this function is called after the HTML document is fully loaded
     // call this function after Data is loaded, reformatted and bound to the variables
     var initVis = function(){
 
-        if (thisData.results == []) {
-            $("#my-div").removeClass('hide');
-            $
+        //if there is not data display the nodata warning and return
+        if (thisData.results.length < 1) {
+            d3.select("#nodata").attr('class','');
+            d3.select("#visualization").attr('class','hide');
+            return;
         }
+
         //TODO: Create an eventHandler  --> DONE :)
         var MyEventHandler = new Object();
 
