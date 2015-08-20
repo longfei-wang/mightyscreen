@@ -100,7 +100,6 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 	serializer_class = DataSerializer
 	lookup_field='plate_well'
 	project=None
-	pdata=None
 	plate_list=[]
 	curPlate = None
 	channels = []
@@ -232,6 +231,24 @@ class DataViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.Gener
 			'mark':instance.hit,
 			#'results':hits_data,
 			},status=status.HTTP_200_OK)
+
+	@list_route()
+	def layout(self,request):
+		"""
+		Apply the layout of current plate to all plates in this project
+		"""
+		plate_data = self.get_queryset()
+		#get the well array for each welltype
+		P_wells = list(plate_data.filter(welltype="P").values_list('well',flat=True))
+		N_wells = list(plate_data.filter(welltype="N").values_list('well',flat=True))
+		
+		#then apply to all plates in this project.
+
+		self.project.data_set.update(welltype="X")
+		self.project.data_set.filter(well__in=P_wells).update(welltype='P')
+		self.project.data_set.filter(well__in=N_wells).update(welltype='N')
+
+		return redirect('tableview')
 
 	@detail_route(methods=['GET'])
 	def setP(self,request,plate_well):

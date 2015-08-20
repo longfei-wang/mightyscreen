@@ -10,16 +10,31 @@
 
 {% block content %}
 
-<div class="row">
-    <div class="col-md-12 col-sm-12" id="plateSelector">
+<div id="nodata" class="hide"> 
+    <div class="alert alert-info">
+    There is no data. Do you want to <a href="{% url 'data-demo' %}">Load Demo</a>?
+    <a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
     </div>
-
 </div>
 
+<div id="visualization">
 
-<div class="row">
-	<div class="col-md-12 col-sm-12" id="tableview">
+	<div class="row">
+	    <div class="col-md-12 col-sm-12" id="plateSelector">
+	    </div>
+
 	</div>
+
+	<div class="row well">
+	    <div class="btn-group" role="group" aria-label="demo">
+	        <a href="{% url 'data-layout' %}" class="btn btn-default">Appy current layout to other plates</a>
+	    </div>
+	</div>
+	<div class="row">
+		<div class="col-md-12 col-sm-12" id="tableview">
+		</div>
+	</div>
+
 </div>
 
 {% endblock %}
