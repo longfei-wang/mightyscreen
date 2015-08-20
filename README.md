@@ -17,15 +17,15 @@ CSV files
 The program is only tested on 384-plate format. But to support other plate format is not hard. Please send us a sample input file and we can add support to that.
 
 ####required columns
-plate, well
+    plate, well
 these 2 columns are required by MightyScreen.
 
 ####reserved name spaces
-identifier, plate_well, hit, welltype, create_date
+    identifier, plate_well, hit, welltype, create_date
 MightyScreen already specified the meaning for the above columns. You can choose to include them or not, but don't name your experimental readouts with these names.
 
 ####supported chemical identifiers
-name, cid, name, smiles, inchi, sdf, inchikey, formula, listkey, identifier(the export file from MightyScreen)
+    name, cid, name, smiles, inchi, sdf, inchikey, formula, listkey, identifier(the export file from MightyScreen)
 Columns with these will be used to connect your screening compound to PubChem chemical records. But they are not required.
 For ICCB users, these are not required, just choose HMS as chemical identifier when uploading. 
 
