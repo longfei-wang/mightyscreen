@@ -93,6 +93,7 @@ function updateParse(d,fid) {
         .attr('name',fid+'plates')
         .attr('value',response.plates.join(','));
 
+    var supported_options = "identifier cid name smiles inchi sdf inchikey formula listkey".split(" ");
     //readouts name form
     var readoutform = form
 
@@ -100,7 +101,7 @@ function updateParse(d,fid) {
         .text('Select Readouts (check to select)');
     
     readoutform.selectAll('.readoutform')
-        .data(response.titles.filter(function(d){return d != 'identifier';}))
+        .data(response.titles.filter(function(d){return supported_options.indexOf(d) == -1;}))
         .enter()
         .append('div')
         .attr('class','checkbox readoutform')
@@ -123,12 +124,9 @@ function updateParse(d,fid) {
     //     .attr('selected','selected')
     //     .text('HMS-ICCB');
 
-    var supported_options = "identifier cid name smiles inchi sdf inchikey formula listkey".split(" ");
 
-    console.log(response.titles)
     var supported_titles = response.titles.filter(function(d){
-        console.log(d == 'identifier')
-        console.log(supported_options)
+        
         return supported_options.indexOf(d.toLowerCase()) > -1;
         
     });
