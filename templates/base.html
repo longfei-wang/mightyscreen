@@ -117,17 +117,15 @@
                         </div>
                     {% endfor %}
                 {% endif %}
-
-
+                
+                <div id="nodata" class="hide"> 
+                    <div class="alert alert-danger">
+                    There is no data in your current project. Do you want to <a href="{% url 'data-demo' %}">Load Demo</a>?
+                    <a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
+                    </div>
+                </div>
 
                 <div id="contentblock">
-                    <div id="nodata" class="hide"> 
-                        <div class="alert alert-danger">
-                        There is no data in your current project. Do you want to <a href="{% url 'data-demo' %}">Load Demo</a>?
-                        <a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
-                        </div>
-                    </div>
-
                 {% block content %}
                 
                 {% endblock %}
@@ -138,12 +136,11 @@
 
 
     <hr>
-    <div class="row">
+    <div class="row container">
         <footer>
             <p>
-            Under development.... || copyright reserved || 
-            <a href='https://github.com/longfei-wang/mightyscreen'>github</a> || 
-            <a href="{% url "admin:index" %}">admin</a>
+            Copyright © MightyScreen 2013 ||
+            <a href='https://github.com/longfei-wang/mightyscreen'>SourceCode</a>
             </p>
         </footer>
     </div>

@@ -6,10 +6,28 @@
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
       <div class="container">
-        <h1>Hello!</h1>
-        <p>Welcome to MightyScreen!</p>
-        <p>Enable you to play with your own data.</p>
-        <p><a href="{% url 'uploadview' %}" class="btn btn-primary btn-lg" role="button">Get Started &raquo;</a></p>
+        <h1>Welcome to MightyScreen!</h1>
+        <p>A simple but comprehensive data analysis tool for high-throughput screens.</p>
+        <p><a href="{% url 'uploadview' %}" class="btn btn-primary btn-lg" role="button">Get Start &raquo;</a></p>
       </div>
     </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-4">
+          <h2>Visualization</h2>
+          <p>MightyScreen encodes massive data into various visual elements which enable users to have comprehensive understandings of the data.</p>
+       </div>
+        <div class="col-md-4">
+          <h2>Better Hit Selection</h2>
+          <p>MightyScreen facilitate the superior pattern recognition and decision making ability of human with its interactive visualization design.</p>
+        </div>
+        <div class="col-md-4">
+          <h2>No limitation</h2>
+          <p>MightyScreen supports unlimited numbers of numeric measurements/readouts.</p>
+        </div>
+      </div>
+    </div>
+
 {% endblock %}
