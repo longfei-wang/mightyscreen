@@ -9,6 +9,7 @@ import json
 from django.shortcuts import get_object_or_404
 from collections import OrderedDict as odict
 from django.db.models import Sum,Max
+import datetime
 #Create your models here.
 
 class JSONField(models.TextField):
@@ -287,6 +288,7 @@ class data(models.Model):
     
 #the serializer for data
 class DataSerializer(serializers.ModelSerializer):
+    create_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
 
     class Meta:
         model = data
