@@ -198,17 +198,17 @@ PlateVis.prototype.updateVis = function(){
         .attr("text-anchor","middle")
         .text(function(d){ return that.format(d.readout);});
 
-    var counter = 0;
+    //var counter = 0;
     //index of selection
     dot.append("text")
         .attr("font-size", 10)
-        .attr("x", - this.height / 40 - 4)
+        .attr("x", - this.height / 40 - 12)
         .attr("y", - this.height / 40)
         .attr("text-anchor","right")
         .text(function(d){
             if (d.hit) {
-                counter += 1;
-                return counter
+                //counter += 1;
+                return d.well;
             }
     });
 

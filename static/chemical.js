@@ -188,7 +188,7 @@ ChemicalVis.prototype.updateVis = function(){
         .attr("width", this.box.width)
         .attr("height", this.box.height*0.75);
 
-    var counter = 0;
+    //var counter = 0;
     //the index
     this.chemical
         .append("text")
@@ -197,8 +197,8 @@ ChemicalVis.prototype.updateVis = function(){
         .attr("anchor","left")
         .text(function(d) {
             if (d.hit) {
-                counter += 1;
-                return counter;
+                //counter += 1;
+                return d.well;
             }
     })
 
@@ -212,7 +212,7 @@ ChemicalVis.prototype.updateVis = function(){
         .append("text")
         .attr("class","hover_text")
         .attr("y",14)
-        .attr("x",20)
+        .attr("x",32)
         .attr("anchor","left")
         .text(function(d){
             return d.cid?"PubChem":"";
