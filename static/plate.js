@@ -201,8 +201,8 @@ PlateVis.prototype.updateVis = function(){
     //var counter = 0;
     //index of selection
     dot.append("text")
-        .attr("font-size", 10)
-        .attr("x", - this.height / 40 - 12)
+        .attr("font-size", 8)
+        .attr("x", - this.height / 40 - 8)
         .attr("y", - this.height / 40)
         .attr("text-anchor","right")
         .text(function(d){
